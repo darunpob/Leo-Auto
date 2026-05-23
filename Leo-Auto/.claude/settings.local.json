@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"g:\\\\BangkokU\\\\Buyear3\\\\Term2\\\\cs460\\\\kuyyai\" -Exclude \".venv\")",
+      "Bash(Format-Table Name, LastWriteTime)",
+      "Bash(Select-String -Path \"g:\\\\BangkokU\\\\Buyear3\\\\Term2\\\\cs460\\\\kuyyai\\\\frontend\\\\index.html\" -Pattern \"page-analytics|test-toggle|test-panel|test-hud|testModeBtn|toggleTestMode\" -n)",
+      "Bash(Select-Object -First 40)"
+    ]
+  }
+}
