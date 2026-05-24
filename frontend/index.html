@@ -3925,6 +3925,40 @@ function populateSelectsModal() {
   sSel.innerHTML = '<option value="">Series</option>';
   brands.forEach(b => bSel.innerHTML += `<option value="${b}">${b}</option>`);
   series.forEach(s => sSel.innerHTML += `<option value="${s}">${s}</option>`);
+  
+  // Add event listener to brand select to filter series
+  bSel.addEventListener('change', filterSeriesByBrand);
+}
+
+function filterSeriesByBrand() {
+  const selectedBrand = document.getElementById('m_brand').value;
+  const sSel = document.getElementById('m_series');
+  
+  if (!selectedBrand) {
+    // Show all series if no brand selected
+    [...sSel.options].forEach(opt => {
+      if (opt.value) opt.style.display = '';
+    });
+    return;
+  }
+  
+  // Get series for selected brand from data
+  const seriesForBrand = new Set();
+  globalData.forEach(item => {
+    if (item.Brand.trim().toUpperCase() === selectedBrand.toUpperCase()) {
+      seriesForBrand.add(item.Series.trim().toUpperCase());
+    }
+  });
+  
+  // Show/hide series options
+  [...sSel.options].forEach(opt => {
+    if (!opt.value) return; // Always show placeholder
+    const optText = opt.text.trim().toUpperCase();
+    opt.style.display = seriesForBrand.has(optText) ? '' : 'none';
+  });
+  
+  // Reset series selection
+  sSel.value = '';
 }
 
 /* ลบ Brand หรือ Series ที่เลือกออกจาก dropdown */
