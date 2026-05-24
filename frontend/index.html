@@ -3407,24 +3407,32 @@ async function loadProducts() {
       };
     });
 
-    renderGrid(globalData);
-    updateStats(globalData);
-    buildFilterChips();
     console.log('Inventory loaded:', globalData.length, 'items');
-    if (document.getElementById('page-analytics')?.style.display !== 'none') renderStockDashboard();
+    return true;
   } catch (e) {
     console.error('Failed to load inventory from API, falling back to embedded data', e);
     // fallback to embedded sample if fetch fails
     globalData = EMBEDDED_DATA;
-    renderGrid(globalData);
-    updateStats(globalData);
-    buildFilterChips();
-    if (document.getElementById('page-analytics')?.style.display !== 'none') renderStockDashboard();
+    return false;
   }
 }
 
-// เรียกตอนเปิดหน้า เพื่อให้ stats อัปเดตเสมอ
-loadProducts();
+// Render grid and update UI after loading
+async function refreshInventoryUI() {
+  const success = await loadProducts();
+  renderGrid(globalData);
+  updateStats(globalData);
+  buildFilterChips();
+  if (document.getElementById('page-analytics')?.style.display !== 'none') {
+    renderStockDashboard();
+  }
+  return success;
+}
+
+// Load on page init
+async function initInventory() {
+  await refreshInventoryUI();
+}
 
 /* ──────────────── RENDER ──────────────── */
 function renderGrid(data) {
@@ -3864,10 +3872,6 @@ document.getElementById('manageForm').onsubmit = async (e) => {
   const isEdit = document.getElementById('editMode').value === "true";
   const formData = new FormData(e.target);
 
-  // FormData with a multi-file input is tricky. The `new FormData(form)` constructor handles it,
-  // but we must ensure the input name is `images` (plural), which we've set in the HTML.
-  // The constructor will automatically add multiple `images` entries for each file.
-
   // Ensure cost_price is never sent as empty string (FastAPI float parse would fail → 422)
   if (!formData.get('cost_price') || String(formData.get('cost_price')).trim() === '') {
     formData.set('cost_price', '0');
@@ -3881,14 +3885,12 @@ document.getElementById('manageForm').onsubmit = async (e) => {
     const res = await fetch(url, { method, body: formData });
     if (res.ok) {
       closeManageModal();
-      loadProducts();
-      // Restore to current page instead of going back to inventory
-      if (currentPage !== 'inventory') {
-        setTimeout(() => {
-          const navPill = document.querySelector(`[onclick*="'${currentPage}'"]`);
-          if (navPill) switchPage(currentPage, navPill);
-        }, 100);
-      }
+      // Refresh data without changing page
+      await loadProducts();
+      renderGrid(globalData);
+      updateStats(globalData);
+      buildFilterChips();
+      // Don't change page, just refresh data
     } else {
       const err = await res.json();
       await fancyAlert(err.detail[0]?.msg || err.detail, 'error');
@@ -3905,14 +3907,11 @@ async function deleteProduct(pn) {
   try {
     const res = await fetch(`${API_URL}/inventory/${encodeURIComponent(pn)}`, { method: 'DELETE' });
     if (res.ok) { 
-      loadProducts();
-      // Restore to current page
-      if (currentPage !== 'inventory') {
-        setTimeout(() => {
-          const navPill = document.querySelector(`[onclick*="'${currentPage}'"]`);
-          if (navPill) switchPage(currentPage, navPill);
-        }, 100);
-      }
+      // Refresh data without changing page
+      await loadProducts();
+      renderGrid(globalData);
+      updateStats(globalData);
+      buildFilterChips();
     }
     else { const err = await res.json(); await fancyAlert(err.detail, 'error'); }
   } catch { await fancyAlert('เชื่อมต่อระบบล้มเหลว', 'error'); }
@@ -5049,7 +5048,7 @@ function loadSavedTestResults() {
   } catch(e) {}
 }
 
-window.onload = loadProducts;
+window.onload = initInventory;
 
 /* ══════════════════════════════════════
    STOCK INTELLIGENCE DASHBOARD
