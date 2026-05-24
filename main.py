@@ -5,8 +5,6 @@ import pandas as pd
 from fastapi import FastAPI, Form, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from google import genai
-from google.genai import types
 from PIL import Image
 
 app = FastAPI()
@@ -20,11 +18,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-import os
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
-client = genai.Client(api_key=GOOGLE_API_KEY)
-
-DB_FILE = "inventory.csv"
+# --- 1. Database Setup ---
 LOCATION_COLUMN = "Storage Location"
 COST_COLUMN = "Cost Price"
 
@@ -593,63 +587,6 @@ async def delete_order(bill_no: int):
 
     _save_orders(bills_to_keep)
     return {"message": f"ลบบิล #{bill_no} สำเร็จ"}
-
-# ==========================================
-# 🤖 3. API สำหรับ AI (Gemini 2.5 Flash)
-# ==========================================
-
-# [AI SUMMARY] สรุปรายงานและแจ้งเตือน
-@app.get("/api/summary")
-async def ai_summary():
-    df = get_db()
-    inventory_csv = df.to_csv(index=False)
-    
-    prompt = f"""
-You are the ultimate inventory manager at Leo Auto.
-You will be given the current stock data (CSV format):
-{inventory_csv}
-
-IMPORTANT: You do NOT have sales history/sold quantities. You must NOT claim “ขายบ่อย” using sold metrics.
-Instead, infer “ควรโฟกัส” from stock level and inventory value (Price * Stock).
-
-Return a smart, well-structured Thai report with the following sections:
-
-1) 🚨 ของที่ควรเติม (Low stock)
-- List items where Stock < 5
-- Sort by Stock ascending (lowest first)
-- For each item show: Part Number, Part Name, Brand, Series, Stock, Cost Price (ถ้ามี), and a short action recommendation (เช่น “ควรสั่งเพิ่ม”)
-- If there are no low stock items, say so.
-
-2) 💎 ของที่มูลค่าสูง (Inventory value)
-- Compute total inventory value approximately using Price * Stock
-- Also compute top 5 items by (Price * Stock)
-- For each item show: Part Number, Part Name, Price, Stock, Inventory Value
-
-3) ⚠️ เสี่ยงขาดแต่กระทบหนัก (High value + low stock)
-- Find items where Stock < 5 AND (Price * Stock) is high
-- Suggest a Top 3 to prioritize
-- Explain in 1 line why each is risky (value + scarcity)
-
-4) 📌 สรุปภาพรวมแบบผู้บริหาร
-- Brand with most items
-- Series with most items
-- Total inventory value (rough)
-- Count of low-stock items
-
-Formatting rules:
-- Use Emojis
-- Keep it concise but specific
-- Answer in Thai
-- Do not include any claims about sales frequency
-"""
-    try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash", 
-            contents=prompt
-        )
-        return {"report": response.text}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

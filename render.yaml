@@ -7,5 +7,3 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11
-      - key: GOOGLE_API_KEY
-        value: AIzaSyA4OMdkw35WXwVUbyLahn57BRbjyng0xlQ
