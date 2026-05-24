@@ -3587,7 +3587,54 @@ function setFilter(el, type, val) {
   activeFilters[type] = val;
   el.parentElement.querySelectorAll(`.chip[onclick*="'${type}'"]`).forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
+  
+  // ถ้าเลือก Brand → อัพเดท Series chips
+  if (type === 'brand') {
+    updateSeriesChips(val);
+  }
+  
   filterLocal();
+}
+
+function updateSeriesChips(selectedBrand) {
+  const seriesContainer = document.querySelectorAll('.chip-label')[1].parentElement;
+  const seriesChips = seriesContainer.querySelectorAll('.chip[onclick*="series"]');
+  
+  if (selectedBrand === 'All') {
+    // แสดงแค่ "All"
+    seriesChips.forEach(chip => {
+      if (chip.textContent.trim() === 'All') {
+        chip.style.display = 'inline-block';
+        chip.classList.add('active');
+      } else {
+        chip.style.display = 'none';
+      }
+    });
+    activeFilters.series = 'All';
+  } else {
+    // แสดงแค่รุ่นของ Brand นั้น
+    const brandSeriesMap = {
+      'HINO': ['PROFIA', 'MEGA 500', 'MEGA 700'],
+      'ISUZU': ['GIGA', 'NPR 150'],
+      'FUSO': ['VICTOR 500']
+    };
+    
+    const allowedSeries = brandSeriesMap[selectedBrand] || [];
+    
+    seriesChips.forEach(chip => {
+      const chipText = chip.textContent.trim();
+      if (chipText === 'All' || allowedSeries.includes(chipText)) {
+        chip.style.display = 'inline-block';
+      } else {
+        chip.style.display = 'none';
+      }
+    });
+    
+    // รีเซ็ต Series เป็น All
+    activeFilters.series = 'All';
+    seriesChips.forEach(c => c.classList.remove('active'));
+    seriesChips[0].classList.add('active');
+  }
 }
 
 function filterCards() { filterLocal(); }
