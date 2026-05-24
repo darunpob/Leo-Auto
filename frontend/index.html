@@ -4423,24 +4423,30 @@ function billSearch() {
   const box = document.getElementById('billSearchResults');
   if (!q) { box.style.display = 'none'; return; }
 
-  const results = globalData.filter(item =>
-    item['Part Name'].toLowerCase().includes(q) ||
-    item['Part Number'].toLowerCase().includes(q) ||
-    item['Brand'].toLowerCase().includes(q)
-  ).slice(0, 8);
+  const results = globalData.filter(item => {
+    const totalStock = Number(item.Stock || 0) + Number(item.Used_Stock || 0);
+    return totalStock > 0 && (
+      item['Part Name'].toLowerCase().includes(q) ||
+      item['Part Number'].toLowerCase().includes(q) ||
+      item['Brand'].toLowerCase().includes(q)
+    );
+  }).slice(0, 8);
 
   if (!results.length) { box.style.display = 'none'; return; }
 
-  box.innerHTML = results.map(item => `
+  box.innerHTML = results.map(item => {
+    const totalStock = Number(item.Stock || 0) + Number(item.Used_Stock || 0);
+    const stockDisplay = totalStock > 0 ? `(เหลือ ${totalStock})` : '(หมด)';
+    return `
     <div class="bill-drop-item" onclick="addToBill('${escQ(item['Part Number'])}')">
       <div style="flex:1;min-width:0;">
         <div class="bill-drop-name">${item['Part Name']}</div>
-        <div class="bill-drop-pn">${item['Part Number']} · ${item['Brand']} ${item['Series']}</div>
+        <div class="bill-drop-pn">${item['Part Number']} · ${item['Brand']} ${item['Series']} ${stockDisplay}</div>
       </div>
       <div class="bill-drop-price">฿${Number(item.Price).toLocaleString()}</div>
       <div class="bill-drop-add">+</div>
     </div>
-  `).join('');
+  `}).join('');
   box.style.display = 'block';
 }
 
@@ -4449,6 +4455,14 @@ function escQ(s) { return String(s).replace(/'/g,"\'"); }
 function addToBill(pn) {
   const item = globalData.find(i => i['Part Number'].trim() === pn.trim());
   if (!item) return;
+  
+  // Check if stock is available
+  const totalStock = Number(item.Stock || 0) + Number(item.Used_Stock || 0);
+  if (totalStock <= 0) {
+    showScanToast('❌ สินค้านี้หมดแล้ว ไม่สามารถเพิ่มลงบิลได้', 'error');
+    return;
+  }
+  
   const existing = billItems.find(b => b.pn === pn);
   if (existing) {
     existing.qty++;
