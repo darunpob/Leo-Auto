@@ -3,14 +3,15 @@ from sqlalchemy import create_engine, Column, String, Float, Integer, Text, Date
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
-import psycopg2
-from psycopg2.extras import execute_values
 
-# Get DATABASE_URL from environment or use a default
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:password@localhost/leo_auto")
+# SQLite database (lightweight, no external DB needed)
+DATABASE_URL = "sqlite:///./leo_auto.db"
 
-# SQLAlchemy setup
-engine = create_engine(DATABASE_URL, echo=False, pool_pre_ping=True)
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    echo=False
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -47,7 +48,7 @@ class Order(Base):
 # Create tables
 def init_db():
     Base.metadata.create_all(bind=engine)
-    print("✓ Database tables created/verified")
+    print("✓ SQLite database initialized")
 
 
 def get_db():
