@@ -3370,7 +3370,7 @@
   }
 </style>
 <script>
-window.API_URL = 'http://localhost:3000/api';
+window.API_URL = 'https://leo-auto-backend-production.up.railway.app/api';
 
 let globalData = [];
 let dpMode = 'brand'; // ใช้ใน dark prompt
@@ -3460,7 +3460,7 @@ function renderGrid(data) {
       .split(',')
       .map(url => url.trim())
       .filter(Boolean)
-      .map(url => url.startsWith('http') ? url : `http://localhost:8000/${url}`);
+      .map(url => url.startsWith('http') ? url : `https://leo-auto-backend-production.up.railway.app/${url}`);
     
     const firstImage = imageUrls[0] || '';
     
@@ -3616,7 +3616,7 @@ function openLightbox(partNumber) {
   const item = globalData.find(p => p['Part Number'] === partNumber);
   if (!item) return;
 
-  const imageUrls = (item.Image_URL || "").split(',').map(url => url.trim()).filter(Boolean).map(url => url.startsWith('http') ? url : `http://localhost:8000/${url}`);
+  const imageUrls = (item.Image_URL || "").split(',').map(url => url.trim()).filter(Boolean).map(url => url.startsWith('http') ? url : `https://leo-auto-backend-production.up.railway.app/${url}`);
   if (imageUrls.length === 0) return;
 
   lightboxState.images = imageUrls;
@@ -3742,7 +3742,7 @@ function openManageModal(isEdit = false, pn = null) {
         imgHint.style.display = 'block';
         imageUrls.forEach(rawUrl => {
           const url = rawUrl.trim();
-          const fullUrl = url.startsWith('http') ? url : `http://localhost:8000/${url}`;
+          const fullUrl = url.startsWith('http') ? url : `https://leo-auto-backend-production.up.railway.app/${url}`;
           const div = document.createElement('div');
           div.className = 'preview-container';
           div.innerHTML = `
