@@ -19,6 +19,7 @@ app.add_middleware(
 )
 
 # --- 1. Database Setup ---
+DB_FILE = "inventory.csv"
 LOCATION_COLUMN = "Storage Location"
 COST_COLUMN = "Cost Price"
 
