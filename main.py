@@ -428,3 +428,114 @@ async def delete_order(bill_id: int):
     orders = [o for o in orders if o.get("id") != bill_id]
     _save_orders(orders)
     return {"message": f"✅ ลบบิล #{bill_id} สำเร็จ!"}
+
+
+# ==========================================
+# 📦 5. API สำหรับ Export/Import CSV
+# ==========================================
+
+# [EXPORT] ส่งออก CSV
+@app.get("/api/inventory/export")
+async def export_inventory(db: Session = Depends(get_db_session)):
+    items = db.query(InventoryItem).all()
+    
+    data = [
+        {
+            "Part Number": item.part_number,
+            "Part Name": item.part_name,
+            "Brand": item.brand,
+            "Series": item.series,
+            "Price": item.price,
+            "Stock": item.stock,
+            "Used_Price": item.used_price,
+            "Used_Stock": item.used_stock,
+            "Image_URL": item.image_url,
+            "Storage Location": item.storage_location,
+            "Cost Price": item.cost_price,
+        }
+        for item in items
+    ]
+    
+    df = pd.DataFrame(data)
+    
+    # สร้าง CSV file ที่ server สามารถใช้ได้
+    csv_buffer = io.StringIO()
+    df.to_csv(csv_buffer, index=False, encoding='utf-8-sig')
+    csv_content = csv_buffer.getvalue()
+    
+    # บันทึก CSV เพื่อสำรอง
+    with open("inventory_export.csv", "w", encoding='utf-8-sig') as f:
+        f.write(csv_content)
+    
+    return {
+        "message": "✅ ส่งออก CSV สำเร็จ",
+        "csv_data": csv_content,
+        "count": len(data)
+    }
+
+# [IMPORT] นำเข้าข้อมูลจาก CSV
+@app.post("/api/inventory/import")
+async def import_inventory(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db_session),
+):
+    try:
+        content = await file.read()
+        df = pd.read_csv(io.StringIO(content.decode('utf-8')))
+        
+        imported_count = 0
+        skipped_count = 0
+        
+        for _, row in df.iterrows():
+            part_number = str(row.get('Part Number', '')).strip()
+            
+            if not part_number:
+                skipped_count += 1
+                continue
+            
+            # Check if already exists
+            existing = db.query(InventoryItem).filter(
+                InventoryItem.part_number == part_number
+            ).first()
+            
+            if existing:
+                # Update existing record
+                existing.part_name = str(row.get('Part Name', '')).strip()
+                existing.brand = str(row.get('Brand', '')).strip()
+                existing.series = str(row.get('Series', '')).strip()
+                existing.price = float(row.get('Price', 0))
+                existing.stock = int(row.get('Stock', 0))
+                existing.used_price = float(row.get('Used_Price', 0))
+                existing.used_stock = int(row.get('Used_Stock', 0))
+                existing.image_url = str(row.get('Image_URL', '')).strip()
+                existing.storage_location = str(row.get('Storage Location', '')).strip()
+                existing.cost_price = float(row.get('Cost Price', 0))
+                existing.updated_at = datetime.utcnow()
+            else:
+                # Create new record
+                new_item = InventoryItem(
+                    part_number=part_number,
+                    part_name=str(row.get('Part Name', '')).strip(),
+                    brand=str(row.get('Brand', '')).strip(),
+                    series=str(row.get('Series', '')).strip(),
+                    price=float(row.get('Price', 0)),
+                    stock=int(row.get('Stock', 0)),
+                    used_price=float(row.get('Used_Price', 0)),
+                    used_stock=int(row.get('Used_Stock', 0)),
+                    image_url=str(row.get('Image_URL', '')).strip(),
+                    storage_location=str(row.get('Storage Location', '')).strip(),
+                    cost_price=float(row.get('Cost Price', 0)),
+                )
+                db.add(new_item)
+            
+            imported_count += 1
+        
+        db.commit()
+        
+        return {
+            "message": "✅ นำเข้า CSV สำเร็จ",
+            "imported": imported_count,
+            "skipped": skipped_count,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Import failed: {str(e)}")
