@@ -36,7 +36,7 @@ app.mount("/picture", StaticFiles(directory="picture"), name="picture")
 # ฟังก์ชันจัดการ CSV
 def get_db():
     if not os.path.exists(DB_FILE):
-        return pd.DataFrame(columns=["Part Number", "Part Name", "Brand", "Series", "Price", "Stock", "Image_URL", LOCATION_COLUMN, COST_COLUMN])
+        return pd.DataFrame(columns=["Part Number", "Part Name", "Brand", "Series", "Price", "Stock", "Used_Price", "Used_Stock", "Image_URL", LOCATION_COLUMN, COST_COLUMN])
 
     df = pd.read_csv(DB_FILE).fillna("")
     df['Part Number'] = df['Part Number'].astype(str)
@@ -128,21 +128,27 @@ async def add_product(
     series: str = Form(...),
     price: float = Form(...),
     stock: int = Form(...),
+    used_price: float = Form(0),
+    used_stock: int = Form(0),
     cost_price: float = Form(0),
     location: str = Form(""),
-    image: UploadFile = File(None)
+    images: list[UploadFile] = File([])
 ):
     df = get_db()
     if part_number in df['Part Number'].values:
         raise HTTPException(status_code=400, detail="Part Number นี้มีอยู่แล้วในระบบ!")
     
-    file_path = ""
-    if image and image.filename:
-        ext = image.filename.split(".")[-1]
-        safe_filename = f"{part_number}.{ext}"
-        file_path = f"picture/{safe_filename}"
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
+    image_urls = []
+    if images:
+        for i, image in enumerate(images):
+            if image.filename:
+                ext = image.filename.split(".")[-1]
+                # สร้างชื่อไฟล์ที่ไม่ซ้ำกัน
+                safe_filename = f"{part_number}_{i+1}.{ext}"
+                file_path = f"picture/{safe_filename}"
+                with open(file_path, "wb") as buffer:
+                    shutil.copyfileobj(image.file, buffer)
+                image_urls.append(file_path)
             
     new_data = {
         "Part Number": part_number,
@@ -151,7 +157,9 @@ async def add_product(
         "Series": series,
         "Price": price,
         "Stock": stock,
-        "Image_URL": file_path,
+        "Used_Price": used_price,
+        "Used_Stock": used_stock,
+        "Image_URL": ",".join(image_urls),
         LOCATION_COLUMN: location,
         COST_COLUMN: cost_price
     }
@@ -168,9 +176,11 @@ async def update_product(
     series: str = Form(...),
     price: float = Form(...),
     stock: int = Form(...),
+    used_price: float = Form(0),
+    used_stock: int = Form(0),
     cost_price: float = Form(0),
     location: str = Form(""),
-    image: UploadFile = File(None)
+    images: list[UploadFile] = File([])
 ):
     df = get_db()
     if part_number not in df['Part Number'].values:
@@ -184,17 +194,44 @@ async def update_product(
     df.at[idx, "Series"] = series
     df.at[idx, "Price"] = price
     df.at[idx, "Stock"] = stock
+    df.at[idx, "Used_Price"] = used_price
+    df.at[idx, "Used_Stock"] = used_stock
     df.at[idx, LOCATION_COLUMN] = location
     df.at[idx, COST_COLUMN] = cost_price
     
-    # ถ้ามีการอัปโหลดรูปภาพ "ใหม่" ค่อยอัปเดตไฟล์
-    if image and image.filename:
-        ext = image.filename.split(".")[-1]
-        safe_filename = f"{part_number}.{ext}"
-        file_path = f"picture/{safe_filename}"
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-        df.at[idx, "Image_URL"] = file_path 
+    # จัดการรูปภาพ
+    existing_urls = df.at[idx, "Image_URL"]
+    if pd.isna(existing_urls) or not existing_urls:
+        existing_urls = ""
+        
+    image_urls = existing_urls.split(',') if existing_urls else []
+
+    if images:
+        # หาเลข index สูงสุดของรูปที่มีอยู่เพื่อตั้งชื่อไฟล์ใหม่
+        max_index = 0
+        for url in image_urls:
+            try:
+                # ดึงเลข index จากชื่อไฟล์ เช่น 'PN_1.jpg' -> 1
+                filename = url.split('/')[-1]
+                index_part = filename.split('_')[-1].split('.')[0]
+                if index_part.isdigit():
+                    max_index = max(max_index, int(index_part))
+            except:
+                continue
+
+        for i, image in enumerate(images):
+            if image.filename:
+                ext = image.filename.split(".")[-1]
+                # สร้างชื่อไฟล์ใหม่ต่อจาก index เดิม
+                safe_filename = f"{part_number}_{max_index + i + 1}.{ext}"
+                file_path = f"picture/{safe_filename}"
+                with open(file_path, "wb") as buffer:
+                    shutil.copyfileobj(image.file, buffer)
+                image_urls.append(file_path)
+    
+    # ลบรายการ URL ที่ว่างเปล่าออก
+    image_urls = [url for url in image_urls if url]
+    df.at[idx, "Image_URL"] = ",".join(image_urls)
         
     save_db(df)
     return {"message": f"✅ อัปเดต {part_number} สำเร็จ!"}
@@ -206,9 +243,52 @@ async def delete_product(part_number: str):
     if part_number not in df['Part Number'].values:
         raise HTTPException(status_code=404, detail="ไม่พบสินค้าในระบบ")
     
+    # ลบรูปภาพที่เกี่ยวข้องก่อน
+    idx = df[df['Part Number'] == part_number].index[0]
+    image_urls_str = df.at[idx, "Image_URL"]
+    if pd.notna(image_urls_str) and image_urls_str:
+        image_urls = image_urls_str.split(',')
+        for url in image_urls:
+            if os.path.exists(url):
+                os.remove(url)
+
     df = df[df['Part Number'] != part_number]
     save_db(df)
     return {"message": f"🗑️ ลบ {part_number} สำเร็จ!"}
+
+
+# [DELETE IMAGE] ลบรูปภาพเดียว
+@app.delete("/api/inventory/{part_number}/image")
+async def delete_image(part_number: str, image_url: str):
+    df = get_db()
+    if part_number not in df['Part Number'].values:
+        raise HTTPException(status_code=404, detail="ไม่พบสินค้าในระบบ")
+
+    idx = df[df['Part Number'] == part_number].index[0]
+    
+    # ดึงรายการ URL ที่มีอยู่
+    existing_urls_str = df.at[idx, "Image_URL"]
+    if pd.isna(existing_urls_str) or not existing_urls_str:
+        raise HTTPException(status_code=404, detail="ไม่พบรูปภาพสำหรับสินค้านี้")
+
+    image_urls = existing_urls_str.split(',')
+    
+    # ตรวจสอบว่า URL ที่จะลบมีอยู่จริงหรือไม่
+    if image_url not in image_urls:
+        raise HTTPException(status_code=404, detail="ไม่พบ URL รูปภาพที่ระบุ")
+
+    # ลบไฟล์รูปภาพออกจาก physical storage
+    if os.path.exists(image_url):
+        os.remove(image_url)
+    
+    # ลบ URL ออกจากรายการและอัปเดต DataFrame
+    image_urls.remove(image_url)
+    df.at[idx, "Image_URL"] = ",".join(image_urls)
+    
+    save_db(df)
+    return {"message": f"🗑️ ลบรูปภาพ {image_url} สำเร็จ!"}
+
+
 
 
 # ==========================================
@@ -344,103 +424,175 @@ async def ai_vision(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# ==========================================
-# 🧾 4) Orders (ขายรายวัน / บิล)
-# ==========================================
-ORDERS_FILE = "orders.json"
-
+import json
+# --- Helper Functions ---
 def _load_orders():
     if not os.path.exists(ORDERS_FILE):
         return []
     try:
-        import json
-        with open(ORDERS_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return data if isinstance(data, list) else []
-    except Exception:
+        with open(ORDERS_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError):
         return []
 
-def _save_orders(bills):
-    import json
-    with open(ORDERS_FILE, "w", encoding="utf-8") as f:
-        json.dump(bills, f, ensure_ascii=False, indent=2)
+def _save_orders(data):
+    with open(ORDERS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
 
 def _compute_bill_total(items):
-    total = 0.0
-    for it in items:
-        qty = float(it.get("quantity", 0))
-        unit = float(it.get("unit_price", 0))
-        total += qty * unit
-    return total
+    return sum(it.get("quantity", 0) * it.get("unit_price", 0) for it in items)
+
 
 # [CREATE] บันทึกบิลขายรายวัน (รับ JSON)
 @app.post("/api/orders")
 async def create_order(data: dict):
     date = data.get("date")
     items = data.get("items", [])
+    bill_name = data.get("name", "") # รับชื่อบิล
+
     if not date:
         raise HTTPException(status_code=422, detail="Missing field: date")
     if not isinstance(items, list) or not items:
         raise HTTPException(status_code=422, detail="items must be a non-empty array")
 
-    # normalize items
+    # --- Stock Deduction Logic ---
+    inventory_df = get_db()
+    inventory_df['Part Number'] = inventory_df['Part Number'].astype(str)
+    
+    for it in items:
+        pn = str(it.get("part_number"))
+        qty = float(it.get("quantity", 0))
+        item_type = it.get("type", "new") # default to 'new' if not provided
+
+        mask = inventory_df['Part Number'] == pn
+        if not mask.any():
+            raise HTTPException(status_code=404, detail=f"Part number {pn} not found in inventory")
+        
+        idx = inventory_df.index[mask][0]
+
+        if item_type == 'used':
+            stock_col = 'Used_Stock'
+        else: # 'new'
+            stock_col = 'Stock'
+
+        current_stock = pd.to_numeric(inventory_df.at[idx, stock_col], errors='coerce')
+        if pd.isna(current_stock):
+            current_stock = 0
+
+        if current_stock < qty:
+            raise HTTPException(status_code=400, detail=f"Not enough stock for {pn} ({item_type}). Have: {current_stock}, Need: {qty}")
+        
+        inventory_df.at[idx, stock_col] = current_stock - qty
+
+    # --- End Stock Deduction ---
+    save_db(inventory_df) # <--- ⭐️ บันทึกไฟล์ CSV ที่อัปเดตสต็อกแล้ว
+
+    # normalize items for saving
     norm_items = []
     for it in items:
-        pn = it.get("part_number")
+        pn = str(it.get("part_number"))
         qty = it.get("quantity")
         unit = it.get("unit_price")
+        item_type = it.get("type", "new")
+
         if not pn:
             raise HTTPException(status_code=422, detail="Missing item.part_number")
         try:
             qty_f = float(qty)
-        except Exception:
+        except (ValueError, TypeError):
             raise HTTPException(status_code=422, detail="Invalid item.quantity")
         try:
             unit_f = float(unit)
-        except Exception:
+        except (ValueError, TypeError):
             raise HTTPException(status_code=422, detail="Invalid item.unit_price")
         if qty_f <= 0:
             raise HTTPException(status_code=422, detail="item.quantity must be > 0")
         if unit_f < 0:
             raise HTTPException(status_code=422, detail="item.unit_price must be >= 0")
+        
+        # Find part name from inventory
+        part_name_series = inventory_df.loc[inventory_df['Part Number'] == pn, 'Part Name']
+        part_name = part_name_series.iloc[0] if not part_name_series.empty else ""
+
         norm_items.append({
             "part_number": pn,
-            "quantity": int(qty_f) if qty_f.is_integer() else qty_f,
+            "quantity": int(qty_f) if qty_f == int(qty_f) else qty_f,
             "unit_price": unit_f,
-            "part_name": it.get("part_name", "")
+            "part_name": part_name,
+            "type": item_type
         })
 
     bills = _load_orders()
     next_no = 1
     if bills:
         try:
-            next_no = max(int(b.get("bill_no", 0)) for b in bills) + 1
-        except Exception:
+            # Find the max bill_no and add 1
+            max_no = max(b.get("bill_no", 0) for b in bills)
+            next_no = max_no + 1
+        except (ValueError, TypeError):
             next_no = len(bills) + 1
-
-    bill = {
+    
+    new_bill = {
         "bill_no": next_no,
+        "name": bill_name or f"บิล #{next_no}", # ใช้ชื่อที่ส่งมา หรือตั้งชื่อ default
         "date": date,
         "items": norm_items,
         "total": _compute_bill_total(norm_items)
     }
-    bills.append(bill)
+    bills.append(new_bill)
     _save_orders(bills)
-    return {"message": "✅ บันทึกบิลสำเร็จ", "bill_no": next_no}
+    
+    return {"message": f"บันทึกบิล #{next_no} สำเร็จ!", "new_bill": new_bill}
 
-# [READ] ดึงบิลของวันที่
+# [READ] โหลดบิลทั้งหมด
 @app.get("/api/orders")
-async def list_orders(date: str = ""):
-    if not date:
-        # if no date param return empty (frontend uses date)
-        return {"bills": []}
+async def get_orders():
     bills = _load_orders()
-    filtered = [b for b in bills if str(b.get("date", "")).strip() == str(date).strip()]
-    # ensure total exists
-    for b in filtered:
-        if "total" not in b:
-            b["total"] = _compute_bill_total(b.get("items", []))
-    return {"bills": filtered}
+    # เรียงจากใหม่ไปเก่า
+    return sorted(bills, key=lambda b: b.get("bill_no", 0), reverse=True)
+
+# [UPDATE] แก้ไขชื่อบิล
+@app.put("/api/orders/{bill_no}")
+async def update_order_name(bill_no: int, data: dict):
+    new_name = data.get("name")
+    if not new_name:
+        raise HTTPException(status_code=422, detail="Missing field: name")
+
+    bills = _load_orders()
+    bill_found = False
+    for bill in bills:
+        if bill.get("bill_no") == bill_no:
+            bill["name"] = new_name
+            bill_found = True
+            break
+    
+    if not bill_found:
+        raise HTTPException(status_code=404, detail=f"Bill #{bill_no} not found")
+
+    _save_orders(bills)
+    return {"message": f"อัปเดตชื่อบิล #{bill_no} เป็น '{new_name}' สำเร็จ"}
+
+# [DELETE] ลบบิล
+@app.delete("/api/orders/{bill_no}")
+async def delete_order(bill_no: int):
+    bills = _load_orders()
+    original_len = len(bills)
+    
+    bills_to_keep = [b for b in bills if b.get("bill_no") != bill_no]
+
+    if len(bills_to_keep) == original_len:
+        raise HTTPException(status_code=404, detail=f"Bill #{bill_no} not found")
+
+    _save_orders(bills_to_keep)
+    return {"message": f"ลบบิล #{bill_no} สำเร็จ"}
+    
+    bills_to_keep = [b for b in bills if b.get("bill_no") != bill_no]
+
+    if len(bills_to_keep) == original_len:
+        raise HTTPException(status_code=404, detail=f"Bill #{bill_no} not found")
+
+    _save_orders(bills_to_keep)
+    return {"message": f"ลบบิล #{bill_no} สำเร็จ"}
 
 # ==========================================
 # 🤖 3. API สำหรับ AI (Gemini 2.5 Flash)

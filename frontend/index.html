@@ -8,6 +8,84 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  /* ── FANCY ALERT/CONFIRM/PROMPT (replace native alert/confirm/prompt) ── */
+  .fancy-prompt-overlay{
+    position:fixed; inset:0; z-index:3000;
+    background:rgba(0,0,0,0.7); backdrop-filter: blur(10px);
+    display:none; align-items:center; justify-content:center; padding:20px;
+  }
+  .fancy-prompt-overlay.open{ display:flex; }
+
+  .fancy-prompt-box{
+    background: rgba(16, 16, 28, 0.98);
+    border: 0.5px solid rgba(255,255,255,0.14);
+    border-radius: 22px;
+    width: 100%;
+    max-width: 520px;
+    padding: 24px;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.75), 0 0 0 0.5px rgba(255,255,255,0.07);
+    animation: modalIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .fancy-prompt-title{
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 8px;
+    color: rgba(255,255,255,0.92);
+  }
+  .fancy-prompt-message{
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.78);
+    white-space: pre-wrap;
+    margin-bottom: 16px;
+  }
+  .fancy-prompt-input{
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.06);
+    color: white;
+    border: 0.5px solid rgba(255,255,255,0.14);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 16px;
+  }
+  .fancy-prompt-input:focus{
+    border-color: rgba(96,165,250,0.5);
+    background: rgba(255,255,255,0.08);
+  }
+  .fancy-prompt-btnrow{ display:flex; gap: 10px; }
+  .fancy-prompt-btn{
+    flex:1;
+    padding: 12px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 0.5px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.68);
+    background: rgba(255,255,255,0.07);
+  }
+  .fancy-prompt-btn:hover{ background: rgba(255,255,255,0.12); color:#fff; }
+  .fancy-prompt-btn.primary{
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    border: none;
+    color: #fff;
+  }
+  .fancy-prompt-btn.primary:hover{
+    transform: scale(1.02);
+    box-shadow: 0 4px 16px rgba(37,99,235,0.5);
+  }
+
+  @media (max-width: 520px){
+    .fancy-prompt-box{ padding: 18px; }
+  }
+
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
     background: #0a0a0f;
@@ -35,7 +113,7 @@
 
   .app-wrapper {
     position: relative; z-index: 1;
-    max-width: 1100px; margin: 0 auto; padding: 20px 24px 60px;
+    max-width: 1600px; margin: 0 auto; padding: 20px 24px 60px;
   }
 
   /* NAV */
@@ -187,6 +265,7 @@
   .stat-card:hover { transform: translateY(-3px); background: rgba(255,255,255,0.08); box-shadow: 0 12px 32px rgba(0,0,0,0.3); }
   .stat-val { font-size: 26px; font-weight: 700; letter-spacing: -1px; }
   .stat-lbl { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 3px; font-weight: 300; }
+  .stat-lbl-breakdown { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 6px; line-height: 1.4; font-weight: 300; }
   .stat-dot { width: 7px; height: 7px; border-radius: 50%; margin-bottom: 12px; box-shadow: 0 0 8px currentColor; }
   .dot-blue { background: #60a5fa; color: #60a5fa; }
   .dot-purple { background: #a78bfa; color: #a78bfa; }
@@ -208,7 +287,7 @@
   }
   .sort-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
 
-  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
 
   .card {
     background: rgba(255,255,255,0.05);
@@ -234,6 +313,33 @@
   .card-name { font-size: 14px; font-weight: 500; letter-spacing: -0.2px; line-height: 1.35; margin-bottom: 10px; }
   .card-meta { display: flex; align-items: center; justify-content: space-between; }
   .card-price { font-size: 18px; font-weight: 600; letter-spacing: -0.5px; color: #f5f5f7; }
+  .card-meta {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .price-stock-container {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+  .price-stock-group {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .new-item {
+    border-color: rgba(52, 211, 153, 0.4);
+  }
+  .used-item {
+    border-color: rgba(251, 191, 36, 0.4);
+  }
+  .price-stock-group .card-price {
+    font-size: 16px;
+  }
   .card-stock {
     font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 500;
   }
@@ -243,10 +349,11 @@
 
   /* CHAT */
   .chat-fab {
+    display: none;
     position: fixed; bottom: 24px; right: 24px; z-index: 100;
     width: 52px; height: 52px; border-radius: 50%;
     background: linear-gradient(135deg, #2563eb, #7c3aed);
-    display: flex; align-items: center; justify-content: center;
+    align-items: center; justify-content: center;
     cursor: pointer; font-size: 20px;
     box-shadow: 0 8px 24px rgba(37,99,235,0.5);
     transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
@@ -255,6 +362,7 @@
   .chat-fab:hover { transform: scale(1.12); box-shadow: 0 12px 32px rgba(37,99,235,0.6); }
 
   .chat-panel {
+    display: none;
     position: fixed; bottom: 90px; right: 24px; z-index: 99;
     width: 370px;
     background: rgba(18,18,30,0.95); backdrop-filter: blur(32px) saturate(180%);
@@ -513,6 +621,1011 @@
     text-shadow: 0 2px 4px rgba(0,0,0,0.6);
     transform: translateY(-2px);
   }
+
+  /* --- Orders View --- */
+  .orders-grid {
+    display: grid;
+    /* Stack panels vertically and make them full-width */
+    grid-template-columns: 1fr;
+    gap: 18px;
+    align-items: stretch;
+  }
+  .card-view {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    border: 0.5px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+  }
+  .card-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 0.5px solid rgba(255,255,255,0.1);
+  }
+  .card-view-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .bill-date {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+  }
+  #order-search-results {
+    margin-top: 8px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    max-height: 250px;
+    overflow-y: auto;
+  }
+  .order-search-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 0.5px solid rgba(255,255,255,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .order-search-item:last-child { border-bottom: none; }
+  .order-search-item:hover { background: rgba(96,165,250,0.1); }
+  .order-search-name { font-size: 13px; font-weight: 500; }
+  .order-search-pn { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+  #order-items-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 100px;
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+  .order-item-card {
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+  }
+  .order-item-details .name { font-size: 13px; font-weight: 500; }
+  .order-item-details .price { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .order-item-qty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .order-item-qty input {
+    width: 45px;
+    background: rgba(255,255,255,0.1);
+    border: 0.5px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: white;
+    text-align: center;
+    font-size: 13px;
+    padding: 6px;
+  }
+  .order-item-remove {
+    color: rgba(255,100,100,0.7);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px;
+  }
+  .order-item-remove:hover { color: #fca5a5; }
+  .order-summary-row {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 0.5px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .order-total-label { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.6); }
+  .order-total-value { font-size: 22px; font-weight: 700; }
+  .item-type-selector {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 4px;
+    font-size: 10px;
+  }
+  .type-btn {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+  }
+  .type-btn.active {
+    background: rgba(0,0,0,0.3);
+    color: white;
+    font-weight: 500;
+  }
+  #bill-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    padding-right: 8px;
+    flex-grow: 1;
+  }
+  .bill-history-item {
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 16px;
+    align-items: center;
+    border: 0.5px solid transparent;
+    transition: all 0.2s;
+  }
+  .bill-history-item:hover {
+    background: rgba(0,0,0,0.3);
+    border-color: rgba(255,255,255,0.1);
+  }
+  .bill-info .name { font-size: 14px; font-weight: 500; cursor: pointer; }
+  .bill-info .name:hover { text-decoration: underline; }
+  .bill-info .date { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+  .bill-total { font-size: 16px; font-weight: 600; text-align: right; }
+  .bill-actions { display: flex; gap: 8px; }
+  .bill-action-btn {
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; cursor: pointer; transition: all 0.2s;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.6);
+    border: none;
+  }
+  .bill-action-btn.edit:hover { background: #ca8a04; color: white; }
+  .bill-action-btn.delete:hover { background: #dc2626; color: white; }
+
+  #billDetailModal .modal-content {
+    width: 500px;
+    max-width: 90vw;
+  }
+  #bill-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+  }
+  #bill-detail-name { font-size: 18px; font-weight: 600; }
+  #bill-detail-date { font-size: 12px; color: rgba(255,255,255,0.5); }
+  #bill-detail-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 16px 0;
+    max-height: 40vh;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+  .bill-detail-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    padding: 8px 0;
+    border-bottom: 0.5px solid rgba(255,255,255,0.08);
+  }
+  .bill-detail-item:last-child { border: none; }
+  .bill-detail-item-info .name { font-size: 13px; }
+  .bill-detail-item-info .details { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .bill-detail-item-total { font-size: 14px; font-weight: 500; align-self: center; }
+  #bill-detail-summary {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 0.5px solid rgba(255,255,255,0.1);
+    text-align: right;
+  }
+  #bill-detail-total-label { font-size: 14px; color: rgba(255,255,255,0.6); }
+  #bill-detail-total-value { font-size: 22px; font-weight: 700; margin-left: 12px; }
+
+  /* --- Orders View --- */
+  .orders-grid {
+    display: grid;
+    /* Stack panels vertically and make them full-width */
+    grid-template-columns: 1fr;
+    gap: 18px;
+    align-items: stretch;
+  }
+  .card-view {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    border: 0.5px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+  }
+  .card-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 0.5px solid rgba(255,255,255,0.1);
+  }
+  .card-view-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .bill-date {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+  }
+  #order-search-results {
+    margin-top: 8px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    max-height: 250px;
+    overflow-y: auto;
+  }
+  .order-search-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 0.5px solid rgba(255,255,255,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .order-search-item:last-child { border-bottom: none; }
+  .order-search-item:hover { background: rgba(96,165,250,0.1); }
+  .order-search-name { font-size: 13px; font-weight: 500; }
+  .order-search-pn { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+  #order-items-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 100px;
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+  .order-item-card {
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+  }
+  .order-item-details .name { font-size: 13px; font-weight: 500; }
+  .order-item-details .price { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .order-item-qty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .order-item-qty input {
+    width: 45px;
+    background: rgba(255,255,255,0.1);
+    border: 0.5px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: white;
+    text-align: center;
+    font-size: 13px;
+    padding: 6px;
+  }
+  .order-item-remove {
+    color: rgba(255,100,100,0.7);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px;
+  }
+  .order-item-remove:hover { color: #fca5a5; }
+  .order-summary-row {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 0.5px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .order-total-label { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.6); }
+  .order-total-value { font-size: 22px; font-weight: 700; }
+  .item-type-selector {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 4px;
+    font-size: 10px;
+  }
+  .type-btn {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+  }
+  .type-btn.active {
+    background: rgba(0,0,0,0.3);
+    color: white;
+    font-weight: 500;
+  }
+  #bill-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    padding-right: 8px;
+    flex-grow: 1;
+  }
+  .bill-history-item {
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 16px;
+    align-items: center;
+    border: 0.5px solid transparent;
+    transition: all 0.2s;
+  }
+  .bill-history-item:hover {
+    background: rgba(0,0,0,0.3);
+    border-color: rgba(255,255,255,0.1);
+  }
+  .bill-info .name { font-size: 14px; font-weight: 500; cursor: pointer; }
+  .bill-info .name:hover { text-decoration: underline; }
+  .bill-info .date { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+  .bill-total { font-size: 16px; font-weight: 600; text-align: right; }
+  .bill-actions { display: flex; gap: 8px; }
+  .bill-action-btn {
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; cursor: pointer; transition: all 0.2s;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.6);
+    border: none;
+  }
+  .bill-action-btn.edit:hover { background: #ca8a04; color: white; }
+  .bill-action-btn.delete:hover { background: #dc2626; color: white; }
+
+  #billDetailModal .modal-content {
+    width: 500px;
+    max-width: 90vw;
+  }
+  #bill-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+  }
+  #bill-detail-name { font-size: 18px; font-weight: 600; }
+  #bill-detail-date { font-size: 12px; color: rgba(255,255,255,0.5); }
+  #bill-detail-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 16px 0;
+    max-height: 40vh;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+  .bill-detail-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    padding: 8px 0;
+    border-bottom: 0.5px solid rgba(255,255,255,0.08);
+  }
+  .bill-detail-item:last-child { border: none; }
+  .bill-detail-item-info .name { font-size: 13px; }
+  .bill-detail-item-info .details { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .bill-detail-item-total { font-size: 14px; font-weight: 500; align-self: center; }
+  #bill-detail-summary {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 0.5px solid rgba(255,255,255,0.1);
+    text-align: right;
+  }
+  #bill-detail-total-label { font-size: 14px; color: rgba(255,255,255,0.6); }
+  #bill-detail-total-value { font-size: 22px; font-weight: 700; margin-left: 12px; }
+
+  /* --- Orders View --- */
+  .orders-grid {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 24px;
+    align-items: stretch;
+  }
+  .card-view {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    border: 0.5px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 24px;
+  }
+  .card-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 0.5px solid rgba(255,255,255,0.1);
+  }
+  .card-view-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .bill-date {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+  }
+  #order-search-results {
+    margin-top: 8px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    max-height: 250px;
+    overflow-y: auto;
+  }
+  .order-search-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 0.5px solid rgba(255,255,255,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .order-search-item:last-child { border-bottom: none; }
+  .order-search-item:hover { background: rgba(96,165,250,0.1); }
+  .order-search-name { font-size: 13px; font-weight: 500; }
+  .order-search-pn { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+  #order-items-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 100px;
+  }
+  .order-item-card {
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+  }
+  .order-item-details .name { font-size: 13px; font-weight: 500; }
+  .order-item-details .price { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .order-item-qty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .order-item-qty input {
+    width: 45px;
+    background: rgba(255,255,255,0.1);
+    border: 0.5px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: white;
+    text-align: center;
+    font-size: 13px;
+    padding: 6px;
+  }
+  .order-item-remove {
+    color: rgba(255,100,100,0.7);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px;
+  }
+  .order-item-remove:hover { color: #fca5a5; }
+  .order-summary-row {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 0.5px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .order-total-label { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.6); }
+  .order-total-value { font-size: 22px; font-weight: 700; }
+  .item-type-selector {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 4px;
+    font-size: 10px;
+  }
+  .type-btn {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+  }
+  .type-btn.active {
+    background: rgba(0,0,0,0.3);
+    color: white;
+    font-weight: 500;
+  }
+  #bill-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 600px;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+  .bill-history-item {
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 16px;
+    align-items: center;
+    border: 0.5px solid transparent;
+    transition: all 0.2s;
+  }
+  .bill-history-item:hover {
+    background: rgba(0,0,0,0.3);
+    border-color: rgba(255,255,255,0.1);
+  }
+  .bill-info .name { font-size: 14px; font-weight: 500; cursor: pointer; }
+  .bill-info .name:hover { text-decoration: underline; }
+  .bill-info .date { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+  .bill-total { font-size: 16px; font-weight: 600; text-align: right; }
+  .bill-actions { display: flex; gap: 8px; }
+  .bill-action-btn {
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; cursor: pointer; transition: all 0.2s;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.6);
+    border: none;
+  }
+  .bill-action-btn.edit:hover { background: #ca8a04; color: white; }
+  .bill-action-btn.delete:hover { background: #dc2626; color: white; }
+
+  #billDetailModal .modal-content {
+    width: 500px;
+    max-width: 90vw;
+  }
+  #bill-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+  }
+  #bill-detail-name { font-size: 18px; font-weight: 600; }
+  #bill-detail-date { font-size: 12px; color: rgba(255,255,255,0.5); }
+  #bill-detail-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 16px 0;
+    max-height: 40vh;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+  .bill-detail-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    padding: 8px 0;
+    border-bottom: 0.5px solid rgba(255,255,255,0.08);
+  }
+  .bill-detail-item:last-child { border: none; }
+  .bill-detail-item-info .name { font-size: 13px; }
+  .bill-detail-item-info .details { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .bill-detail-item-total { font-size: 14px; font-weight: 500; align-self: center; }
+  #bill-detail-summary {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 0.5px solid rgba(255,255,255,0.1);
+    text-align: right;
+  }
+  #bill-detail-total-label { font-size: 14px; color: rgba(255,255,255,0.6); }
+  #bill-detail-total-value { font-size: 22px; font-weight: 700; margin-left: 12px; }
+
+  /* --- Orders View --- */
+  .orders-grid {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 24px;
+    align-items: stretch;
+  }
+  .card-view {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    border: 0.5px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 24px;
+  }
+  .card-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 0.5px solid rgba(255,255,255,0.1);
+  }
+  .card-view-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .bill-date {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+  }
+  #order-search-results {
+    margin-top: 8px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    max-height: 250px;
+    overflow-y: auto;
+  }
+  .order-search-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 0.5px solid rgba(255,255,255,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .order-search-item:last-child { border-bottom: none; }
+  .order-search-item:hover { background: rgba(96,165,250,0.1); }
+  .order-search-name { font-size: 13px; font-weight: 500; }
+  .order-search-pn { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+  #order-items-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 100px;
+  }
+  .order-item-card {
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 12px;
+    align-items: center;
+  }
+  .order-item-details .name { font-size: 13px; font-weight: 500; }
+  .order-item-details .price { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .order-item-qty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .order-item-qty input {
+    width: 45px;
+    background: rgba(255,255,255,0.1);
+    border: 0.5px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: white;
+    text-align: center;
+    font-size: 13px;
+    padding: 6px;
+  }
+  .order-item-remove {
+    color: rgba(255,100,100,0.7);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px;
+  }
+  .order-item-remove:hover { color: #fca5a5; }
+  .order-summary-row {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 0.5px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .order-total-label { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.6); }
+  .order-total-value { font-size: 22px; font-weight: 700; }
+  .item-type-selector {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 4px;
+    font-size: 10px;
+  }
+  .type-btn {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+  }
+  .type-btn.active {
+    background: rgba(0,0,0,0.3);
+    color: white;
+    font-weight: 500;
+  }
+  #bill-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 600px;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+  .bill-history-item {
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 16px;
+    align-items: center;
+    border: 0.5px solid transparent;
+    transition: all 0.2s;
+  }
+  .bill-history-item:hover {
+    background: rgba(0,0,0,0.3);
+    border-color: rgba(255,255,255,0.1);
+  }
+  .bill-info .name { font-size: 14px; font-weight: 500; cursor: pointer; }
+  .bill-info .name:hover { text-decoration: underline; }
+  .bill-info .date { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+  .bill-total { font-size: 16px; font-weight: 600; text-align: right; }
+  .bill-actions { display: flex; gap: 8px; }
+  .bill-action-btn {
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; cursor: pointer; transition: all 0.2s;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.6);
+    border: none;
+  }
+  .bill-action-btn.edit:hover { background: #ca8a04; color: white; }
+  .bill-action-btn.delete:hover { background: #dc2626; color: white; }
+
+  #billDetailModal .modal-content {
+    width: 500px;
+    max-width: 90vw;
+  }
+  #bill-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+  }
+  #bill-detail-name { font-size: 18px; font-weight: 600; }
+  #bill-detail-date { font-size: 12px; color: rgba(255,255,255,0.5); }
+  #bill-detail-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 16px 0;
+    max-height: 40vh;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+  .bill-detail-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    padding: 8px 0;
+    border-bottom: 0.5px solid rgba(255,255,255,0.08);
+  }
+  .bill-detail-item:last-child { border: none; }
+  .bill-detail-item-info .name { font-size: 13px; }
+  .bill-detail-item-info .details { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .bill-detail-item-total { font-size: 14px; font-weight: 500; align-self: center; }
+  #bill-detail-summary {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 0.5px solid rgba(255,255,255,0.1);
+    text-align: right;
+  }
+  #bill-detail-total-label { font-size: 14px; color: rgba(255,255,255,0.6); }
+  #bill-detail-total-value { font-size: 22px; font-weight: 700; margin-left: 12px; }
+
+  /* --- Orders View --- */
+  .orders-grid {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 24px;
+    align-items: flex-start;
+  }
+  .card-view {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    border: 0.5px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 24px;
+  }
+  .card-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 0.5px solid rgba(255,255,255,0.1);
+  }
+  .card-view-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .bill-date {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+  }
+  #order-search-results {
+    margin-top: 8px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    max-height: 250px;
+    overflow-y: auto;
+  }
+  .order-search-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 0.5px solid rgba(255,255,255,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .order-search-item:last-child { border-bottom: none; }
+  .order-search-item:hover { background: rgba(96,165,250,0.1); }
+  .order-search-name { font-size: 13px; font-weight: 500; }
+  .order-search-pn { font-size: 11px; color: rgba(255,255,255,0.4); }
+
+  #order-items-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 100px;
+  }
+  .order-item-card {
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+  }
+  .order-item-details .name { font-size: 13px; font-weight: 500; }
+  .order-item-details .price { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .order-item-qty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .order-item-qty input {
+    width: 45px;
+    background: rgba(255,255,255,0.1);
+    border: 0.5px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: white;
+    text-align: center;
+    font-size: 13px;
+    padding: 6px;
+  }
+  .order-item-remove {
+    color: rgba(255,100,100,0.7);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px;
+  }
+  .order-item-remove:hover { color: #fca5a5; }
+  .order-summary-row {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 0.5px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .order-total-label { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.6); }
+  .order-total-value { font-size: 22px; font-weight: 700; }
+  .item-type-selector {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 4px;
+    font-size: 10px;
+  }
+  .type-btn {
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+  }
+  .type-btn.active {
+    background: rgba(0,0,0,0.3);
+    color: white;
+    font-weight: 500;
+  }
+  #bill-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 600px;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+  .bill-history-item {
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 16px;
+    align-items: center;
+    border: 0.5px solid transparent;
+    transition: all 0.2s;
+  }
+  .bill-history-item:hover {
+    background: rgba(0,0,0,0.3);
+    border-color: rgba(255,255,255,0.1);
+  }
+  .bill-info .name { font-size: 14px; font-weight: 500; cursor: pointer; }
+  .bill-info .name:hover { text-decoration: underline; }
+  .bill-info .date { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+  .bill-total { font-size: 16px; font-weight: 600; text-align: right; }
+  .bill-actions { display: flex; gap: 8px; }
+  .bill-action-btn {
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border-radius: 8px; cursor: pointer; transition: all 0.2s;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.6);
+    border: none;
+  }
+  .bill-action-btn.edit:hover { background: #ca8a04; color: white; }
+  .bill-action-btn.delete:hover { background: #dc2626; color: white; }
+
+  #billDetailModal .modal-content {
+    width: 500px;
+    max-width: 90vw;
+  }
+  #bill-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+  }
+  #bill-detail-name { font-size: 18px; font-weight: 600; }
+  #bill-detail-date { font-size: 12px; color: rgba(255,255,255,0.5); }
+  #bill-detail-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 16px 0;
+    max-height: 40vh;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+  .bill-detail-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    padding: 8px 0;
+    border-bottom: 0.5px solid rgba(255,255,255,0.08);
+  }
+  .bill-detail-item:last-child { border: none; }
+  .bill-detail-item-info .name { font-size: 13px; }
+  .bill-detail-item-info .details { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .bill-detail-item-total { font-size: 14px; font-weight: 500; align-self: center; }
+  #bill-detail-summary {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 0.5px solid rgba(255,255,255,0.1);
+    text-align: right;
+  }
+  #bill-detail-total-label { font-size: 14px; color: rgba(255,255,255,0.6); }
+  #bill-detail-total-value { font-size: 22px; font-weight: 700; margin-left: 12px; }
   @keyframes rainbowSpin {
     0% { background-position: 0% 50%; }
     100% { background-position: 100% 50%; }
@@ -577,6 +1690,90 @@
     transition: all 0.2s;
   }
   .modal-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+  .image-previews-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+  .preview-container {
+    position: relative;
+    width: 100%;
+    padding-top: 100%; /* 1:1 Aspect Ratio */
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.04);
+    border: 1px dashed rgba(255,255,255,0.1);
+  }
+  .preview-image {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .remove-image-btn {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 22px;
+    text-align: center;
+    transition: all 0.2s;
+    backdrop-filter: blur(4px);
+  }
+  .remove-image-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+  }
+
+  .image-previews-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+  .preview-container {
+    position: relative;
+    width: 100%;
+    padding-top: 100%; /* 1:1 Aspect Ratio */
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.04);
+    border: 1px dashed rgba(255,255,255,0.1);
+  }
+  .preview-image {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .remove-image-btn {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 22px;
+    text-align: center;
+    transition: all 0.2s;
+    backdrop-filter: blur(4px);
+  }
+  .remove-image-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+  }
 
   /* Form inputs inside modal */
   .m-input {
@@ -999,6 +2196,58 @@
   .an-live-val { font-size: 22px; font-weight: 700; letter-spacing: -0.8px; }
   .an-live-lbl { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; }
 
+  /* Stock Intelligence tabs */
+  .si-tab {
+    padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.55); cursor: pointer; transition: all 0.2s;
+    font-family: inherit;
+  }
+  .si-tab:hover { background: rgba(255,255,255,0.11); color: #fff; }
+  .si-tab.active { background: rgba(96,165,250,0.18); border-color: rgba(96,165,250,0.5); color: #93c5fd; }
+
+  /* SI Table */
+  .si-th {
+    padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 600;
+    color: rgba(255,255,255,0.4); letter-spacing: 0.3px; cursor: pointer;
+    user-select: none; white-space: nowrap;
+  }
+  .si-th:hover { color: rgba(255,255,255,0.75); }
+  .si-td {
+    padding: 10px 12px; font-size: 12px; color: rgba(255,255,255,0.8);
+    border-top: 0.5px solid rgba(255,255,255,0.05); white-space: nowrap;
+  }
+  .si-tr:hover td { background: rgba(255,255,255,0.03); }
+
+  /* Stock badge */
+  .si-badge {
+    display: inline-block; padding: 3px 9px; border-radius: 12px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
+  }
+  .si-badge-out   { background: rgba(248,113,113,0.18); color: #fca5a5; border: 0.5px solid rgba(248,113,113,0.35); }
+  .si-badge-qty1  { background: rgba(251,146,60,0.18); color: #fdba74; border: 0.5px solid rgba(251,146,60,0.35); }
+  .si-badge-low   { background: rgba(251,191,36,0.18); color: #fcd34d; border: 0.5px solid rgba(251,191,36,0.35); }
+  .si-badge-dead  { background: rgba(167,139,250,0.18); color: #c4b5fd; border: 0.5px solid rgba(167,139,250,0.35); }
+  .si-badge-ok    { background: rgba(52,211,153,0.15); color: #6ee7b7; border: 0.5px solid rgba(52,211,153,0.25); }
+
+  /* dist bars */
+  .si-dist-row { display: flex; align-items: center; gap: 8px; }
+  .si-dist-lbl { font-size: 11px; color: rgba(255,255,255,0.55); width: 90px; flex-shrink: 0; }
+  .si-dist-track { flex: 1; height: 10px; background: rgba(255,255,255,0.05); border-radius: 5px; overflow: hidden; }
+  .si-dist-bar { height: 100%; border-radius: 5px; transition: width 0.8s cubic-bezier(0.22,1,0.36,1); }
+  .si-dist-cnt { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.7); width: 24px; text-align: right; }
+
+  /* hot item row */
+  .si-hot-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; background: rgba(255,255,255,0.04);
+    border: 0.5px solid rgba(255,255,255,0.08); border-radius: 12px;
+  }
+  .si-hot-pn { font-size: 11px; font-weight: 700; color: #fbbf24; flex-shrink: 0; }
+  .si-hot-name { font-size: 11px; color: rgba(255,255,255,0.6); flex: 1; overflow: hidden; text-overflow: ellipsis; }
+  .si-hot-price { font-size: 12px; font-weight: 800; color: #f87171; flex-shrink: 0; }
+  .si-hot-stock { font-size: 10px; font-weight: 700; color: #fbbf24; flex-shrink: 0; }
+
   .an-brand-chart { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
   .an-brand-row { display: flex; align-items: center; gap: 8px; }
   .an-brand-name { font-size: 11px; color: rgba(255,255,255,0.6); width: 60px; }
@@ -1091,15 +2340,54 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ══════ ORDERS PAGE ══════ */
-  .orders-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-top: 8px;
+  /* Lightbox styles */
+  #lightbox-images-container img {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 100%; max-height: 100%;
+    object-fit: contain; border-radius: 16px;
+    opacity: 0; transition: opacity 0.3s ease;
+    pointer-events: none;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
   }
-  @media(max-width:800px){ .orders-layout { grid-template-columns: 1fr; } }
+  #lightbox-images-container img.active {
+    opacity: 1; pointer-events: auto;
+  }
+  .lightbox-nav {
+    background: rgba(0,0,0,0.3); backdrop-filter: blur(8px);
+    color: white; border: 1px solid rgba(255,255,255,0.1);
+    font-size: 24px; padding: 12px; cursor: pointer;
+    transition: all 0.2s; z-index: 1000; border-radius: 50%;
+    width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;
+  }
+  .lightbox-nav:hover { background: rgba(0,0,0,0.6); }
 
+  /* ══════ ORDERS PAGE ══════ */
+  #page-orders {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 220px);
+  }
+  .orders-layout {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+    min-height: 0;
+  }
+  @media(max-width:800px){ .orders-layout { flex-direction: column; } }
+
+  .orders-left {
+    flex: 0 0 420px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .orders-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
   .orders-card {
     background: rgba(255,255,255,0.05);
     backdrop-filter: blur(20px);
@@ -1109,6 +2397,8 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
+    flex: 1;
+    min-height: 0;
   }
   .orders-card-header { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
   .orders-card-title { font-size:16px; font-weight:600; letter-spacing:-0.3px; }
@@ -1189,7 +2479,12 @@
   }
   .bill-drop-add:hover { background:rgba(37,99,235,0.5); color:#fff; transform:scale(1.1); }
 
-  .bill-table-wrap { flex:1; }
+  .bill-table-wrap { 
+    flex: 1; 
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
   .bill-table-head {
     display: flex; gap: 8px; align-items: center;
     padding: 6px 10px;
@@ -1198,7 +2493,11 @@
     border-bottom: 0.5px solid rgba(255,255,255,0.08);
     margin-bottom: 4px;
   }
-  .bill-items-list { min-height: 80px; max-height: 280px; overflow-y: auto; }
+  .bill-items-list { 
+    flex: 1; 
+    min-height: 80px; 
+    overflow-y: auto;
+  }
   .bill-empty { text-align:center; padding:32px 0; font-size:12px; color:rgba(255,255,255,0.28); }
 
   .bill-row {
@@ -1252,7 +2551,14 @@
   .bill-btn-save:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(37,99,235,0.5); }
 
   /* History */
-  .bill-history-list { flex:1; overflow-y:auto; max-height:420px; display:flex; flex-direction:column; gap:10px; }
+  .bill-history-list { 
+    flex: 1; 
+    overflow-y: auto; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px;
+    min-height: 0;
+  }
   .hist-card {
     background: rgba(255,255,255,0.04); border:0.5px solid rgba(255,255,255,0.09);
     border-radius:14px; overflow:hidden; transition:all 0.2s;
@@ -1378,17 +2684,17 @@
       </div>
     </div>
     <div class="nav-pills">
-      <div class="nav-pill active" onclick="switchPage('inventory',this)">Inventory</div>
-      <div class="nav-pill" onclick="switchPage('orders',this)">Orders</div>
-      <div class="nav-pill" onclick="switchPage('analytics',this)">Analytics</div>
-    </div>
+          <div class="nav-pill active" data-view="inventory" onclick="switchPage('inventory', this)">📦 Inventory</div>
+          <div class="nav-pill" data-view="orders" onclick="switchPage('orders', this)">📄 Orders</div>
+          <div class="nav-pill" data-view="analytics" onclick="switchPage('analytics', this)">📈 Analytics</div>
+        </div>
   </nav>
 
   <!-- ══════ PAGE: INVENTORY ══════ -->
   <div id="page-inventory">
   <!-- HERO -->
   <div class="hero">
-    <h1>Find the<br><span>perfect part</span></h1>
+    <h1>Leo Auto BY ART<br><span></span></h1>
     <p>4 brands · 8 series · real-time availability</p>
     <div class="search-bar">
       <span class="search-icon">🔍</span>
@@ -1417,7 +2723,12 @@
     <div class="stat-card"><div class="stat-dot dot-blue"></div><div class="stat-val" id="s-total">0</div><div class="stat-lbl">Total Parts</div></div>
     <div class="stat-card"><div class="stat-dot dot-green"></div><div class="stat-val" id="s-stock">0</div><div class="stat-lbl">Units in Stock</div></div>
     <div class="stat-card"><div class="stat-dot dot-amber"></div><div class="stat-val" id="s-low">0</div><div class="stat-lbl">Low Stock Alerts</div></div>
-    <div class="stat-card"><div class="stat-dot dot-purple"></div><div class="stat-val" id="s-value">฿0</div><div class="stat-lbl">Est. Inventory Value</div></div>
+          <div class="stat-card">
+        <div class="stat-dot dot-purple"></div>
+        <div id="s-value" class="stat-val">฿0</div>
+        <div id="s-value-breakdown" class="stat-lbl-breakdown"></div>
+        <div class="stat-lbl" style="margin-top: 2px;">Est. Inventory Value</div>
+      </div>
   </div>
   <!-- GRID HEADER -->
   <div class="section-header">
@@ -1519,326 +2830,278 @@
     <!-- Header -->
     <div class="an-header">
       <div>
-        <div class="an-title">System Effectiveness Metrics</div>
-        <div class="an-sub" id="anSubLabel">กลุ่มตัวอย่าง 15 คน (พนักงาน 5 + ลูกค้า 10) · ระยะเวลา 2 สัปดาห์ · ก.พ. 2568</div>
+        <div class="an-title">📦 Stock Intelligence</div>
+        <div class="an-sub" id="anSubLabel">วิเคราะห์สต็อกสินค้าแบบ real-time จากข้อมูลในระบบ</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
-        <div class="an-badge" id="anBadge">n = 15</div>
-        <button class="test-toggle-btn" id="testModeBtn" onclick="toggleTestMode()">🧪 Test Mode</button>
+        <div class="an-badge" id="anBadge">Live</div>
+        <button class="test-toggle-btn" onclick="renderStockDashboard()" style="background:rgba(96,165,250,0.15);border-color:rgba(96,165,250,0.4);color:#93c5fd;">🔄 รีเฟรช</button>
       </div>
     </div>
 
-    <!-- Test Panel -->
-    <div class="test-panel" id="testPanel" style="display:none;">
-      <div class="test-panel-header">
-        <span style="font-weight:700;color:#c4b5fd;font-size:14px;">🧪 Test Mode — วัดผลจริง</span>
-        <span style="font-size:12px;color:rgba(255,255,255,0.4);">จับเวลา · บันทึกความแม่นยำ · ให้คะแนน</span>
-      </div>
-      <div class="test-body">
-
-        <!-- Col 1: ค้นหาชิ้นส่วน -->
-        <div class="test-col">
-          <div class="test-task-title">⏱ ค้นหาชิ้นส่วน</div>
-          <div class="test-timer-display" id="timerSearch">00:00.0</div>
-          <div style="display:flex;gap:6px;margin-bottom:8px;">
-            <button class="test-btn test-btn-start" onclick="startTimer('search')">▶ เริ่ม</button>
-            <button class="test-btn test-btn-stop" onclick="stopTimer('search')">■ หยุด</button>
-            <button class="test-btn test-btn-reset" onclick="resetTimer('search')">↺</button>
-          </div>
-          <div class="test-records" id="recordsSearch">ยังไม่มีข้อมูล</div>
-          <div class="test-avg" id="avgSearch">เฉลี่ย: —</div>
-        </div>
-
-        <!-- Col 2: สร้างบิล -->
-        <div class="test-col">
-          <div class="test-task-title">🧾 สร้างบิล</div>
-          <div class="test-timer-display" id="timerBill">00:00.0</div>
-          <div style="display:flex;gap:6px;margin-bottom:8px;">
-            <button class="test-btn test-btn-start" onclick="startTimer('bill')">▶ เริ่ม</button>
-            <button class="test-btn test-btn-stop" onclick="stopTimer('bill')">■ หยุด</button>
-            <button class="test-btn test-btn-reset" onclick="resetTimer('bill')">↺</button>
-          </div>
-          <div class="test-records" id="recordsBill">ยังไม่มีข้อมูล</div>
-          <div class="test-avg" id="avgBill">เฉลี่ย: —</div>
-        </div>
-
-        <!-- Col 3: AI Vision accuracy -->
-        <div class="test-col">
-          <div class="test-task-title">🎯 AI Vision ถูก/ผิด</div>
-          <div class="test-acc-btns">
-            <button class="test-acc-btn test-acc-correct" onclick="recordAccuracy('correct')">✓ ถูก</button>
-            <button class="test-acc-btn test-acc-near" onclick="recordAccuracy('near')">~ ใกล้เคียง</button>
-            <button class="test-acc-btn test-acc-miss" onclick="recordAccuracy('miss')">✗ ผิด</button>
-          </div>
-          <div class="test-records" id="recordsAI" style="font-size:13px;">ถูก: 0 &nbsp;|&nbsp; ใกล้เคียง: 0 &nbsp;|&nbsp; ผิด: 0</div>
-          <div class="test-avg" id="avgAI">ความแม่นยำ: —</div>
-        </div>
-
-        <!-- Col 4: ความพึงพอใจ -->
-        <div class="test-col" style="grid-column:1/-1;">
-          <div class="test-task-title" style="margin-bottom:10px;">⭐ ความพึงพอใจ (1–5)</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;">
-            <div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:4px;">ความง่ายในการใช้งาน</div>
-              <div class="test-star-row" id="stars-ease" data-cat="ease"></div>
-            </div>
-            <div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:4px;">ความเร็วของระบบ</div>
-              <div class="test-star-row" id="stars-speed" data-cat="speed"></div>
-            </div>
-            <div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:4px;">ความแม่นยำ AI</div>
-              <div class="test-star-row" id="stars-accuracy" data-cat="accuracy"></div>
-            </div>
-            <div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:4px;">ความสวยงาม UI</div>
-              <div class="test-star-row" id="stars-ui" data-cat="ui"></div>
-            </div>
-            <div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-bottom:4px;">โดยรวม</div>
-              <div class="test-star-row" id="stars-overall" data-cat="overall"></div>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- /test-body -->
-      <div class="test-apply-row">
-        <span style="font-size:12px;color:rgba(255,255,255,0.4);">กด Apply เพื่ออัปเดต Analytics ด้วยข้อมูลจริง</span>
-        <button class="test-apply-btn" id="testApplyBtn" onclick="applyTestResults()">💾 Apply ผลการทดสอบ</button>
-      </div>
-    </div>
-
-    <!-- KPI Row -->
-    <div class="an-kpi-row">
+    <!-- KPI Summary Row -->
+    <div class="an-kpi-row" id="si-kpi-row">
       <div class="an-kpi an-kpi-blue">
-        <div class="an-kpi-val" data-count="74" data-suffix="%">0%</div>
-        <div class="an-kpi-lbl">ลดเวลาค้นหาชิ้นส่วน</div>
-        <div class="an-kpi-meta">7.4 → 1.9 นาที</div>
-      </div>
-      <div class="an-kpi an-kpi-green">
-        <div class="an-kpi-val" data-count="90" data-suffix="%">0%</div>
-        <div class="an-kpi-lbl">ความแม่นยำ AI Vision</div>
-        <div class="an-kpi-meta">27 / 30 รูปทดสอบ</div>
-      </div>
-      <div class="an-kpi an-kpi-purple">
-        <div class="an-kpi-val" data-count="42" data-suffix="/5" data-decimal="1">0/5</div>
-        <div class="an-kpi-lbl">ความพึงพอใจผู้ใช้</div>
-        <div class="an-kpi-meta">เฉลี่ยจาก 5 หัวข้อ</div>
+        <div class="an-kpi-val" id="si-total">—</div>
+        <div class="an-kpi-lbl">สินค้าทั้งหมด (Part)</div>
+        <div class="an-kpi-meta" id="si-total-meta">กำลังโหลด…</div>
       </div>
       <div class="an-kpi an-kpi-amber">
-        <div class="an-kpi-val" data-count="75" data-suffix="%">0%</div>
-        <div class="an-kpi-lbl">ลดเวลาสร้างบิล</div>
-        <div class="an-kpi-meta">9.8 → 2.4 นาที</div>
+        <div class="an-kpi-val" id="si-low">—</div>
+        <div class="an-kpi-lbl">⚠️ สินค้าเหลือน้อย (≤3)</div>
+        <div class="an-kpi-meta" id="si-low-meta">ต้องสั่งเพิ่ม</div>
+      </div>
+      <div class="an-kpi an-kpi-purple">
+        <div class="an-kpi-val" id="si-deadstock">—</div>
+        <div class="an-kpi-lbl">💤 สินค้าจมทุน (stock≥5)</div>
+        <div class="an-kpi-meta" id="si-dead-meta">ขายช้า / ไม่ขายเลย</div>
+      </div>
+      <div class="an-kpi an-kpi-green">
+        <div class="an-kpi-val" id="si-value">—</div>
+        <div class="an-kpi-lbl">มูลค่าสต็อกรวม</div>
+        <div class="an-kpi-meta" id="si-value-meta">ราคาขาย × จำนวน</div>
       </div>
     </div>
 
-    <!-- Two-column layout -->
-    <div class="an-grid">
+    <!-- Filter Tabs -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;" id="si-tabs">
+      <button class="si-tab active" data-tab="all"     onclick="siTab(this,'all')">📋 ทั้งหมด</button>
+      <button class="si-tab"        data-tab="out"     onclick="siTab(this,'out')">🔴 หมด (0)</button>
+      <button class="si-tab"        data-tab="qty1"    onclick="siTab(this,'qty1')">🟠 เหลือ 1</button>
+      <button class="si-tab"        data-tab="qty2"    onclick="siTab(this,'qty2')">🟡 เหลือ 2</button>
+      <button class="si-tab"        data-tab="qty3"    onclick="siTab(this,'qty3')">🟡 เหลือ 3</button>
+      <button class="si-tab"        data-tab="low"     onclick="siTab(this,'low')">⚠️ เหลือน้อย (≤3)</button>
+      <button class="si-tab"        data-tab="dead"    onclick="siTab(this,'dead')">💤 จมทุน (≥5 ไม่ขาย)</button>
+      <button class="si-tab"        data-tab="hotprice" onclick="siTab(this,'hotprice')">🔥 ราคาแรง</button>
+      <button class="si-tab"        data-tab="highval" onclick="siTab(this,'highval')">💰 มูลค่าสูง</button>
+    </div>
 
-      <!-- LEFT: Time Comparison -->
-      <div class="an-card">
-        <div class="an-card-title">⏱ เปรียบเทียบเวลาทำงาน (ก่อน vs หลัง)</div>
-        <div class="an-card-sub">วัดจากงานจริงในร้าน · หน่วย: นาที</div>
+    <!-- Main content: table + insight panel -->
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start;">
 
-        <div class="an-time-chart">
-          <div class="an-time-row">
-            <div class="an-time-label">ค้นหาชิ้นส่วน</div>
-            <div class="an-time-bars">
-              <div class="an-bar-wrap">
-                <span class="an-bar-tag before">ก่อน</span>
-                <div class="an-bar-track"><div class="an-bar before" style="--w:100%"><span>7.4 นาที</span></div></div>
-              </div>
-              <div class="an-bar-wrap">
-                <span class="an-bar-tag after">หลัง</span>
-                <div class="an-bar-track"><div class="an-bar after" style="--w:25.7%"><span>1.9 นาที</span></div></div>
-              </div>
-            </div>
-            <div class="an-time-badge">−74%</div>
+      <!-- Stock Table -->
+      <div class="an-card" style="padding:0;overflow:hidden;">
+        <div style="padding:18px 20px 14px;border-bottom:0.5px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div class="an-card-title" id="si-table-title">รายการสินค้าทั้งหมด</div>
+            <div class="an-card-sub" style="margin-bottom:0;" id="si-table-sub">—</div>
           </div>
-
-          <div class="an-time-row">
-            <div class="an-time-label">สร้างบิลขาย</div>
-            <div class="an-time-bars">
-              <div class="an-bar-wrap">
-                <span class="an-bar-tag before">ก่อน</span>
-                <div class="an-bar-track"><div class="an-bar before" style="--w:100%"><span>9.8 นาที</span></div></div>
-              </div>
-              <div class="an-bar-wrap">
-                <span class="an-bar-tag after">หลัง</span>
-                <div class="an-bar-track"><div class="an-bar after" style="--w:24.5%"><span>2.4 นาที</span></div></div>
-              </div>
-            </div>
-            <div class="an-time-badge">−75%</div>
-          </div>
-
-          <div class="an-time-row">
-            <div class="an-time-label">ตรวจสต็อกรายวัน</div>
-            <div class="an-time-bars">
-              <div class="an-bar-wrap">
-                <span class="an-bar-tag before">ก่อน</span>
-                <div class="an-bar-track"><div class="an-bar before" style="--w:100%"><span>28 นาที</span></div></div>
-              </div>
-              <div class="an-bar-wrap">
-                <span class="an-bar-tag after">หลัง</span>
-                <div class="an-bar-track"><div class="an-bar after" style="--w:30.4%"><span>8.5 นาที</span></div></div>
-              </div>
-            </div>
-            <div class="an-time-badge">−70%</div>
-          </div>
-
-          <div class="an-time-row">
-            <div class="an-time-label">AI สแกนภาพ</div>
-            <div class="an-time-bars">
-              <div class="an-bar-wrap">
-                <span class="an-bar-tag before">ก่อน</span>
-                <div class="an-bar-track"><div class="an-bar before disabled" style="--w:100%"><span>ไม่มีฟีเจอร์นี้</span></div></div>
-              </div>
-              <div class="an-bar-wrap">
-                <span class="an-bar-tag after">หลัง</span>
-                <div class="an-bar-track"><div class="an-bar after" style="--w:4%"><span>3.2 วิ</span></div></div>
-              </div>
-            </div>
-            <div class="an-time-badge new">ใหม่</div>
-          </div>
+          <input id="si-search" placeholder="🔍 ค้น Part / ชื่อ…" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.14);border-radius:10px;padding:7px 12px;color:#fff;font-size:12px;font-family:inherit;outline:none;width:180px;" oninput="siRender()">
         </div>
+        <div style="overflow-x:auto;">
+          <table id="si-table" style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead>
+              <tr style="background:rgba(255,255,255,0.03);">
+                <th class="si-th" onclick="siSort('PartNumber')">Part # ↕</th>
+                <th class="si-th" onclick="siSort('Name')">ชื่อสินค้า ↕</th>
+                <th class="si-th" onclick="siSort('Brand')">Brand</th>
+                <th class="si-th" onclick="siSort('Stock_New')" style="text-align:right;">ใหม่ ↕</th>
+                <th class="si-th" onclick="siSort('Stock_Used')" style="text-align:right;">มือสอง ↕</th>
+                <th class="si-th" onclick="siSort('_totalStock')" style="text-align:right;">รวม ↕</th>
+                <th class="si-th" onclick="siSort('Price_New')" style="text-align:right;">ราคาใหม่ ↕</th>
+                <th class="si-th" style="text-align:right;">มูลค่า ↕</th>
+                <th class="si-th">สถานะ</th>
+              </tr>
+            </thead>
+            <tbody id="si-tbody"></tbody>
+          </table>
+        </div>
+        <div id="si-empty" style="text-align:center;padding:40px;color:rgba(255,255,255,0.25);display:none;">ไม่พบสินค้า</div>
       </div>
 
-      <!-- RIGHT: AI Accuracy -->
-      <div class="an-card">
-        <div class="an-card-title">🤖 ความแม่นยำ AI Vision Search</div>
-        <div class="an-card-sub">ทดสอบ 30 รูปภาพชิ้นส่วนรถบรรทุกจริง</div>
+      <!-- Right Panel: Charts + Insight -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
 
-        <!-- Donut chart -->
-        <div class="an-donut-wrap">
-          <svg class="an-donut" viewBox="0 0 120 120">
-            <circle cx="60" cy="60" r="48" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="16"/>
-            <!-- r=48, C=301.59 | Exact 73.3%: start=0 | Near 16.7%: start=220.9 | Miss 10%: start=271.3 -->
-            <circle class="an-donut-seg seg-exact" cx="60" cy="60" r="48" fill="none" stroke="#34d399" stroke-width="14"
-              stroke-dasharray="0 302" stroke-dashoffset="0" stroke-linecap="butt"/>
-            <circle class="an-donut-seg seg-near" cx="60" cy="60" r="48" fill="none" stroke="#60a5fa" stroke-width="14"
-              stroke-dasharray="0 302" stroke-dashoffset="-220.9" stroke-linecap="butt"/>
-            <circle class="an-donut-seg seg-miss" cx="60" cy="60" r="48" fill="none" stroke="#f87171" stroke-width="14"
-              stroke-dasharray="0 302" stroke-dashoffset="-271.3" stroke-linecap="butt"/>
-          </svg>
-          <div class="an-donut-center">
-            <div class="an-donut-pct">90%</div>
-            <div class="an-donut-lbl">match rate</div>
-          </div>
+        <!-- Stock distribution donut -->
+        <div class="an-card">
+          <div class="an-card-title">📊 สัดส่วนสต็อก</div>
+          <div class="an-card-sub" style="margin-bottom:12px;">แบ่งตามระดับ</div>
+          <div style="display:flex;flex-direction:column;gap:8px;" id="si-dist-bars"></div>
         </div>
 
-        <div class="an-legend">
-          <div class="an-legend-item">
-            <span class="an-dot green"></span>
-            <span class="an-legend-txt">ถูกต้อง 100%</span>
-            <span class="an-legend-val">22 รูป (73%)</span>
-          </div>
-          <div class="an-legend-item">
-            <span class="an-dot blue"></span>
-            <span class="an-legend-txt">พบสินค้าใกล้เคียง</span>
-            <span class="an-legend-val">5 รูป (17%)</span>
-          </div>
-          <div class="an-legend-item">
-            <span class="an-dot red"></span>
-            <span class="an-legend-txt">ไม่พบในระบบ</span>
-            <span class="an-legend-val">3 รูป (10%)</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- LEFT: User Satisfaction Survey -->
-      <div class="an-card">
-        <div class="an-card-title">⭐ ผลสำรวจความพึงพอใจ</div>
-        <div class="an-card-sub">แบบสอบถาม Likert Scale 1–5 · n = 15 คน</div>
-
-        <div class="an-survey">
-          <div class="an-survey-row">
-            <div class="an-survey-lbl">ความง่ายในการใช้งาน</div>
-            <div class="an-survey-bar-track">
-              <div class="an-survey-bar" style="--sw:86%"></div>
-            </div>
-            <div class="an-survey-score">4.3</div>
-          </div>
-          <div class="an-survey-row">
-            <div class="an-survey-lbl">ความเร็วของระบบ</div>
-            <div class="an-survey-bar-track">
-              <div class="an-survey-bar" style="--sw:82%"></div>
-            </div>
-            <div class="an-survey-score">4.1</div>
-          </div>
-          <div class="an-survey-row">
-            <div class="an-survey-lbl">ความถูกต้องของข้อมูล</div>
-            <div class="an-survey-bar-track">
-              <div class="an-survey-bar" style="--sw:88%"></div>
-            </div>
-            <div class="an-survey-score">4.4</div>
-          </div>
-          <div class="an-survey-row">
-            <div class="an-survey-lbl">ประสิทธิภาพ AI</div>
-            <div class="an-survey-bar-track">
-              <div class="an-survey-bar" style="--sw:78%"></div>
-            </div>
-            <div class="an-survey-score">3.9</div>
-          </div>
-          <div class="an-survey-row">
-            <div class="an-survey-lbl">ความพึงพอใจโดยรวม</div>
-            <div class="an-survey-bar-track">
-              <div class="an-survey-bar highlight" style="--sw:84%"></div>
-            </div>
-            <div class="an-survey-score highlight">4.2</div>
-          </div>
+        <!-- Top high-value items -->
+        <div class="an-card">
+          <div class="an-card-title">🔥 สินค้าราคาแรงใกล้หมด</div>
+          <div class="an-card-sub" style="margin-bottom:12px;">ราคาสูง + stock ≤ 3</div>
+          <div id="si-hotlist" style="display:flex;flex-direction:column;gap:8px;"></div>
         </div>
 
-        <!-- NPS -->
-        <div class="an-nps">
-          <div class="an-nps-left">
-            <div class="an-nps-score">72</div>
-            <div class="an-nps-lbl">NPS Score</div>
-          </div>
-          <div class="an-nps-right">
-            <div class="an-nps-detail">👍 Promoters (9–10) <strong>73%</strong></div>
-            <div class="an-nps-detail">😐 Passives (7–8) <strong>20%</strong></div>
-            <div class="an-nps-detail">👎 Detractors (0–6) <strong>7%</strong></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- RIGHT: Live Inventory Stats -->
-      <div class="an-card">
-        <div class="an-card-title">📦 สถิติ Inventory จริง (Live)</div>
-        <div class="an-card-sub" id="an-live-sub">กำลังโหลดข้อมูล…</div>
-
-        <div id="an-live-stats" class="an-live-stats">
-          <!-- filled by JS -->
+        <!-- Brand breakdown -->
+        <div class="an-card">
+          <div class="an-card-title">🏷 สต็อกแยกตาม Brand</div>
+          <div class="an-card-sub" style="margin-bottom:12px;">จำนวน Part ต่อ Brand</div>
+          <div id="si-brand-bars" class="an-brand-chart"></div>
         </div>
 
-        <div class="an-card-title" style="margin-top:20px; font-size:13px;">🏷 Brand Distribution</div>
-        <div id="an-brand-chart" class="an-brand-chart">
-          <!-- filled by JS -->
-        </div>
-      </div>
-
-    </div><!-- /an-grid -->
-
-    <!-- Methodology note -->
-    <div class="an-method">
-      <div class="an-method-title">📋 วิธีการเก็บข้อมูล</div>
-      <div class="an-method-body">
-        <div class="an-method-item">
-          <span class="an-method-dot blue"></span>
-          <span><strong>การวัดเวลา:</strong> จับเวลาพนักงานทำงานเดิม (ระบบ Excel) เปรียบเทียบกับระบบใหม่ ทำซ้ำ 5 รอบต่อ Task และเฉลี่ย</span>
-        </div>
-        <div class="an-method-item">
-          <span class="an-method-dot purple"></span>
-          <span><strong>ทดสอบ AI Vision:</strong> ถ่ายภาพชิ้นส่วนจริงในร้าน 30 รูปในสภาพแสงต่างกัน ตรวจสอบโดยพนักงาน 2 คน</span>
-        </div>
-        <div class="an-method-item">
-          <span class="an-method-dot green"></span>
-          <span><strong>แบบสอบถาม:</strong> ให้กลุ่มตัวอย่างทดลองใช้งานระบบ 30 นาที แล้วตอบแบบสอบถาม 5 หัวข้อ (Likert 1–5)</span>
-        </div>
       </div>
     </div>
 
   </div><!-- /page-analytics -->
+
+      <div id="settings-view" class="view-content" style="display: none;">
+        <h2>Settings</h2>
+        <p>Settings will be here.</p>
+      </div>
+
+      <div id="orders-view" class="view-content" style="display: none;">
+        <div class="orders-grid">
+          <div class="card-view">
+            <div class="card-view-header">
+              <div class="card-view-title">สร้างบิลใหม่</div>
+              <div id="current-bill-date" class="bill-date"></div>
+            </div>
+            <div class="search-bar" style="max-width: 100%; margin: 0 0 20px;">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="order-item-search" placeholder="ค้นหาสินค้าเพื่อเพิ่มในบิล...">
+            </div>
+            <div id="order-search-results" style="display: none;"></div>
+            <div id="order-items-container"></div>
+            <div class="order-summary-row">
+              <span class="order-total-label">ยอดรวมทั้งหมด</span>
+              <span id="order-total-value" class="order-total-value">฿0</span>
+            </div>
+            <input type="text" id="bill-name-input" class="form-input" placeholder="ตั้งชื่อบิล (ไม่บังคับ)" style="margin-top: 16px;">
+            <button id="save-order-btn" class="btn-primary">
+              <span class="icon">💾</span> บันทึกบิล
+            </button>
+            <div id="save-order-feedback" style="font-size: 12px; margin-top: 8px; text-align: center;"></div>
+          </div>
+          <div class="card-view">
+            <div class="card-view-header">
+              <div class="card-view-title">ประวัติบิล</div>
+            </div>
+            <div id="bill-history-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="orders-view" class="view-content" style="display: none;">
+        <div class="orders-grid">
+          <div class="card-view">
+            <div class="card-view-header">
+              <div class="card-view-title">สร้างบิลใหม่</div>
+              <div id="current-bill-date" class="bill-date"></div>
+            </div>
+            <div class="search-bar" style="max-width: 100%; margin: 0 0 20px;">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="order-item-search" placeholder="ค้นหาสินค้าเพื่อเพิ่มในบิล...">
+            </div>
+            <div id="order-search-results" style="display: none;"></div>
+            <div id="order-items-container"></div>
+            <div class="order-summary-row">
+              <span class="order-total-label">ยอดรวมทั้งหมด</span>
+              <span id="order-total-value" class="order-total-value">฿0</span>
+            </div>
+            <input type="text" id="bill-name-input" class="form-input" placeholder="ตั้งชื่อบิล (ไม่บังคับ)" style="margin-top: 16px;">
+            <button id="save-order-btn" class="btn-primary">
+              <span class="icon">💾</span> บันทึกบิล
+            </button>
+            <div id="save-order-feedback" style="font-size: 12px; margin-top: 8px; text-align: center;"></div>
+          </div>
+          <div class="card-view">
+            <div class="card-view-header">
+              <div class="card-view-title">ประวัติบิล</div>
+            </div>
+            <div id="bill-history-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="orders-view" class="view-content" style="display: none;">
+        <div class="orders-grid">
+          <div class="card-view">
+            <div class="card-view-header">
+              <div class="card-view-title">สร้างบิลใหม่</div>
+              <div id="current-bill-date" class="bill-date"></div>
+            </div>
+            <div class="search-bar" style="max-width: 100%; margin: 0 0 20px;">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="order-item-search" placeholder="ค้นหาสินค้าเพื่อเพิ่มในบิล...">
+            </div>
+            <div id="order-search-results" style="display: none;"></div>
+            <div id="order-items-container"></div>
+            <div class="order-summary-row">
+              <span class="order-total-label">ยอดรวมทั้งหมด</span>
+              <span id="order-total-value" class="order-total-value">฿0</span>
+            </div>
+            <input type="text" id="bill-name-input" class="form-input" placeholder="ตั้งชื่อบิล (ไม่บังคับ)" style="margin-top: 16px;">
+            <button id="save-order-btn" class="btn-primary">
+              <span class="icon">💾</span> บันทึกบิล
+            </button>
+            <div id="save-order-feedback" style="font-size: 12px; margin-top: 8px; text-align: center;"></div>
+          </div>
+          <div class="card-view">
+            <div class="card-view-header">
+              <div class="card-view-title">ประวัติบิล</div>
+            </div>
+            <div id="bill-history-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="orders-view" class="view-content" style="display: none;">
+        <div class="orders-grid">
+          <div class="card-view">
+            <div class="card-view-header">
+              <div class="card-view-title">สร้างบิลใหม่</div>
+              <div id="current-bill-date" class="bill-date"></div>
+            </div>
+            <div class="search-bar" style="max-width: 100%; margin: 0 0 20px;">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="order-item-search" placeholder="ค้นหาสินค้าเพื่อเพิ่มในบิล...">
+            </div>
+            <div id="order-search-results" style="display: none;"></div>
+            <div id="order-items-container"></div>
+            <div class="order-summary-row">
+              <span class="order-total-label">ยอดรวมทั้งหมด</span>
+              <span id="order-total-value" class="order-total-value">฿0</span>
+            </div>
+            <input type="text" id="bill-name-input" class="form-input" placeholder="ตั้งชื่อบิล (ไม่บังคับ)" style="margin-top: 16px;">
+            <button id="save-order-btn" class="btn-primary">
+              <span class="icon">💾</span> บันทึกบิล
+            </button>
+            <div id="save-order-feedback" style="font-size: 12px; margin-top: 8px; text-align: center;"></div>
+          </div>
+          <div class="card-view">
+            <div class="card-view-header">
+              <div class="card-view-title">ประวัติบิล</div>
+            </div>
+            <div id="bill-history-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="orders-view" class="view-content" style="display: none;">
+        <div class="orders-grid">
+          <div class="card-view">
+            <div class="card-view-header">
+              <div class="card-view-title">สร้างบิลใหม่</div>
+              <div id="current-bill-date" class="bill-date"></div>
+            </div>
+            <div class="search-bar" style="max-width: 100%; margin: 0 0 20px;">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="order-item-search" placeholder="ค้นหาสินค้าเพื่อเพิ่มในบิล...">
+            </div>
+            <div id="order-search-results" style="display: none;"></div>
+            <div id="order-items-container"></div>
+            <div class="order-summary-row">
+              <span class="order-total-label">ยอดรวมทั้งหมด</span>
+              <span id="order-total-value" class="order-total-value">฿0</span>
+            </div>
+            <input type="text" id="bill-name-input" class="form-input" placeholder="ตั้งชื่อบิล (ไม่บังคับ)" style="margin-top: 16px;">
+            <button id="save-order-btn" class="btn-primary">
+              <span class="icon">💾</span> บันทึกบิล
+            </button>
+            <div id="save-order-feedback" style="font-size: 12px; margin-top: 8px; text-align: center;"></div>
+          </div>
+          <div class="card-view">
+            <div class="card-view-header">
+              <div class="card-view-title">ประวัติบิล</div>
+            </div>
+            <div id="bill-history-list"></div>
+          </div>
+        </div>
+      </div>
 
 </div><!-- /app-wrapper -->
 
@@ -1918,15 +3181,21 @@
 
       <!-- Price + Stock -->
       <div class="price-stock-row">
-        <input type="number" id="m_price" name="price" placeholder="Price (฿)" required class="m-input" style="margin-top:0;">
-        <input type="number" id="m_stock" name="stock" placeholder="Stock Qty"  required class="m-input" style="margin-top:0;">
+        <input type="number" id="m_price" name="price" placeholder="Price (New)" required class="m-input" style="margin-top:0;">
+        <input type="number" id="m_stock" name="stock" placeholder="Stock (New)"  required class="m-input" style="margin-top:0;">
+      </div>
+
+      <div class="price-stock-row">
+        <input type="number" id="m_used_price" name="used_price" placeholder="Price (Used)" class="m-input" style="margin-top:0;">
+        <input type="number" id="m_used_stock" name="used_stock" placeholder="Stock (Used)" class="m-input" style="margin-top:0;">
       </div>
 
       <!-- Image upload -->
+      <div id="image-previews" class="image-previews-grid"></div>
       <div style="margin-top:12px;">
-        <input type="file" id="m_image" name="image" accept="image/*" class="hidden-file-input">
+        <input type="file" id="m_image" name="images" accept="image/*" class="hidden-file-input" multiple>
         <label for="m_image" class="rainbow-btn" id="fileLabel">
-          <span>📸 คลิกเพื่อเลือกรูปภาพสินค้า</span>
+          <span>📸 คลิกเพื่อเลือกรูปภาพ (เลือกได้หลายรูป)</span>
         </label>
         <div id="current_image_hint" style="color:#34d399;display:none;font-size:11px;margin-top:6px;text-align:center;"></div>
       </div>
@@ -1977,9 +3246,131 @@
   </div>
 </div>
 
+<!-- LIGHTBOX MODAL -->
+<div id="lightboxModal" class="modal-overlay" onclick="closeLightbox()">
+  <div class="report-modal-box" style="background:transparent;border:none;box-shadow:none;max-width:90vw;height:90vh;padding:0;" onclick="event.stopPropagation()">
+    <button class="modal-close" style="top:15px;right:15px;z-index:1001;" onclick="closeLightbox()">✕</button>
+    <div id="lightbox-images-container" style="width:100%;height:100%;position:relative;"></div>
+    <button id="lightbox-prev" class="lightbox-nav prev" style="position:absolute;left:15px;top:50%;transform:translateY(-50%);" onclick="event.stopPropagation();changeLightboxImage(-1)">❮</button>
+    <button id="lightbox-next" class="lightbox-nav next" style="position:absolute;right:15px;top:50%;transform:translateY(-50%);" onclick="event.stopPropagation();changeLightboxImage(1)">❯</button>
+  </div>
+</div>
+
+<!-- Bill Detail Modal -->
+<div id="billDetailModal" class="modal-overlay">
+  <div class="report-modal-box" style="max-width: 500px;">
+    <div class="modal-header">
+      <div id="bill-detail-name" class="modal-title">Bill Details</div>
+      <button class="modal-close" onclick="document.getElementById('billDetailModal').classList.remove('open')">✕</button>
+    </div>
+    <div id="bill-detail-content" style="padding: 20px 24px;">
+      <p id="bill-detail-date" style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: -10px; margin-bottom: 15px;"></p>
+      <div id="bill-detail-items">
+        <!-- Items will be rendered here -->
+      </div>
+      <div id="bill-detail-summary" style="margin-top: 16px; padding-top: 16px; border-top: 0.5px solid rgba(255,255,255,0.1); text-align: right;">
+        <span id="bill-detail-total-label" style="font-size: 14px; color: rgba(255,255,255,0.6);">ยอดรวม</span>
+        <span id="bill-detail-total-value" style="font-size: 22px; font-weight: 700; margin-left: 12px;"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bill Detail Modal -->
+<div id="billDetailModal" class="modal-overlay">
+  <div class="report-modal-box" style="max-width: 500px;">
+    <div class="modal-header">
+      <div id="bill-detail-name" class="modal-title">Bill Details</div>
+      <button class="modal-close" onclick="document.getElementById('billDetailModal').classList.remove('open')">✕</button>
+    </div>
+    <div id="bill-detail-content" style="padding: 20px 24px;">
+      <p id="bill-detail-date" style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: -10px; margin-bottom: 15px;"></p>
+      <div id="bill-detail-items">
+        <!-- Items will be rendered here -->
+      </div>
+      <div id="bill-detail-summary" style="margin-top: 16px; padding-top: 16px; border-top: 0.5px solid rgba(255,255,255,0.1); text-align: right;">
+        <span id="bill-detail-total-label" style="font-size: 14px; color: rgba(255,255,255,0.6);">ยอดรวม</span>
+        <span id="bill-detail-total-value" style="font-size: 22px; font-weight: 700; margin-left: 12px;"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bill Detail Modal -->
+<div id="billDetailModal" class="modal-overlay">
+  <div class="report-modal-box" style="max-width: 500px;">
+    <div class="modal-header">
+      <div id="bill-detail-name" class="modal-title">Bill Details</div>
+      <button class="modal-close" onclick="document.getElementById('billDetailModal').classList.remove('open')">✕</button>
+    </div>
+    <div id="bill-detail-content" style="padding: 20px 24px;">
+      <p id="bill-detail-date" style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: -10px; margin-bottom: 15px;"></p>
+      <div id="bill-detail-items">
+        <!-- Items will be rendered here -->
+      </div>
+      <div id="bill-detail-summary" style="margin-top: 16px; padding-top: 16px; border-top: 0.5px solid rgba(255,255,255,0.1); text-align: right;">
+        <span id="bill-detail-total-label" style="font-size: 14px; color: rgba(255,255,255,0.6);">ยอดรวม</span>
+        <span id="bill-detail-total-value" style="font-size: 22px; font-weight: 700; margin-left: 12px;"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bill Detail Modal -->
+<div id="billDetailModal" class="modal-overlay">
+  <div class="report-modal-box" style="max-width: 500px;">
+    <div class="modal-header">
+      <div id="bill-detail-name" class="modal-title">Bill Details</div>
+      <button class="modal-close" onclick="document.getElementById('billDetailModal').classList.remove('open')">✕</button>
+    </div>
+    <div id="bill-detail-content" style="padding: 20px 24px;">
+      <p id="bill-detail-date" style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: -10px; margin-bottom: 15px;"></p>
+      <div id="bill-detail-items">
+        <!-- Items will be rendered here -->
+      </div>
+      <div id="bill-detail-summary" style="margin-top: 16px; padding-top: 16px; border-top: 0.5px solid rgba(255,255,255,0.1); text-align: right;">
+        <span id="bill-detail-total-label" style="font-size: 14px; color: rgba(255,255,255,0.6);">ยอดรวม</span>
+        <span id="bill-detail-total-value" style="font-size: 22px; font-weight: 700; margin-left: 12px;"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bill Detail Modal -->
+<div id="billDetailModal" class="modal-overlay">
+  <div class="report-modal-box" style="max-width: 500px;">
+    <div class="modal-header">
+      <div id="bill-detail-name" class="modal-title">Bill Details</div>
+      <button class="modal-close" onclick="document.getElementById('billDetailModal').classList.remove('open')">✕</button>
+    </div>
+    <div id="bill-detail-content" style="padding: 20px 24px;">
+      <p id="bill-detail-date" style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: -10px; margin-bottom: 15px;"></p>
+      <div id="bill-detail-items">
+        <!-- Items will be rendered here -->
+      </div>
+      <div id="bill-detail-summary" style="margin-top: 16px; padding-top: 16px; border-top: 0.5px solid rgba(255,255,255,0.1); text-align: right;">
+        <span id="bill-detail-total-label" style="font-size: 14px; color: rgba(255,255,255,0.6);">ยอดรวม</span>
+        <span id="bill-detail-total-value" style="font-size: 22px; font-weight: 700; margin-left: 12px;"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Orders full-height override (placed after duplicated rules) */
+  .orders-grid { grid-template-columns: 420px 1fr !important; min-height: calc(100vh - 180px) !important; gap: 24px !important; align-items: stretch !important; }
+  .orders-grid .card-view { display: flex !important; flex-direction: column !important; height: 100% !important; }
+  .orders-grid .card-view .card-view-header { flex: none !important; }
+  /* Make the main containers scrollable and fill remaining height */
+  .orders-grid .card-view #order-items-container,
+  .orders-grid .card-view #bill-history-list,
+  .orders-grid .card-view #billHistory,
+  .orders-grid .card-view #billHistoryList {
+    flex: 1 !important; overflow: auto !important; max-height: none !important;
+  }
+</style>
 <script>
-const API_URL = 'http://localhost:8000/api';
-let ordersState = { items: [], currentDate: '', history: [] };
+window.API_URL = 'http://localhost:3000/api';
 
 let globalData = [];
 let dpMode = 'brand'; // ใช้ใน dark prompt
@@ -1993,16 +3384,55 @@ function setNav(el) {
 const EMBEDDED_DATA = [{"Part Number": "FDF01002", "Part Name": "PPAINT GRILLE WIDE 137CM", "Brand": "Fuso", "Series": "CANTER 2010", "Price": "3000.0", "Stock": "10", "Image_URL": "picture/FDF01002.png", "Storage Location": "หน้าห้อง", "Cost Price": "2500.0"}, {"Part Number": "FDF01004-", "Part Name": "PPAINT FRONT PANEL WIDE 173CM", "Brand": "Fuso", "Series": "CANTER 2010", "Price": "2000.0", "Stock": "23", "Image_URL": "picture/FDF01004-.png", "Storage Location": "", "Cost Price": "1500.0"}, {"Part Number": "FDF01007-C", "Part Name": "Chrome Wiper Panel Wide RHD", "Brand": "Fuso", "Series": "CANTER 2010", "Price": "2200.0", "Stock": "18", "Image_URL": "picture/FDF01007-C.png", "Storage Location": "หน้าห้องน้ำ", "Cost Price": "0.0"}, {"Part Number": "FDF01037L ", "Part Name": "FDF01037RCorner Benzel LH RH", "Brand": "Fuso", "Series": "CANTER 2010", "Price": "200.0", "Stock": "50", "Image_URL": "picture/FDF01037L .png", "Storage Location": "", "Cost Price": "0.0"}, {"Part Number": "FDF01045 ", "Part Name": "Radiator Surge tank", "Brand": "Fuso", "Series": "CANTER 2010", "Price": "100.0", "Stock": "15", "Image_URL": "picture/FDF01045 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDF01047", "Part Name": "Water Pump", "Brand": "Fuso", "Series": "CANTER 2010", "Price": "700.0", "Stock": "10", "Image_URL": "picture/FDF01047.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDF01048 ", "Part Name": "Brake Master", "Brand": "Fuso", "Series": "CANTER 2010", "Price": "800.0", "Stock": "14", "Image_URL": "picture/FDF01048 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH00003-C ", "Part Name": "Chrome Lower Grille", "Brand": "HINO", "Series": "VICTOR 500", "Price": "2000.0", "Stock": "10", "Image_URL": "picture/FDH00003-C .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH00047", "Part Name": "CHINO LOGO Silver", "Brand": "hino", "Series": "victor 500", "Price": "1000.0", "Stock": "20", "Image_URL": "picture/FDH00047.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH00064-C ", "Part Name": "Chrome Bumper", "Brand": "HINO", "Series": "VICTOR 500", "Price": "4500.0", "Stock": "5", "Image_URL": "picture/FDH00064-C .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH00070", "Part Name": "Cabin Shell LHD Low", "Brand": "HINO", "Series": "VICTOR 500", "Price": "100000.0", "Stock": "2", "Image_URL": "picture/FDH00070.png", "Storage Location": "", "Cost Price": "123.0"}, {"Part Number": "FDH00067L", "Part Name": "STEP ARM LOWER LHRH", "Brand": "hino", "Series": "victor 500 ", "Price": "2000.0", "Stock": "10", "Image_URL": "picture/FDH00067L.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH00074", "Part Name": "Gear Lever Bracket", "Brand": "hino", "Series": "victor 500", "Price": "500.0", "Stock": "10", "Image_URL": "picture/FDH00074.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH00075", "Part Name": "LOGO 24V 37cm25cm YELLOW", "Brand": "hino", "Series": "victor 500", "Price": "1500.0", "Stock": "5", "Image_URL": "picture/FDH00075.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH00076", "Part Name": "Water Tank", "Brand": "hino ", "Series": "victor 500", "Price": "1500.0", "Stock": "10", "Image_URL": "picture/FDH00076.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH00077", "Part Name": "OIL RESERVOIR ASSY 38446-67002,44360-EW011", "Brand": "hino", "Series": "victor 500", "Price": "3500.0", "Stock": "5", "Image_URL": "picture/FDH00077.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH00085 ", "Part Name": "Tie rod End S4550-E0150", "Brand": "HINO", "Series": "VICTOR 500", "Price": "700.0", "Stock": "8", "Image_URL": "picture/FDH00085 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH03001-C ", "Part Name": "Chrome Front Panel 200cm", "Brand": "hino", "Series": "PROFIA", "Price": "3000.0", "Stock": "5", "Image_URL": "picture/FDH03001-C .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH03003-P   ", "Part Name": "Painted bumper 98 35T 240cm.", "Brand": "hino", "Series": "profia", "Price": "5000.0", "Stock": "5", "Image_URL": "picture/FDH03003-P   .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH03006-P ", "Part Name": "Grille 135cm", "Brand": "hino  ", "Series": "profia", "Price": "2500.0", "Stock": "4", "Image_URL": "picture/FDH03006-P .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH03015 ", "Part Name": "Mirror 26cm", "Brand": "HINO", "Series": "PROFIA", "Price": "500.0", "Stock": "30", "Image_URL": "picture/FDH03015 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH03016L-C FDH03016R-C ", "Part Name": "CHROME VISOR LHRH", "Brand": "hino ", "Series": "profia", "Price": "1000.0", "Stock": "4", "Image_URL": "picture/FDH03016L-C FDH03016R-C .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH03020-C ", "Part Name": "Chrome Center Grille 165cm", "Brand": "hino ", "Series": "profia", "Price": "1400.0", "Stock": "4", "Image_URL": "picture/FDH03020-C .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH03022 ", "Part Name": "Water Tank", "Brand": "hino", "Series": "profia", "Price": "500.0", "Stock": "3", "Image_URL": "picture/FDH03022 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH03024L-RHD", "Part Name": "Paint Mirror Arm LHRH RHD", "Brand": "HINO", "Series": "PROFIA", "Price": "1000.0", "Stock": "10", "Image_URL": "picture/FDH03024L-RHD.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH03040L-P", "Part Name": "Head Lamp Case 94  LHRH", "Brand": "HINO", "Series": "PROFIA", "Price": "400.0", "Stock": "17", "Image_URL": "picture/FDH03040L-P.png", "Storage Location": "ชั้นบนสุดตึกซ้าย", "Cost Price": ""}, {"Part Number": "FDH03044-C", "Part Name": "Chrome Bumper Grille", "Brand": "hino   ", "Series": "profia", "Price": "1500.0", "Stock": "6", "Image_URL": "picture/FDH03044-C.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH03044", "Part Name": "Painted Bumper Garnish  2000 35T", "Brand": "HINO", "Series": "PROFIA", "Price": "1500.0", "Stock": "2", "Image_URL": "picture/FDH03044.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH03072", "Part Name": "INNER HANDLE", "Brand": "HINO", "Series": "PROFIA", "Price": "400.0", "Stock": "5", "Image_URL": "picture/FDH03072.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH03086", "Part Name": "ENGNE FAN 16306-2522", "Brand": "hino", "Series": "profia", "Price": "1500.0", "Stock": "5", "Image_URL": "picture/FDH03086.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01001-C ", "Part Name": "Chrome Front Bumper 240CM", "Brand": "HINO", "Series": "mega 700", "Price": "6000.0", "Stock": "3", "Image_URL": "picture/FDH01001-C .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01002-P ", "Part Name": "Front Panel", "Brand": "HINO", "Series": "mega 700", "Price": "4000.0", "Stock": "4", "Image_URL": "picture/FDH01002-P .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01003-P ", "Part Name": "Upper Grille", "Brand": "HINO", "Series": "mega 700", "Price": "3800.0", "Stock": "3", "Image_URL": "picture/FDH01003-P .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01006-P ", "Part Name": "Lower Grille", "Brand": "hino", "Series": "mega 700", "Price": "1000.0", "Stock": "10", "Image_URL": "picture/FDH01006-P .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01008", "Part Name": "MIRROR ARM LHRH (DOOR)", "Brand": "HINO", "Series": "mega 700", "Price": "1500.0", "Stock": "10", "Image_URL": "picture/FDH01008.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01015-P ", "Part Name": "Lower Bumper Center", "Brand": "HINO", "Series": "mega 700", "Price": "800.0", "Stock": "5", "Image_URL": "picture/FDH01015-P .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01023L", "Part Name": "Front Panel Handle LHRH", "Brand": "HINO", "Series": "mega 700", "Price": "700.0", "Stock": "5", "Image_URL": "picture/FDH01023L.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01025 ", "Part Name": "Side Lamp", "Brand": "HINO", "Series": "mega 700", "Price": "600.0", "Stock": "10", "Image_URL": "picture/FDH01025 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01031", "Part Name": "Battery Cover Plastic", "Brand": "HINO", "Series": "mega 700", "Price": "800.0", "Stock": "6", "Image_URL": "picture/FDH01031.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01033L", "Part Name": "Door Trim Black(Manual) LHRH", "Brand": "HINO", "Series": "mega 700", "Price": "1500.0", "Stock": "15", "Image_URL": "picture/FDH01033L.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01035 ", "Part Name": "Aluminum Step Lower 32cm14cm", "Brand": "HINO", "Series": "mega 700", "Price": "500.0", "Stock": "30", "Image_URL": "picture/FDH01035 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01038L", "Part Name": "Window Regulator Auto LHRH", "Brand": "HINO", "Series": "mega 700", "Price": "1400.0", "Stock": "12", "Image_URL": "picture/FDH01038L.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01040", "Part Name": "Bumper Inner Frame", "Brand": "hino      ", "Series": "mega 700", "Price": "1000.0", "Stock": "7", "Image_URL": "picture/FDH01040.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01049", "Part Name": " Mirrors 220 170mm", "Brand": "hino  ", "Series": "mega 700", "Price": "1800.0", "Stock": "10", "Image_URL": "picture/FDH01049.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01051-P ", "Part Name": "Step Panel Lower Garnish", "Brand": "hino  ", "Series": "mega 700", "Price": "400.0", "Stock": "40", "Image_URL": "picture/FDH01051-P .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01052 ", "Part Name": "Courtesy Lamp", "Brand": "hino ", "Series": "mega 700", "Price": "1000.0", "Stock": "10", "Image_URL": "picture/FDH01052 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01100 ", "Part Name": "HINO 700 logo", "Brand": "hino   ", "Series": "mega 700", "Price": "1000.0", "Stock": "40", "Image_URL": "picture/FDH01100 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01103  ", "Part Name": "Mark for Hino 5 5cm", "Brand": "HINO", "Series": "mega 700", "Price": "1000.0", "Stock": "20", "Image_URL": "picture/FDH01103  .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH01106 ", "Part Name": "Indoor Lamp (lamp)", "Brand": "HINO", "Series": "mega 700", "Price": "2000.0", "Stock": "5", "Image_URL": "picture/FDH01106 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02004-P ", "Part Name": "Front Bumper (N) 195cm 2003", "Brand": "HINO", "Series": "MEGA 500", "Price": "3500.0", "Stock": "5", "Image_URL": "picture/FDH02004-P .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02011-C ", "Part Name": "Chrome Grille (W) 165cm", "Brand": "HINO", "Series": "MEGA 500", "Price": "2500.0", "Stock": "9", "Image_URL": "picture/FDH02011-C .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02013-C ", "Part Name": "Chrome Lower Bumper", "Brand": "HINO", "Series": "MEGA 500", "Price": "3000.0", "Stock": "6", "Image_URL": "picture/FDH02013-C .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02014 ", "Part Name": "Mirror Arm RHD Screm Head", "Brand": "HINO", "Series": "MEGA 500", "Price": "400.0", "Stock": "20", "Image_URL": "picture/FDH02014 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02014-P", "Part Name": "Bumper 220cm", "Brand": "HINO", "Series": "MEGA 500", "Price": "3500.0", "Stock": "4", "Image_URL": "picture/FDH02014-P.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02016-", "Part Name": "PLOWER BUMPER 200CM", "Brand": "HINO", "Series": "MEGA 500", "Price": "3000.0", "Stock": "4", "Image_URL": "picture/FDH02016-.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02018-P ", "Part Name": "Wiper Panel  185cm", "Brand": "HINO", "Series": "MEGA 500", "Price": "2000.0", "Stock": "6", "Image_URL": "picture/FDH02018-P .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02020 ", "Part Name": "Front Panel Handle", "Brand": "HINO", "Series": "MEGA 500", "Price": "1000.0", "Stock": "10", "Image_URL": "picture/FDH02020 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02027-P ", "Part Name": "Mirror 23cm23.5cm", "Brand": "HINO", "Series": "MEGA 500", "Price": "1500.0", "Stock": "20", "Image_URL": "picture/FDH02027-P .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02032L-Y FDH02032R-Y ", "Part Name": "Corner Lamp Yellow LHRH", "Brand": "HINO", "Series": "MEGA 500", "Price": "1800.0", "Stock": "15", "Image_URL": "picture/FDH02032L-Y FDH02032R-Y .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02043 ", "Part Name": "Back Panel Outer 200CM", "Brand": "HINO", "Series": "MEGA 500", "Price": "3800.0", "Stock": "2", "Image_URL": "picture/FDH02043 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02049 ", "Part Name": "Water Tank (trailer)", "Brand": "HINO", "Series": "MEGA 500", "Price": "1700.0", "Stock": "3", "Image_URL": "picture/FDH02049 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02050L FDH02050R ", "Part Name": "SPLASH BOARD REAR STAY LHRH", "Brand": "HINO", "Series": "MEGA 500", "Price": "2500.0", "Stock": "15", "Image_URL": "picture/FDH02050L FDH02050R .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02059-N-LHD ", "Part Name": "WIPER LINK NARROW LHD", "Brand": "HINO", "Series": "MEGA 500", "Price": "1800.0", "Stock": "5", "Image_URL": "picture/FDH02059-N-LHD .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02071 ", "Part Name": "Alloy step lower", "Brand": "HINO", "Series": "MEGA 500", "Price": "500.0", "Stock": "30", "Image_URL": "picture/FDH02071 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02073L-LHD FDH02073R-LHD ", "Part Name": "Mirror Arm LHD LHRH", "Brand": "HINO", "Series": "MEGA 500", "Price": "800.0", "Stock": "8", "Image_URL": "picture/FDH02073L-LHD FDH02073R-LHD .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02074 ", "Part Name": "Shroud assy fan.png", "Brand": "HINO", "Series": "MEGA 500", "Price": "1000.0", "Stock": "15", "Image_URL": "picture/FDH02074 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02084 ", "Part Name": "MARK 500", "Brand": "HINO", "Series": "MEGA 500", "Price": "700.0", "Stock": "10", "Image_URL": "picture/FDH02084 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02086 ", "Part Name": "Reflector 15.2 3 2.5cm", "Brand": "HINO", "Series": "MEGA 500", "Price": "50.0", "Stock": "100", "Image_URL": "picture/FDH02086 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDH02092 ", "Part Name": "Ashiray 10 9.2CM", "Brand": "HINO", "Series": "MEGA 500", "Price": "500.0", "Stock": "50", "Image_URL": "picture/FDH02092 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02001-P ", "Part Name": "Front Panel  Plastic White", "Brand": "ISUZU", "Series": "DECA 360", "Price": "3500.0", "Stock": "4", "Image_URL": "picture/FDI02001-P .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02002  ", "Part Name": "Interior of the panel", "Brand": "ISUZU", "Series": "DECA 360", "Price": "1300.0", "Stock": "5", "Image_URL": "picture/FDI02002  .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02003-P ", "Part Name": "Grille 160cm", "Brand": "ISUZU", "Series": "DECA 360", "Price": "2000.0", "Stock": "8", "Image_URL": "picture/FDI02003-P .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02005 -P ", "Part Name": "FRONT BUMPER 215CM PAINT", "Brand": "ISUZU", "Series": "DECA 360", "Price": "3000.0", "Stock": "4", "Image_URL": "picture/FDI02005 -P .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02007LR", "Part Name": "FRONT PILLAR INNER UPPER LH  RH", "Brand": "ISUZU", "Series": "DECA 360", "Price": "1000.0", "Stock": "10", "Image_URL": "picture/FDI02007LR.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02011LR-P", "Part Name": "Wiper base plating LHD OR RHD 195cm", "Brand": "ISUZU", "Series": "DECA 360", "Price": "1500.0", "Stock": "15", "Image_URL": "picture/FDI02011LR-P.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02016LR ", "Part Name": "CORNER PANEL GARNISH LH RH", "Brand": "ISUZU", "Series": "DECA 360", "Price": "500.0", "Stock": "20", "Image_URL": "picture/FDI02016LR .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02038LR ", "Part Name": "SPLASH BOARD REAR LH  RH", "Brand": "ISUZU", "Series": "DECA 360", "Price": "800.0", "Stock": "20", "Image_URL": "picture/FDI02038LR .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02041LR ", "Part Name": "Step Panel Upper LHRH", "Brand": "ISUZU", "Series": "DECA 360", "Price": "600.0", "Stock": "23", "Image_URL": "picture/FDI02041LR .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02042RL", "Part Name": "STEP PANEL LOWER RHLH", "Brand": "ISUZU", "Series": "DECA 360", "Price": "400.0", "Stock": "15", "Image_URL": "picture/FDI02042RL.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02043 ", "Part Name": "STEP PANEL LOWER GARNISH LH=RH", "Brand": "ISUZU", "Series": "DECA 360", "Price": "200.0", "Stock": "40", "Image_URL": "picture/FDI02043 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02047 ", "Part Name": "DOOR FENDER LH  RH", "Brand": "ISUZU", "Series": "DECA 360", "Price": "900.0", "Stock": "20", "Image_URL": "picture/FDI02047 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02048LR", "Part Name": "REAR PILLAR OUTER LH RH", "Brand": "ISUZU", "Series": "DECA 360", "Price": "1800.0", "Stock": "20", "Image_URL": "picture/FDI02048LR.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02053 ", "Part Name": "WINDSHIELD TANK", "Brand": "ISUZU", "Series": "DECA 360", "Price": "1300.0", "Stock": "15", "Image_URL": "picture/FDI02053 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02072 ", "Part Name": "HANDLE ASSIST A-POST SHORT LH=RH", "Brand": "ISUZU", "Series": "DECA 360", "Price": "600.0", "Stock": "20", "Image_URL": "picture/FDI02072 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02107-C", "Part Name": "Golden Isuzu logo 8cm", "Brand": "ISUZU", "Series": "DECA 360", "Price": "1000.0", "Stock": "10", "Image_URL": "picture/FDI02107-C.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02111  ", "Part Name": "WINDOW HANDLE", "Brand": "ISUZU", "Series": "DECA 360", "Price": "100.0", "Stock": "30", "Image_URL": "picture/FDI02111  .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02115-P", "Part Name": "Paint New Grille 160cm (White+Black)", "Brand": "ISUZU", "Series": "DECA 360", "Price": "3000.0", "Stock": "3", "Image_URL": "picture/FDI02115-P.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI02118LR", "Part Name": "Door Shell LHRH (With Whole)", "Brand": "ISUZU", "Series": "DECA 360", "Price": "4000.0", "Stock": "2", "Image_URL": "picture/FDI02118LR.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04053 ", "Part Name": "HEAD LAMP LHRH", "Brand": "ISUZU", "Series": "DECA 360", "Price": "2500.0", "Stock": "10", "Image_URL": "picture/FDI04053 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI01001-P ", "Part Name": "PAINT FRONT BUMPER 245cm", "Brand": "ISUZU", "Series": "GIGA", "Price": "4000.0", "Stock": "3", "Image_URL": "picture/FDI01001-P .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI01002-P ", "Part Name": "PAINT UNDER BUMPER", "Brand": "ISUZU", "Series": "GIGA", "Price": "1500.0", "Stock": "6", "Image_URL": "picture/FDI01002-P .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI01035-P ", "Part Name": "Paint Grille", "Brand": "ISUZU", "Series": "GIGA", "Price": "1500.0", "Stock": "5", "Image_URL": "picture/FDI01035-P .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI01036-P", "Part Name": "Paint Front Panel", "Brand": "ISUZU", "Series": "GIGA", "Price": "800.0", "Stock": "10", "Image_URL": "picture/FDI01036-P.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI01040-P", "Part Name": "Bumper Grille  PAINT", "Brand": "ISUZU", "Series": "GIGA", "Price": "1300.0", "Stock": "9", "Image_URL": "picture/FDI01040-P.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI01042", "Part Name": "Dashboard LHD 215cm", "Brand": "ISUZU", "Series": "GIGA", "Price": "10000.0", "Stock": "2", "Image_URL": "picture/FDI01042.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI01047-P", "Part Name": "Front Panel  PAINT", "Brand": "ISUZU", "Series": "GIGA", "Price": "1800.0", "Stock": "6", "Image_URL": "picture/FDI01047-P.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI01048LR-P", "Part Name": "Bumper Garnish LHRH", "Brand": "ISUZU", "Series": "GIGA", "Price": "500.0", "Stock": "22", "Image_URL": "picture/FDI01048LR-P.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI01050 ", "Part Name": "GIGA LOGO", "Brand": "ISUZU", "Series": "GIGA", "Price": "1000.0", "Stock": "20", "Image_URL": "picture/FDI01050 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI01051M ", "Part Name": "Sunvisor Middle", "Brand": "ISUZU", "Series": "GIGA", "Price": "2000.0", "Stock": "5", "Image_URL": "picture/FDI01051M .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04001-P", "Part Name": "Paint front panel (W) 135cm", "Brand": "ISUZU", "Series": "NPR 150", "Price": "3000.0", "Stock": "4", "Image_URL": "picture/FDI04001-P.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04004-P", "Part Name": "Paint bumper 195cm", "Brand": "ISUZU", "Series": "NPR 150", "Price": "3500.0", "Stock": "6", "Image_URL": "picture/FDI04004-P.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04006N-C", "Part Name": "Chrome Grille Upper Garnish  110cm", "Brand": "ISUZU", "Series": "NPR 150", "Price": "1000.0", "Stock": "5", "Image_URL": "picture/FDI04006N-C.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04014LR-P", "Part Name": "Mirror Arm Bracket LH RH", "Brand": "ISUZU", "Series": "NPR 150", "Price": "800.0", "Stock": "5", "Image_URL": "picture/FDI04014LR-P.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04017", "Part Name": "Cover Mirror Arm Support", "Brand": "ISUZU", "Series": "NPR 150", "Price": "540.0", "Stock": "40", "Image_URL": "picture/FDI04017.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04025 ", "Part Name": "Roof Handle LH RH", "Brand": "ISUZU", "Series": "NPR 150", "Price": "500.0", "Stock": "20", "Image_URL": "picture/FDI04025 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04030", "Part Name": "Wiper Motor 24V LHD 8980291243", "Brand": "ISUZU", "Series": "NPR 150", "Price": "2400.0", "Stock": "10", "Image_URL": "picture/FDI04030.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04034", "Part Name": "Air Filter NO Filter 8-98050-415-1, 8980504152", "Brand": "ISUZU", "Series": "NPR 150", "Price": "5000.0", "Stock": "4", "Image_URL": "picture/FDI04034.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04035-1", "Part Name": "Air Filter Cover Clip", "Brand": "ISUZU", "Series": "NPR 150", "Price": "20.0", "Stock": "100", "Image_URL": "picture/FDI04035-1.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04038-", "Part Name": "BABS Grille 133CM (W)", "Brand": "ISUZU", "Series": "NPR 150", "Price": "2500.0", "Stock": "10", "Image_URL": "picture/FDI04038-.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04045 -C-LHD-W", "Part Name": "Chrome Mirror Arm LHD LH 40CM RH 50CM", "Brand": "ISUZU", "Series": "NPR 150", "Price": "2000.0", "Stock": "20", "Image_URL": "picture/FDI04045 -C-LHD-W.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04054LR", "Part Name": "Corner Lamp LH RH (General)", "Brand": "ISUZU", "Series": "NPR 150", "Price": "2500.0", "Stock": "10", "Image_URL": "picture/FDI04054LR.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04055", "Part Name": "WIPER LINK LHD(W)", "Brand": "ISUZU", "Series": "NPR 150", "Price": "1500.0", "Stock": "20", "Image_URL": "picture/FDI04055.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04062-P", "Part Name": "Painting Grille 133 cm Width in Modification", "Brand": "ISUZU", "Series": "NPR 150", "Price": "2700.0", "Stock": "3", "Image_URL": "picture/FDI04062-P.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04074 ", "Part Name": "Fuel Tank Cap", "Brand": "ISUZU", "Series": "NPR 150", "Price": "500.0", "Stock": "20", "Image_URL": "picture/FDI04074 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04091L-1FDI04091R-1 ", "Part Name": "Door Trim LH RH Automatic", "Brand": "ISUZU", "Series": "NPR 150", "Price": "1500.0", "Stock": "10", "Image_URL": "picture/FDI04091L-1FDI04091R-1 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04103", "Part Name": "Mudgurad Flap  41.5  28cm", "Brand": "ISUZU", "Series": "NPR 150", "Price": "500.0", "Stock": "40", "Image_URL": "picture/FDI04103.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04105", "Part Name": "Steering wheel", "Brand": "ISUZU", "Series": "NPR 150", "Price": "3500.0", "Stock": "6", "Image_URL": "picture/FDI04105.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04106-H", "Part Name": "Gear lever sleeve", "Brand": "ISUZU", "Series": "NPR 150", "Price": "3000.0", "Stock": "4", "Image_URL": "picture/FDI04106-H.png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "FDI04122 ", "Part Name": "Elf logo", "Brand": "ISUZU", "Series": "NPR 150", "Price": "500.0", "Stock": "30", "Image_URL": "picture/FDI04122 .png", "Storage Location": "", "Cost Price": ""}, {"Part Number": "241241421", "Part Name": "test", "Brand": "Fuso", "Series": "CANTER 2010", "Price": "4444.0", "Stock": "5555", "Image_URL": "", "Storage Location": "", "Cost Price": ""}];
 
 async function loadProducts() {
+  console.log("--- STARTING DIAGNOSTIC TEST ---");
+  console.log("Loading inventory from API...");
   try {
-    const res = await fetch(`${API_URL}/inventory`);
-    if (!res.ok) throw new Error('not ok');
-    globalData = await res.json();
-  } catch {
-    // Backend ไม่ได้รัน → ใช้ข้อมูลจาก CSV ที่ embed ไว้
+    const res = await fetch(`${window.API_URL}/inventory`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    // normalize and convert types
+    globalData = data.map(item => {
+      const toNum = v => {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : 0;
+      };
+
+      // ensure keys exist and normalize image urls
+      let img = item.Image_URL || item['Image_URL'] || item.ImageUrl || '';
+      img = String(img || '').trim();
+      if (img && !img.startsWith('http')) {
+        // server serves picture/ via static mount
+        img = `${window.API_URL.replace(/\/api$/, '')}/${img}`.replace(/([^:]\/)\//g, '$1');
+      }
+
+      return {
+        'Part Number': item['Part Number'] ?? item.PartNumber ?? '',
+        'Part Name': item['Part Name'] ?? item['Part_Name'] ?? item.PartName ?? item['Part Name'],
+        'Brand': item.Brand ?? item['Brand'] ?? '',
+        'Series': item.Series ?? item['Series'] ?? '',
+        'Price': toNum(item.Price ?? item.Price_New ?? item['Price']),
+        'Stock': toNum(item.Stock ?? item.Stock_New ?? item['Stock']),
+        'Used_Price': toNum(item.Used_Price ?? item['Used_Price'] ?? 0),
+        'Used_Stock': toNum(item.Used_Stock ?? item['Used_Stock'] ?? 0),
+        'Image_URL': img,
+        'Storage Location': item['Storage Location'] ?? item.Location ?? '',
+        'Cost Price': toNum((item['Cost Price'] ?? item.Cost_Price ?? item.Cost) || 0)
+      };
+    });
+
+    renderGrid(globalData);
+    updateStats(globalData);
+    console.log('Inventory loaded:', globalData.length, 'items');
+    if (document.getElementById('page-analytics')?.style.display !== 'none') renderStockDashboard();
+  } catch (e) {
+    console.error('Failed to load inventory from API, falling back to embedded data', e);
+    // fallback to embedded sample if fetch fails
     globalData = EMBEDDED_DATA;
+    renderGrid(globalData);
+    updateStats(globalData);
+    if (document.getElementById('page-analytics')?.style.display !== 'none') renderStockDashboard();
   }
-  renderGrid(globalData);
-  updateStats(globalData);
 }
 
 // เรียกตอนเปิดหน้า เพื่อให้ stats อัปเดตเสมอ
@@ -2026,46 +3456,55 @@ function renderGrid(data) {
   }
 
   data.forEach(item => {
-    let imgPath = '';
-    if (item.Image_URL && item.Image_URL !== 'nan') {
-      imgPath = item.Image_URL.startsWith('http')
-        ? item.Image_URL
-        : `http://localhost:8000/${item.Image_URL}`;
-    }
+    const imageUrls = (item.Image_URL && item.Image_URL !== 'nan' ? item.Image_URL : "")
+      .split(',')
+      .map(url => url.trim())
+      .filter(Boolean)
+      .map(url => url.startsWith('http') ? url : `http://localhost:8000/${url}`);
+    
+    const firstImage = imageUrls[0] || '';
+    
+    const imageCountBadge = imageUrls.length > 1 
+      ? `<div class="image-count-badge">+${imageUrls.length - 1}</div>` 
+      : '';
+
     const stockClass = item.Stock > 5 ? 'stock-ok' : 'stock-low';
     const loc = item['Storage Location'] && item['Storage Location'] !== 'nan'
       ? item['Storage Location'] : '';
     const _cpRaw = item['Cost Price'];
-    // ให้แสดงได้แม้เป็น 0.0 แต่ต้องเป็นค่าที่แปลงเป็นตัวเลขได้จริง (ไม่ใช่ '', 'nan', null)
     const parsedCost = (_cpRaw !== '' && _cpRaw !== 'nan' && _cpRaw != null) ? Number(_cpRaw) : null;
     const cost = (parsedCost !== null && Number.isFinite(parsedCost)) ? parsedCost : null;
     const pn = item['Part Number'].replace(/'/g, "\\'");
-    const eyeOpen = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-    const eyeClosed = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
     const costHtml = cost !== null ? `
       <div class="cost-row" id="cost-row-${pn}" onclick="toggleCostBox(this)" role="button" tabindex="0" title="แสดง/ซ่อนราคาทุน">
         <span class="cost-label"></span>
         <span class="cost-value hidden-cost">${'฿'+cost.toLocaleString()}</span>
-        <!-- ลบลูกตาออกแล้ว ใช้คลิกที่กรอบแทน -->
       </div>` : '';
 
     grid.innerHTML += `
       <div class="card">
-        <div class="card-img-wrap">
+        <div class="card-img-wrap" onclick="openLightbox('${pn}')">
+          ${imageCountBadge}
           <div class="card-img-placeholder">🔧</div>
-          ${imgPath ? `<img src="${imgPath}" loading="lazy" onerror="this.style.display='none'" style="opacity:0;" onload="this.style.opacity='1'">` : ''}
+          ${firstImage ? `<img src="${firstImage}" loading="lazy" onerror="this.style.display='none'" style="opacity:0;" onload="this.style.opacity='1'">` : ''}
         </div>
         <div class="card-body">
           <div class="card-brand">${item.Brand} · ${item.Series}</div>
           <div class="card-name">${item['Part Name']}</div>
           <div class="card-meta">
-            <div>
-              <div class="card-price">฿${Number(item.Price).toLocaleString()}</div>
+            <div class="price-stock-container">
+              <div class="price-stock-group new-item">
+                <div class="card-price">฿${Number(item.Price).toLocaleString()}</div>
+                <div class="card-stock ${stockClass}">${item.Stock} pcs</div>
+              </div>
+              ${(item.Used_Price && item.Used_Stock) ? `
+              <div class="price-stock-group used-item">
+                <div class="card-price">฿${Number(item.Used_Price).toLocaleString()}</div>
+                <div class="card-stock ${item.Used_Stock > 5 ? 'stock-ok' : (item.Used_Stock > 0 ? 'stock-low' : 'stock-out')}">${item.Used_Stock} pcs</div>
+              </div>
+              ` : ''}
             </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;">
-              ${loc ? `<div class="card-location-tag">📍 ${loc}</div>` : ''}
-              <div class="card-stock ${stockClass}">${item.Stock} pcs</div>
-            </div>
+            ${loc ? `<div style="width:100%; text-align:right;"><div class="card-location-tag" style="display:inline-block;">📍 ${loc}</div></div>` : ''}
           </div>
         </div>
         <div style="padding:10px 16px;border-top:0.5px solid rgba(255,255,255,0.08);font-size:11px;color:gray;display:flex;justify-content:space-between;align-items:center;">
@@ -2095,287 +3534,31 @@ function updateStats(data) {
     return Number.isFinite(n) ? n : 0;
   };
 
-  const totalStock = data.reduce((s, i) => s + toNum(i.Stock), 0);
-  const lowCount = data.reduce((s, i) => s + (toNum(i.Stock) < 5 ? 1 : 0), 0);
+  const totalNewStock = data.reduce((s, i) => s + toNum(i.Stock), 0);
+  const totalUsedStock = data.reduce((s, i) => s + toNum(i.Used_Stock), 0);
+  const totalStock = totalNewStock + totalUsedStock;
 
-  const inventoryValue = data.reduce((s, i) => {
-    const price = toNum(i.Price);
-    const stock = toNum(i.Stock);
-    return s + price * stock;
+  const lowCount = data.reduce((s, i) => {
+    let currentLow = 0;
+    if (toNum(i.Stock) > 0 && toNum(i.Stock) < 5) currentLow++;
+    if (toNum(i.Used_Stock) > 0 && toNum(i.Used_Stock) < 5) currentLow++;
+    return s + currentLow;
   }, 0);
+
+  const newInventoryValue = data.reduce((s, i) => s + (toNum(i.Price) * toNum(i.Stock)), 0);
+  const usedInventoryValue = data.reduce((s, i) => s + (toNum(i.Used_Price) * toNum(i.Used_Stock)), 0);
+  const totalInventoryValue = newInventoryValue + usedInventoryValue;
 
   document.getElementById('s-stock').innerText = totalStock.toLocaleString();
   document.getElementById('s-low').innerText = lowCount;
-  document.getElementById('s-value').innerText = `฿${inventoryValue.toLocaleString()}`;
-}
-
-/* ──────────────── ORDERS PAGE ──────────────── */
-const ORDERS_API = `${API_URL}/orders`;
-
-
-function initOrdersPage() {
-  const dateEl = document.getElementById('orderDate');
-  if (dateEl && !dateEl.value) {
-    const d = new Date();
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    dateEl.value = `${yyyy}-${mm}-${dd}`;
-  }
-
-  const partSel = document.getElementById('orderPartSelect');
-  if (partSel && partSel.options.length <= 1 && globalData.length > 0) {
-    populateOrderPartSelect();
-  }
-
-  // bind date change
-  if (dateEl && !dateEl.dataset.bound) {
-    dateEl.dataset.bound = "1";
-    dateEl.addEventListener('change', () => {
-      resetOrderBill();
-      loadOrdersHistoryForSelectedDate();
-    });
-  }
-  if (partSel && !partSel.dataset.bound) {
-    partSel.dataset.bound = "1";
-  }
-
-  // load initial history
-  loadOrdersHistoryForSelectedDate();
-}
-
-function populateOrderPartSelect() {
-  const partSel = document.getElementById('orderPartSelect');
-  if (!partSel) return;
-  const current = partSel.value || '';
-  partSel.innerHTML = '<option value="">เลือกสินค้า</option>';
-  globalData.forEach(item => {
-    const pn = item['Part Number'];
-    const name = item['Part Name'] || '';
-    const opt = document.createElement('option');
-    opt.value = pn;
-    opt.textContent = `${pn} - ${name}`;
-    partSel.appendChild(opt);
-  });
-  partSel.value = current && [...partSel.options].some(o => o.value === current) ? current : '';
-}
-
-function getSelectedOrderDate() {
-  return (document.getElementById('orderDate')?.value || '').trim();
-}
-
-function resetOrderBill() {
-  ordersState.items = [];
-  document.getElementById('orderItemsList').innerHTML = '';
-  document.getElementById('orderCount').innerText = '0';
-  document.getElementById('orderTotal').innerText = '฿0';
-  document.getElementById('orderSaveMsg').innerText = '';
-}
-
-function calcOrderTotals() {
-  let count = 0;
-  let total = 0;
-  ordersState.items.forEach(it => {
-    count += it.qty;
-    total += it.qty * it.price;
-  });
-  return { count, total };
-}
-
-function renderOrderItems() {
-  const list = document.getElementById('orderItemsList');
-  if (!list) return;
-  list.innerHTML = '';
-
-  ordersState.items.forEach((it, idx) => {
-    const lineTotal = it.qty * it.price;
-    const card = document.createElement('div');
-    card.style.background = 'rgba(255,255,255,0.05)';
-    card.style.border = '0.5px solid rgba(255,255,255,0.1)';
-    card.style.borderRadius = '14px';
-    card.style.padding = '12px';
-
-    card.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
-        <div style="flex:1;">
-          <div style="font-weight:700; letter-spacing:-0.2px; font-size:13px;">${it.partNumber}</div>
-          <div style="font-size:11px; color:rgba(255,255,255,0.55); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:420px;">
-            ${it.partName || ''}
-          </div>
-          <div style="margin-top:10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-            <span style="font-size:11px; color:rgba(255,255,255,0.6);">ราคา/ชิ้น</span>
-            <span style="font-size:12px; font-weight:700; color:#f5f5f7;">฿${Number(it.price).toLocaleString()}</span>
-
-            <span style="font-size:11px; color:rgba(255,255,255,0.6); margin-left:8px;">จำนวน</span>
-            <input type="number" min="1" value="${it.qty}"
-              style="width:110px; padding:7px 10px; border-radius:10px; background:rgba(255,255,255,0.06); border:0.5px solid rgba(255,255,255,0.12); color:white; outline:none;"
-              onchange="updateOrderItemQty(${idx}, this.value)">
-          </div>
-        </div>
-
-        <div style="text-align:right; min-width:150px;">
-          <div style="font-size:11px; color:rgba(255,255,255,0.55);">รวม</div>
-          <div style="font-size:14px; font-weight:800; color:#f5f5f7; margin-top:6px;">฿${Number(lineTotal).toLocaleString()}</div>
-          <button class="btn-action btn-del" style="margin-top:10px;" onclick="removeOrderItem(${idx})">ลบ</button>
-        </div>
-      </div>
+  document.getElementById('s-value').innerText = `฿${totalInventoryValue.toLocaleString()}`;
+  const breakdownEl = document.getElementById('s-value-breakdown');
+  if (breakdownEl) {
+    breakdownEl.innerHTML = `
+      <span style="color:#6ee7b7;">ใหม่: ฿${newInventoryValue.toLocaleString()}</span> + 
+      <span style="color:#fcd34d;">เก่า: ฿${usedInventoryValue.toLocaleString()}</span>
     `;
-    list.appendChild(card);
-  });
-
-  const { count, total } = calcOrderTotals();
-  document.getElementById('orderCount').innerText = String(count);
-  document.getElementById('orderTotal').innerText = `฿${Number(total).toLocaleString()}`;
-}
-
-function addOrderItem() {
-  const pn = document.getElementById('orderPartSelect')?.value || '';
-  const qtyRaw = document.getElementById('orderQty')?.value;
-  const qty = Number(qtyRaw);
-
-  if (!pn) return alert('⚠️ กรุณาเลือกสินค้า');
-  if (!Number.isFinite(qty) || qty <= 0) return alert('⚠️ กรุณากรอกจำนวนให้ถูกต้อง');
-
-  const item = globalData.find(i => i['Part Number'] === pn);
-  if (!item) return alert('❌ ไม่พบสินค้าใน inventory');
-
-  const existingIdx = ordersState.items.findIndex(i => i.partNumber === pn);
-  const price = Number(item.Price);
-
-  if (existingIdx >= 0) {
-    ordersState.items[existingIdx].qty += qty;
-  } else {
-    ordersState.items.push({
-      partNumber: pn,
-      partName: item['Part Name'] || '',
-      price: Number.isFinite(price) ? price : 0,
-      qty
-    });
   }
-
-  document.getElementById('orderQty').value = '';
-  renderOrderItems();
-}
-
-function updateOrderItemQty(idx, newVal) {
-  const n = Number(newVal);
-  if (!Number.isFinite(n) || n <= 0) return alert('จำนวนต้องมากกว่า 0');
-  ordersState.items[idx].qty = n;
-  renderOrderItems();
-}
-
-function removeOrderItem(idx) {
-  ordersState.items.splice(idx, 1);
-  renderOrderItems();
-}
-
-function clearOrderBill() {
-  if (!confirm('ล้างบิลนี้ใช่ไหม?')) return;
-  resetOrderBill();
-}
-
-async function saveOrder() {
-  const date = getSelectedOrderDate();
-  if (!date) return alert('⚠️ กรุณาเลือกวันที่');
-  if (!ordersState.items.length) return alert('⚠️ ยังไม่มีรายการในบิล');
-
-  const payload = {
-    date,
-    items: ordersState.items.map(it => ({
-      part_number: it.partNumber,
-      quantity: it.qty,
-      unit_price: it.price
-    }))
-  };
-
-  try {
-    const res = await fetch(`${ORDERS_API}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      return alert(`❌ บันทึกไม่สำเร็จ: ${err.detail || res.status}`);
-    }
-
-    document.getElementById('orderSaveMsg').innerText = '✅ บันทึกบิลสำเร็จ';
-    resetOrderBill();
-    await loadOrdersHistoryForSelectedDate();
-    // refresh select options still exists
-  } catch {
-    alert('❌ เชื่อมต่อ Backend ไม่ได้');
-  }
-}
-
-async function loadOrdersHistoryForSelectedDate() {
-  const date = getSelectedOrderDate();
-  if (!date) return;
-
-  try {
-    const res = await fetch(`${ORDERS_API}?date=${encodeURIComponent(date)}`);
-    if (!res.ok) throw new Error('load failed');
-    const data = await res.json();
-    ordersState.history = data.bills || [];
-    renderOrdersHistory();
-  } catch {
-    // keep silent
-    const list = document.getElementById('ordersHistoryList');
-    if (list) list.innerHTML = '<div style="color:#fca5a5; font-size:12px;">❌ โหลดประวัติบิลไม่สำเร็จ</div>';
-  }
-}
-
-function renderOrdersHistory() {
-  const list = document.getElementById('ordersHistoryList');
-  if (!list) return;
-
-  list.innerHTML = '';
-  if (!ordersState.history.length) {
-    list.innerHTML = '<div style="color:rgba(255,255,255,0.5); font-size:12px;">ยังไม่มีบิลของวันนี้</div>';
-    return;
-  }
-
-  ordersState.history.forEach((bill, idx) => {
-    const total = Number(bill.total || 0);
-    const div = document.createElement('div');
-    div.style.background = 'rgba(255,255,255,0.05)';
-    div.style.border = '0.5px solid rgba(255,255,255,0.1)';
-    div.style.borderRadius = '14px';
-    div.style.padding = '12px';
-
-    div.innerHTML = `
-      <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
-        <div>
-          <div style="font-weight:800; letter-spacing:-0.3px;">Bill #${bill.bill_no || (idx+1)}</div>
-          <div style="font-size:11px; color:rgba(255,255,255,0.55); margin-top:4px;">${(bill.items || []).length} รายการ</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:11px; color:rgba(255,255,255,0.55);">รวมเงิน</div>
-          <div style="font-size:14px; font-weight:800; color:#f5f5f7; margin-top:6px;">฿${total.toLocaleString()}</div>
-        </div>
-      </div>
-      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:10px;">
-        <button class="btn-action" onclick="loadOrderItemsToEditor(${bill.bill_no})">เปิดบิล</button>
-      </div>
-    `;
-    list.appendChild(div);
-  });
-}
-
-function loadOrderItemsToEditor(billNo) {
-  const bill = ordersState.history.find(b => b.bill_no === billNo);
-  if (!bill) return;
-
-  ordersState.items = (bill.items || []).map(x => ({
-    partNumber: x.part_number,
-    partName: x.part_name || '',
-    price: Number(x.unit_price || 0),
-    qty: Number(x.quantity || 0)
-  }));
-
-  renderOrderItems();
-  document.getElementById('orderSaveMsg').innerText = `โหลดบิล #${billNo} แล้ว (คุณสามารถบันทึกเป็นบิลใหม่ได้)`;
 }
 
 /* ──────────────── END ORDERS PAGE ──────────────── */
@@ -2423,26 +3606,116 @@ function filterLocal() {
   renderGrid(filtered);
 }
 
+/* ──────────────── LIGHTBOX ──────────────── */
+let lightboxState = {
+  images: [],
+  currentIndex: 0
+};
+
+function openLightbox(partNumber) {
+  const item = globalData.find(p => p['Part Number'] === partNumber);
+  if (!item) return;
+
+  const imageUrls = (item.Image_URL || "").split(',').map(url => url.trim()).filter(Boolean).map(url => url.startsWith('http') ? url : `http://localhost:8000/${url}`);
+  if (imageUrls.length === 0) return;
+
+  lightboxState.images = imageUrls;
+  lightboxState.currentIndex = 0;
+
+  const modal = document.getElementById('lightboxModal');
+  const container = document.getElementById('lightbox-images-container');
+  container.innerHTML = ''; // Clear previous images
+
+  imageUrls.forEach((url, index) => {
+    const img = document.createElement('img');
+    img.src = url;
+    if (index === 0) img.classList.add('active');
+    container.appendChild(img);
+  });
+
+  document.getElementById('lightbox-prev').style.display = imageUrls.length > 1 ? 'block' : 'none';
+  document.getElementById('lightbox-next').style.display = imageUrls.length > 1 ? 'block' : 'none';
+
+  modal.classList.add('open');
+}
+
+function closeLightbox() {
+  document.getElementById('lightboxModal').classList.remove('open');
+}
+
+function changeLightboxImage(direction) {
+  const images = document.querySelectorAll('#lightbox-images-container img');
+  if (images.length <= 1) return;
+
+  images[lightboxState.currentIndex].classList.remove('active');
+  lightboxState.currentIndex = (lightboxState.currentIndex + direction + images.length) % images.length;
+  images[lightboxState.currentIndex].classList.add('active');
+}
+
 /* ──────────────── MANAGE MODAL ──────────────── */
+function previewManageImages(files) {
+  const previewContainer = document.getElementById('image-previews');
+  const label = document.getElementById('fileLabel');
+  // Don't clear existing previews, just add new ones
+  for (const file of files) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const div = document.createElement('div');
+      div.className = 'preview-container';
+      div.innerHTML = `<img src="${e.target.result}" class="preview-image">`;
+      previewContainer.appendChild(div);
+    }
+    reader.readAsDataURL(file);
+  }
+  if (files.length > 0) {
+    label.innerHTML = `<span>✅ เลือกแล้ว ${files.length} รูป (เลือกเพิ่มได้)</span>`;
+    label.style.borderColor = '#34d399';
+  }
+}
+
+async function removeExistingImage(partNumber, imageUrl, event) {
+  event.stopPropagation();
+  if (!await fancyConfirm(`คุณแน่ใจหรือไม่ว่าต้องการลบรูปภาพนี้?`)) return;
+
+  try {
+    const res = await fetch(`${API_URL}/inventory/${partNumber}/image?image_url=${encodeURIComponent(imageUrl)}`, {
+      method: 'DELETE'
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to delete image');
+    }
+    // Visually remove the preview
+    event.target.closest('.preview-container').remove();
+    // Refresh data to update the main card display
+    loadProducts();
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    await fancyAlert(`เกิดข้อผิดพลาดในการลบรูปภาพ: ${error.message}`, 'error');
+  }
+}
+
 function openManageModal(isEdit = false, pn = null) {
   const modal = document.getElementById('manageModal');
   modal.classList.add('open');
   populateSelectsModal();
 
-  // re-attach file listener
   const fileInput = document.getElementById('m_image');
-  fileInput.onchange = function(e) {
-    const label = document.getElementById('fileLabel');
-    if (e.target.files.length > 0) {
-      label.innerHTML = `<span>✅ ${e.target.files[0].name}</span>`;
-      label.style.borderColor = '#34d399';
-    } else {
-      label.innerHTML = `<span>📸 คลิกเพื่อเลือกรูปภาพสินค้า</span>`;
-      label.style.borderColor = 'rgba(255,255,255,0.3)';
-    }
-  };
-
+  const previewContainer = document.getElementById('image-previews');
+  const label = document.getElementById('fileLabel');
   const imgHint = document.getElementById('current_image_hint');
+
+  // Reset image-related things
+  fileInput.value = '';
+  previewContainer.innerHTML = '';
+  label.innerHTML = `<span>📸 คลิกเพื่อเลือกรูปภาพ (เลือกได้หลายรูป)</span>`;
+  label.style.borderColor = 'rgba(255,255,255,0.3)';
+  imgHint.style.display = 'none';
+
+  // Attach file listener
+  fileInput.onchange = function(e) {
+    previewManageImages(e.target.files);
+  };
 
   if (isEdit) {
     document.getElementById('modalTitle').innerText = "📝 แก้ไขสินค้า";
@@ -2456,14 +3729,28 @@ function openManageModal(isEdit = false, pn = null) {
       document.getElementById('m_series').value= item['Series'];
       document.getElementById('m_price').value = item['Price'];
       document.getElementById('m_stock').value = item['Stock'];
+      document.getElementById('m_used_price').value = item['Used_Price'] || '';
+      document.getElementById('m_used_stock').value = item['Used_Stock'] || '';
       const _cp = item['Cost Price'];
       document.getElementById('m_cost').value = (_cp !== '' && _cp !== 'nan' && _cp != null && Number(_cp) > 0) ? Number(_cp) : '';
       document.getElementById('m_loc').value   = item['Storage Location'];
-      if (item['Image_URL'] && item['Image_URL'] !== 'nan') {
-        imgHint.innerText = `รูปปัจจุบัน: มีรูปภาพแล้ว (อัปโหลดใหม่หากต้องการเปลี่ยน)`;
+
+      // Display existing images with remove buttons
+      const imageUrls = (item.Image_URL || "").split(',').filter(Boolean);
+      if (imageUrls.length > 0) {
+        imgHint.innerText = `รูปปัจจุบัน: ${imageUrls.length} รูป (คลิก ✕ เพื่อลบ)`;
         imgHint.style.display = 'block';
-      } else {
-        imgHint.style.display = 'none';
+        imageUrls.forEach(rawUrl => {
+          const url = rawUrl.trim();
+          const fullUrl = url.startsWith('http') ? url : `http://localhost:8000/${url}`;
+          const div = document.createElement('div');
+          div.className = 'preview-container';
+          div.innerHTML = `
+            <img src="${fullUrl}" class="preview-image" loading="lazy">
+            <button type="button" class="remove-image-btn" onclick="removeExistingImage('${item['Part Number']}', '${url}', event)">&times;</button>
+          `;
+          previewContainer.appendChild(div);
+        });
       }
     }
   } else {
@@ -2471,9 +3758,10 @@ function openManageModal(isEdit = false, pn = null) {
     document.getElementById('editMode').value = "false";
     document.getElementById('m_pn').readOnly = false;
     document.getElementById('manageForm').reset();
-    document.getElementById('fileLabel').innerHTML = `<span>📸 คลิกเพื่อเลือกรูปภาพสินค้า</span>`;
-    document.getElementById('fileLabel').style.borderColor = 'rgba(255,255,255,0.3)';
-    imgHint.style.display = 'none';
+    // Resetting the form already clears previews, but we do it again for safety
+    previewContainer.innerHTML = '';
+    label.innerHTML = `<span>📸 คลิกเพื่อเลือกรูปภาพ (เลือกได้หลายรูป)</span>`;
+    label.style.borderColor = 'rgba(255,255,255,0.3)';
   }
 }
 
@@ -2489,6 +3777,22 @@ document.getElementById('reportModal').addEventListener('click', function(e) {
   if (e.target === this) this.classList.remove('open');
 });
 
+document.addEventListener('keydown', function(event) {
+  if (event.key === "Escape") {
+    document.querySelectorAll('.modal-overlay.open').forEach(modal => {
+      modal.classList.remove('open');
+    });
+  }
+});
+
+document.addEventListener('keydown', function(event) {
+  if (event.key === "Escape") {
+    document.querySelectorAll('.modal-overlay.open').forEach(modal => {
+      modal.classList.remove('open');
+    });
+  }
+});
+
 /* ──────────────── FORM SUBMIT ──────────────── */
 document.getElementById('manageForm').onsubmit = async (e) => {
   e.preventDefault();
@@ -2498,6 +3802,11 @@ document.getElementById('manageForm').onsubmit = async (e) => {
 
   const isEdit = document.getElementById('editMode').value === "true";
   const formData = new FormData(e.target);
+
+  // FormData with a multi-file input is tricky. The `new FormData(form)` constructor handles it,
+  // but we must ensure the input name is `images` (plural), which we've set in the HTML.
+  // The constructor will automatically add multiple `images` entries for each file.
+
   // Ensure cost_price is never sent as empty string (FastAPI float parse would fail → 422)
   if (!formData.get('cost_price') || String(formData.get('cost_price')).trim() === '') {
     formData.set('cost_price', '0');
@@ -2514,22 +3823,22 @@ document.getElementById('manageForm').onsubmit = async (e) => {
       loadProducts();
     } else {
       const err = await res.json();
-      alert(`❌ ${err.detail[0]?.msg || err.detail}`);
+      await fancyAlert(err.detail[0]?.msg || err.detail, 'error');
     }
   } catch {
-    alert("❌ เชื่อมต่อ Backend ล้มเหลว");
+    await fancyAlert('เชื่อมต่อ Backend ล้มเหลว', 'error');
   }
   btn.innerHTML = orig;
 };
 
 /* ──────────────── DELETE ──────────────── */
 async function deleteProduct(pn) {
-  if (!confirm(`⚠️ ยืนยันลบ Part: ${pn}?`)) return;
+  if (!await fancyConfirm(`ยืนยันลบ Part: ${pn}?`)) return;
   try {
     const res = await fetch(`${API_URL}/inventory/${encodeURIComponent(pn)}`, { method: 'DELETE' });
     if (res.ok) { loadProducts(); }
-    else { const err = await res.json(); alert(`❌ ${err.detail}`); }
-  } catch { alert('❌ เชื่อมต่อระบบล้มเหลว'); }
+    else { const err = await res.json(); await fancyAlert(err.detail, 'error'); }
+  } catch { await fancyAlert('เชื่อมต่อระบบล้มเหลว', 'error'); }
 }
 
 /* ──────────────── SELECTS ──────────────── */
@@ -2558,7 +3867,7 @@ function populateSelectsModal() {
 }
 
 /* ลบ Brand หรือ Series ที่เลือกออกจาก dropdown */
-function deleteFromSelect(mode) {
+async function deleteFromSelect(mode) {
   const sel = document.getElementById(mode === 'brand' ? 'm_brand' : 'm_series');
   const val = sel.value;
   if (!val) {
@@ -2575,8 +3884,7 @@ function deleteFromSelect(mode) {
   );
   const label = mode === 'brand' ? 'Brand' : 'Series';
   if (inUse) {
-    // Show confirm with warning
-    const ok = confirm(`⚠️ "${val}" ยังถูกใช้งานโดยสินค้าในระบบ\nการลบออกจากรายการนี้จะทำให้เลือกไม่ได้ในครั้งหน้า\nต้องการลบออกจากรายการ ${label} หรือไม่?`);
+    const ok = await fancyConfirm(`"${val}" ยังถูกใช้งานโดยสินค้าในระบบ\nการลบออกจากรายการนี้จะทำให้เลือกไม่ได้ในครั้งหน้า\nต้องการลบออกจากรายการ ${label} หรือไม่?`);
     if (!ok) return;
   }
   // Remove matching option
@@ -2840,60 +4148,7 @@ function toggleChat() { document.getElementById('chatPanel').classList.toggle('o
 let analyticsInitialized = false;
 
 function initAnalytics() {
-  if (analyticsInitialized) return;
-  analyticsInitialized = true;
-
-  // Restore any previously saved real test results
-  loadSavedTestResults();
-
-  // Animate KPI counters
-  document.querySelectorAll('.an-kpi-val[data-count]').forEach(el => {
-    const target = parseInt(el.dataset.count);
-    const suffix = el.dataset.suffix || '';
-    const isDecimal = !!el.dataset.decimal;
-    let start = 0;
-    const duration = 1400;
-    const step = 16;
-    const steps = duration / step;
-    const inc = target / steps;
-    const timer = setInterval(() => {
-      start = Math.min(start + inc, target);
-      if (isDecimal) {
-        el.textContent = (start / 10).toFixed(1) + suffix;
-      } else {
-        el.textContent = Math.round(start) + suffix;
-      }
-      if (start >= target) clearInterval(timer);
-    }, step);
-  });
-
-  // Animate "after" bars with a small delay
-  setTimeout(() => {
-    document.querySelectorAll('.an-bar.after').forEach(bar => {
-      bar.style.width = bar.style.getPropertyValue('--w') || '0%';
-      // override via explicit computed --w
-      const w = bar.getAttribute('style').match(/--w:([\d.]+%)/);
-      if (w) bar.style.setProperty('width', w[1]);
-    });
-    document.querySelectorAll('.an-survey-bar').forEach(bar => {
-      const sw = bar.style.getPropertyValue('--sw') || '0%';
-      const m = bar.getAttribute('style').match(/--sw:([\d.]+%)/);
-      if (m) bar.style.setProperty('width', m[1]);
-    });
-  }, 200);
-
-  // Animate donut — C = 2π×48 ≈ 301.59
-  setTimeout(() => {
-    const C = 2 * Math.PI * 48;
-    // segment lengths (leave 2-unit gap between segments for separation)
-    const gap = 2;
-    document.querySelector('.seg-exact')?.setAttribute('stroke-dasharray', `${C*0.733 - gap} ${C*0.267 + gap}`);
-    document.querySelector('.seg-near')?.setAttribute('stroke-dasharray',  `${C*0.167 - gap} ${C*0.833 + gap}`);
-    document.querySelector('.seg-miss')?.setAttribute('stroke-dasharray',  `${C*0.100 - gap} ${C*0.900 + gap}`);
-  }, 300);
-
-  // Live inventory stats
-  buildLiveStats();
+  renderStockDashboard();
 }
 
 function buildLiveStats() {
@@ -3009,7 +4264,7 @@ async function updateCost(partNumber, newCost) {
         if (res.ok) {
             console.log("บันทึกราคาทุนสำเร็จ");
         } else {
-            alert("เกิดข้อผิดพลาดในการบันทึกราคาทุน");
+            await fancyAlert('เกิดข้อผิดพลาดในการบันทึกราคาทุน', 'error');
         }
     } catch (err) {
         console.error(err);
@@ -3023,8 +4278,8 @@ let billItems   = [];   // current bill items
 let billCounter = 1;    // auto-increment bill number
 
 function initOrdersPage() {
-  // Set today date if not set
-  const today = new Date().toISOString().slice(0,10);
+  // Set today date if not set — use Thailand timezone (UTC+7)
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
   if (!document.getElementById('billDate').value) {
     document.getElementById('billDate').value = today;
   }
@@ -3084,7 +4339,7 @@ function addToBill(pn) {
   if (existing) {
     existing.qty++;
   } else {
-    billItems.push({ pn, name: item['Part Name'], price: Number(item.Price), qty: 1 });
+    billItems.push({ pn, name: item['Part Name'], price: Number(item.Price), qty: 1, type: 'new' });
   }
   document.getElementById('billSearchInput').value = '';
   document.getElementById('billSearchResults').style.display = 'none';
@@ -3094,7 +4349,7 @@ function addToBill(pn) {
 function renderBillItems() {
   const list = document.getElementById('billItems');
   if (!billItems.length) {
-    list.innerHTML = '<div class="bill-empty">ยังไม่มีรายการ — ค้นหาสินค้าด้านบนเพื่อเพิ่ม</div>';
+    list.innerHTML = '<div class="bill-empty">ยังไม่มีรายการ - ค้นหาสินค้าเพื่อเพิ่มในบิล</div>';
     updateBillTotals();
     return;
   }
@@ -3103,6 +4358,10 @@ function renderBillItems() {
       <div class="bill-row-name" style="flex:2;">
         <div class="bill-row-name-text">${it.name}</div>
         <div class="bill-row-name-pn">${it.pn}</div>
+        <div class="item-type-selector" style="margin-top:4px; display:inline-flex; gap:4px; background: rgba(255,255,255,0.1); border-radius:8px; padding:2px; font-size:10px;">
+            <button class="type-btn ${it.type === 'new' ? 'active' : ''}" style="padding:3px 7px; border-radius:6px; border:none; background:${it.type === 'new' ? 'rgba(0,0,0,0.3)' : 'transparent'}; color:${it.type === 'new' ? 'white' : 'rgba(255,255,255,0.5)'}; cursor:pointer; font-weight:${it.type === 'new' ? '500' : 'normal'}" onclick="changeItemType(${idx},'new')">ใหม่</button>
+            <button class="type-btn ${it.type === 'used' ? 'active' : ''}" style="padding:3px 7px; border-radius:6px; border:none; background:${it.type === 'used' ? 'rgba(0,0,0,0.3)' : 'transparent'}; color:${it.type === 'used' ? 'white' : 'rgba(255,255,255,0.5)'}; cursor:pointer; font-weight:${it.type === 'used' ? '500' : 'normal'}" onclick="changeItemType(${idx},'used')">เก่า</button>
+        </div>
       </div>
       <div class="bill-qty-ctrl">
         <div class="bill-qty-btn" onclick="changeQty(${idx},-1)">−</div>
@@ -3130,24 +4389,34 @@ function removeBillItem(idx) {
   renderBillItems();
 }
 
+function changeItemType(idx, type) {
+  const item = billItems[idx];
+  const product = globalData.find(p => p['Part Number'] === item.pn);
+  if (!product) return;
+  
+  item.type = type;
+  item.price = type === 'new' ? (Number(product.Price) || 0) : (Number(product.Used_Price) || 0);
+  renderBillItems();
+}
+
 function updateBillTotals() {
   const sub = billItems.reduce((s,i) => s + i.price*i.qty, 0);
   document.getElementById('billSubtotal').textContent = '฿'+sub.toLocaleString();
   document.getElementById('billGrand').textContent    = '฿'+sub.toLocaleString();
 }
 
-function clearBill() {
-  if (billItems.length && !confirm('ล้างบิลนี้ใช่ไหม?')) return;
+async function clearBill() {
+  if (billItems.length && !await fancyConfirm('ล้างบิลนี้ใช่ไหม?')) return;
   billItems = [];
   renderBillItems();
   document.getElementById('billSaveMsg').textContent = '';
 }
 
 /* ── Save ── */
-function saveBill() {
-  if (!billItems.length) { alert('⚠️ ยังไม่มีรายการในบิล'); return; }
+async function saveBill() {
+  if (!billItems.length) { await fancyAlert('ยังไม่มีรายการในบิล', 'warn'); return; }
   const date = document.getElementById('billDate').value;
-  if (!date) { alert('⚠️ กรุณาเลือกวันที่'); return; }
+  if (!date) { await fancyAlert('กรุณาเลือกวันที่', 'warn'); return; }
 
   const bills = getAllBills();
   const bill = {
@@ -3160,6 +4429,18 @@ function saveBill() {
   bills.push(bill);
   saveBills(bills);
 
+  // Adjust stock quantities immediately when a bill is saved
+  (async () => {
+    try {
+      await adjustStockForBill(bill);
+      // refresh products after stock update
+      await loadProducts();
+    } catch (err) {
+      console.error('Error adjusting stock for bill:', err);
+      // still proceed — product quantities may be out-of-sync
+    }
+  })();
+
   document.getElementById('billSaveMsg').textContent = `✅ บันทึกบิล #${bill.no} แล้ว (${date})`;
   billItems = [];
   renderBillItems();
@@ -3170,6 +4451,48 @@ function saveBill() {
   if (!hDate || hDate === date) {
     document.getElementById('historyDate').value = date;
     loadHistory();
+  }
+}
+
+// Decrement stock for each item in a saved bill and persist to backend
+async function adjustStockForBill(bill) {
+  if (!bill || !bill.items || !bill.items.length) return;
+  for (const it of bill.items) {
+    try {
+      const pn = it.pn;
+      const product = globalData.find(p => (p['Part Number'] || '').trim() === (pn || '').trim());
+      if (!product) continue;
+
+      // compute new stock values (do not go below zero)
+      const qty = Number(it.qty) || 0;
+      if (it.type === 'used') {
+        product.Used_Stock = Math.max(0, (Number(product.Used_Stock) || 0) - qty);
+      } else {
+        product.Stock = Math.max(0, (Number(product.Stock) || 0) - qty);
+      }
+
+      // prepare FormData for PUT (main.py expects form fields)
+      const fd = new FormData();
+      fd.append('part_number', product['Part Number']);
+      fd.append('part_name', product['Part Name'] || '');
+      fd.append('brand', product.Brand || '');
+      fd.append('series', product.Series || '');
+      fd.append('price', String(product.Price || 0));
+      fd.append('stock', String(product.Stock || 0));
+      fd.append('used_price', String(product.Used_Price || 0));
+      fd.append('used_stock', String(product.Used_Stock || 0));
+      fd.append('cost_price', String(product['Cost Price'] || 0));
+      fd.append('location', product['Storage Location'] || '');
+
+      // call backend PUT endpoint to persist changes
+      const url = `${API_URL}/inventory/${encodeURIComponent(product['Part Number'])}`;
+      const res = await fetch(url, { method: 'PUT', body: fd });
+      if (!res.ok) {
+        console.warn('Failed to update stock for', product['Part Number'], await res.text());
+      }
+    } catch (e) {
+      console.error('adjustStockForBill error for item', it, e);
+    }
   }
 }
 
@@ -3204,7 +4527,10 @@ function renderHistory(bills) {
     <div class="hist-card">
       <div class="hist-card-header" onclick="toggleHistItems(${bill.id})">
         <div>
-          <div class="hist-bill-no">บิล #${bill.no}</div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <div class="hist-bill-name">${bill.name ? bill.name : 'บิล #' + bill.no}</div>
+            <button class="hist-edit-name" onclick="event.stopPropagation(); editBillName(${bill.id})" title="แก้ชื่อบิล">✎</button>
+          </div>
           <div class="hist-bill-date">📅 ${bill.date}</div>
         </div>
         <div style="text-align:right;">
@@ -3221,6 +4547,7 @@ function renderHistory(bills) {
         `).join('')}
       </div>
       <div class="hist-del-btn">
+        <button class="hist-btn hist-btn-view" onclick="openBillDetail(${bill.id})">📋 รายละเอียด</button>
         <button class="hist-btn hist-btn-load" onclick="loadBillToEditor(${bill.id})">📂 โหลดบิล</button>
         <button class="hist-btn hist-btn-del" onclick="deleteBill(${bill.id})">🗑 ลบ</button>
       </div>
@@ -3234,17 +4561,117 @@ function renderHistory(bills) {
   summary.style.display = 'flex';
 }
 
+// Edit a saved bill's display name (stored in localStorage)
+async function editBillName(id) {
+  const bills = getAllBills();
+  const bill = bills.find(b => b.id === id);
+  if (!bill) return;
+  const current = bill.name || (`บิล #${bill.no}`);
+  const name = await fancyPrompt('ตั้งชื่อบิล (ปล่อยว่างเพื่อใช้ชื่ออัตโนมัติ)', current);
+  if (name === null) return; // cancelled
+  const newName = String(name).trim();
+  if (newName) bill.name = newName; else delete bill.name;
+  saveBills(bills);
+  loadHistory();
+}
+
+// Open Bill Detail modal and populate items
+function openBillDetail(id) {
+  const bill = getAllBills().find(b => b.id === id);
+  if (!bill) return;
+  document.getElementById('bill-detail-name').textContent = bill.name || (`บิล #${bill.no}`);
+  document.getElementById('bill-detail-date').textContent = `📅 ${bill.date}`;
+  const itemsEl = document.getElementById('bill-detail-items');
+  itemsEl.innerHTML = bill.items.map(it => `
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.04);">
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600">${it.name}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.45);">${it.pn} · ${it.type}</div>
+      </div>
+      <div style="text-align:right;min-width:110px;">
+        <div>฿${(it.price).toLocaleString()} × ${it.qty}</div>
+        <div style="font-weight:700;margin-top:6px;">฿${(it.price*it.qty).toLocaleString()}</div>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('bill-detail-total-value').textContent = '฿' + (bill.total || 0).toLocaleString();
+  document.getElementById('billDetailModal').classList.add('open');
+}
+
 function toggleHistItems(id) {
   const el = document.getElementById('hist-items-'+id);
   if (el) el.classList.toggle('open');
 }
 
-function deleteBill(id) {
-  if (!confirm('ลบบิลนี้ใช่ไหม?')) return;
-  const bills = getAllBills().filter(b => b.id !== id);
-  saveBills(bills);
-  loadHistory();
-  updateBillNo();
+async function restockItemsFromBill(bill) {
+  if (!bill || !bill.items || !bill.items.length) return;
+  for (const it of bill.items) {
+    try {
+      const pn = it.pn;
+      const product = globalData.find(p => (p['Part Number'] || '').trim() === (pn || '').trim());
+      if (!product) {
+        console.warn(`Product not found for restocking: ${pn}`);
+        continue;
+      }
+
+      const qty = Number(it.qty) || 0;
+      if (it.type === 'used') {
+        product.Used_Stock = (Number(product.Used_Stock) || 0) + qty;
+      } else {
+        product.Stock = (Number(product.Stock) || 0) + qty;
+      }
+
+      const fd = new FormData();
+      fd.append('part_number', product['Part Number']);
+      fd.append('part_name', product['Part Name'] || '');
+      fd.append('brand', product.Brand || '');
+      fd.append('series', product.Series || '');
+      fd.append('price', String(product.Price || 0));
+      fd.append('stock', String(product.Stock || 0));
+      fd.append('used_price', String(product.Used_Price || 0));
+      fd.append('used_stock', String(product.Used_Stock || 0));
+      fd.append('cost_price', String(product['Cost Price'] || 0));
+      fd.append('location', product['Storage Location'] || '');
+
+      const url = `${API_URL}/inventory/${encodeURIComponent(product['Part Number'])}`;
+      const res = await fetch(url, { method: 'PUT', body: fd });
+      if (!res.ok) {
+        console.warn('Failed to restock for', product['Part Number'], await res.text());
+      }
+    } catch (e) {
+      console.error('restockItemsFromBill error for item', it, e);
+      throw new Error(`Failed to restock item ${it.pn}`);
+    }
+  }
+}
+
+async function deleteBill(id) {
+  if (!await fancyConfirm('ลบบิลนี้ใช่ไหม? การกระทำนี้จะคืนสต็อกสินค้ากลับเข้าระบบ')) return;
+  const allBills = getAllBills();
+  const billToDelete = allBills.find(b => b.id === id);
+
+  if (!billToDelete) {
+    console.error(`Bill with id ${id} not found.`);
+    return;
+  }
+
+  try {
+    // Restock items before deleting the bill
+    await restockItemsFromBill(billToDelete);
+
+    // Filter out the deleted bill and save
+    const updatedBills = allBills.filter(b => b.id !== id);
+    saveBills(updatedBills);
+
+    // Refresh UI
+    await loadProducts(); // Reload products to reflect new stock
+    loadHistory();
+    updateBillNo();
+    console.log(`Bill #${billToDelete.no} deleted and stock restored.`);
+  } catch (error) {
+    console.error('Failed to delete bill and restock:', error);
+    await fancyAlert('เกิดข้อผิดพลาดระหว่างการลบบิลและคืนสต็อก', 'error');
+  }
 }
 
 function loadBillToEditor(id) {
@@ -3508,6 +4935,201 @@ function loadSavedTestResults() {
 }
 
 window.onload = loadProducts;
+
+/* ══════════════════════════════════════
+   STOCK INTELLIGENCE DASHBOARD
+══════════════════════════════════════ */
+let siCurrentTab = 'all';
+let siSortKey = '_totalStock';
+let siSortAsc = true;
+
+function renderStockDashboard() {
+  const raw = window.globalData || [];
+
+  // ถ้ายังไม่มีข้อมูล รอแล้วลองใหม่
+  if (!raw.length) {
+    document.getElementById('si-total').textContent = '…';
+    document.getElementById('si-table-sub').textContent = 'กำลังโหลดข้อมูล…';
+    document.getElementById('si-tbody').innerHTML = '';
+    setTimeout(() => { if ((window.globalData||[]).length) renderStockDashboard(); }, 800);
+    return;
+  }
+  const data = raw.map(p => ({
+    PartNumber: p['Part Number'] || p.PartNumber || '',
+    Name:       p['Part Name']  || p.PartName  || p.Name || '',
+    Brand:      p.Brand || '',
+    Series:     p.Series || '',
+    Stock_New:  p.Stock  || p.Stock_New  || 0,
+    Stock_Used: p.Used_Stock || p.Stock_Used || 0,
+    Price_New:  p.Price  || p.Price_New  || 0,
+    Price_Used: p.Used_Price || p.Price_Used || 0,
+    _totalStock: (p.Stock || p.Stock_New || 0) + (p.Used_Stock || p.Stock_Used || 0),
+    _value: ((p.Stock || p.Stock_New || 0) * (p.Price || p.Price_New || 0)) +
+            ((p.Used_Stock || p.Stock_Used || 0) * (p.Used_Price || p.Price_Used || 0))
+  }));
+
+  window._siData = data; // cache for siRender
+
+  if (!data.length) {
+    document.getElementById('si-total').textContent = '—';
+    return;
+  }
+
+  // KPI
+  const totalParts   = data.length;
+  const totalUnits   = data.reduce((s, p) => s + p._totalStock, 0);
+  const lowItems     = data.filter(p => p._totalStock > 0 && p._totalStock <= 3).length;
+  const outItems     = data.filter(p => p._totalStock === 0).length;
+  const deadItems    = data.filter(p => p._totalStock >= 5).length;
+  const totalValue   = data.reduce((s, p) => s + p._value, 0);
+
+  document.getElementById('si-total').textContent = totalParts;
+  document.getElementById('si-total-meta').textContent = `${totalUnits} ชิ้นรวม · หมด ${outItems} รายการ`;
+  document.getElementById('si-low').textContent = lowItems;
+  document.getElementById('si-low-meta').textContent = `รวมหมด ${outItems} + เหลือน้อย ${lowItems}`;
+  document.getElementById('si-deadstock').textContent = deadItems;
+  document.getElementById('si-dead-meta').textContent = `stock ≥ 5 อาจค้างนาน`;
+  document.getElementById('si-value').textContent = '฿' + Math.round(totalValue).toLocaleString();
+  document.getElementById('si-value-meta').textContent = `เฉลี่ย ฿${Math.round(totalValue / totalParts).toLocaleString()} / part`;
+
+  // Dist bars
+  const distGroups = [
+    { label: '🔴 หมด (0)',    count: outItems,                                   color: '#f87171' },
+    { label: '🟠 เหลือ 1',    count: data.filter(p=>p._totalStock===1).length,   color: '#fb923c' },
+    { label: '🟡 เหลือ 2',    count: data.filter(p=>p._totalStock===2).length,   color: '#fbbf24' },
+    { label: '🟢 เหลือ 3–4',  count: data.filter(p=>p._totalStock>=3&&p._totalStock<=4).length, color: '#4ade80' },
+    { label: '🔵 ≥ 5',        count: deadItems,                                  color: '#a78bfa' },
+  ];
+  const maxDist = Math.max(...distGroups.map(d => d.count), 1);
+  document.getElementById('si-dist-bars').innerHTML = distGroups.map(d => `
+    <div class="si-dist-row">
+      <div class="si-dist-lbl">${d.label}</div>
+      <div class="si-dist-track"><div class="si-dist-bar" style="width:${Math.round(d.count/maxDist*100)}%;background:${d.color};"></div></div>
+      <div class="si-dist-cnt">${d.count}</div>
+    </div>`).join('');
+
+  // Hot items: ราคาแรงใกล้หมด
+  const hotItems = [...data]
+    .filter(p => p._totalStock > 0 && p._totalStock <= 3 && (p.Price_New || 0) > 0)
+    .sort((a, b) => (b.Price_New || 0) - (a.Price_New || 0))
+    .slice(0, 6);
+  document.getElementById('si-hotlist').innerHTML = hotItems.length
+    ? hotItems.map(p => `
+      <div class="si-hot-row">
+        <div class="si-hot-pn">${p.PartNumber}</div>
+        <div class="si-hot-name">${p.Name || '—'}</div>
+        <div class="si-hot-price">฿${(p.Price_New||0).toLocaleString()}</div>
+        <div class="si-hot-stock">เหลือ ${p._totalStock}</div>
+      </div>`).join('')
+    : '<div style="color:rgba(255,255,255,0.25);font-size:12px;text-align:center;padding:12px;">ไม่มีสินค้าในกลุ่มนี้</div>';
+
+  // Brand bars
+  const brandMap = {};
+  data.forEach(p => { const b = p.Brand || 'อื่นๆ'; brandMap[b] = (brandMap[b]||0)+1; });
+  const brands = Object.entries(brandMap).sort((a,b)=>b[1]-a[1]);
+  const maxB = brands[0]?.[1] || 1;
+  const brandColors = ['#60a5fa','#34d399','#fbbf24','#f87171','#a78bfa','#fb923c'];
+  document.getElementById('si-brand-bars').innerHTML = brands.map(([b, cnt], i) => `
+    <div class="an-brand-row">
+      <div style="font-size:11px;color:rgba(255,255,255,0.55);width:68px;flex-shrink:0;">${b}</div>
+      <div style="flex:1;height:10px;background:rgba(255,255,255,0.05);border-radius:5px;overflow:hidden;">
+        <div style="height:100%;border-radius:5px;background:${brandColors[i%brandColors.length]};width:${Math.round(cnt/maxB*100)}%;transition:width 0.8s;"></div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);width:24px;text-align:right;">${cnt}</div>
+    </div>`).join('');
+
+  siRender();
+}
+
+function siTab(el, tab) {
+  document.querySelectorAll('.si-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  siCurrentTab = tab;
+  siRender();
+}
+
+function siSort(key) {
+  if (siSortKey === key) siSortAsc = !siSortAsc;
+  else { siSortKey = key; siSortAsc = true; }
+  siRender();
+}
+
+function siRender() {
+  const data = window._siData || [];
+
+  const q = (document.getElementById('si-search')?.value || '').toLowerCase();
+
+  const filtered = data.filter(p => {
+    const matchQ = !q || (p.PartNumber||'').toLowerCase().includes(q) || (p.Name||'').toLowerCase().includes(q);
+    if (!matchQ) return false;
+    const t = p._totalStock;
+    switch (siCurrentTab) {
+      case 'out':     return t === 0;
+      case 'qty1':    return t === 1;
+      case 'qty2':    return t === 2;
+      case 'qty3':    return t === 3;
+      case 'low':     return t > 0 && t <= 3;
+      case 'dead':    return t >= 5;
+      case 'hotprice':return t > 0 && t <= 3 && (p.Price_New||0) > 0;
+      case 'highval': return p._value > 0;
+      default:        return true;
+    }
+  });
+
+  // sort
+  filtered.sort((a, b) => {
+    let va = a[siSortKey], vb = b[siSortKey];
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    if (siCurrentTab === 'hotprice') { va = a.Price_New||0; vb = b.Price_New||0; }
+    if (siCurrentTab === 'highval')  { va = a._value; vb = b._value; }
+    if (va < vb) return siSortAsc ? -1 : 1;
+    if (va > vb) return siSortAsc ? 1 : -1;
+    return 0;
+  });
+
+  const titles = {
+    all:'รายการสินค้าทั้งหมด', out:'🔴 สินค้าหมด', qty1:'🟠 สินค้าเหลือ 1 ชิ้น',
+    qty2:'🟡 สินค้าเหลือ 2 ชิ้น', qty3:'🟡 สินค้าเหลือ 3 ชิ้น',
+    low:'⚠️ สินค้าเหลือน้อย (≤3)', dead:'💤 สินค้าจมทุน (stock ≥ 5)',
+    hotprice:'🔥 สินค้าราคาแรงใกล้หมด', highval:'💰 มูลค่าสต็อกสูงสุด'
+  };
+  document.getElementById('si-table-title').textContent = titles[siCurrentTab] || '';
+  document.getElementById('si-table-sub').textContent = `${filtered.length} รายการ`;
+
+  const tbody = document.getElementById('si-tbody');
+  const empty = document.getElementById('si-empty');
+
+  if (!filtered.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.map(p => {
+    const t = p._totalStock;
+    let badge, rowColor = '';
+    if (t === 0)          { badge = `<span class="si-badge si-badge-out">หมด</span>`; rowColor = 'rgba(248,113,113,0.04)'; }
+    else if (t === 1)     { badge = `<span class="si-badge si-badge-qty1">เหลือ 1</span>`; rowColor = 'rgba(251,146,60,0.04)'; }
+    else if (t <= 3)      { badge = `<span class="si-badge si-badge-low">เหลือน้อย</span>`; rowColor = 'rgba(251,191,36,0.03)'; }
+    else if (t >= 5)      { badge = `<span class="si-badge si-badge-dead">จมทุน</span>`; }
+    else                  { badge = `<span class="si-badge si-badge-ok">ปกติ</span>`; }
+    const val = p._value > 0 ? '฿'+Math.round(p._value).toLocaleString() : '—';
+    const priceNew = p.Price_New ? '฿'+(p.Price_New).toLocaleString() : '—';
+    return `<tr class="si-tr" style="background:${rowColor}">
+      <td class="si-td" style="font-weight:700;color:#fbbf24;">${p.PartNumber||'—'}</td>
+      <td class="si-td" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;">${p.Name||'—'}</td>
+      <td class="si-td" style="color:rgba(255,255,255,0.5);">${p.Brand||'—'}</td>
+      <td class="si-td" style="text-align:right;color:#6ee7b7;">${p.Stock_New||0}</td>
+      <td class="si-td" style="text-align:right;color:#fcd34d;">${p.Stock_Used||0}</td>
+      <td class="si-td" style="text-align:right;font-weight:700;">${t}</td>
+      <td class="si-td" style="text-align:right;">${priceNew}</td>
+      <td class="si-td" style="text-align:right;color:#a78bfa;">${val}</td>
+      <td class="si-td">${badge}</td>
+    </tr>`;
+  }).join('');
+}
 // รายชื่อตีมทั้งหมด (ว่างๆ คือตีมเริ่มต้น)
   const themeList = ['', 'theme-red', 'theme-green'];
   let currentThemeIdx = 0;
@@ -3536,5 +5158,86 @@ window.onload = loadProducts;
   <span id="testHudLabel">🧪 Testing…</span>
   <span id="testHudTimer" style="font-weight:700;margin-left:4px;"></span>
 </div>
+
+<!-- FANCY DIALOG OVERLAY -->
+<div class="fancy-prompt-overlay" id="fancyOverlay">
+  <div class="fancy-prompt-box" id="fancyBox">
+    <div class="fancy-prompt-title" id="fancyTitle"></div>
+    <div class="fancy-prompt-message" id="fancyMessage"></div>
+    <input class="fancy-prompt-input" id="fancyInput" type="text" style="display:none">
+    <div class="fancy-prompt-btnrow" id="fancyBtnRow"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const overlay = document.getElementById('fancyOverlay');
+  const titleEl = document.getElementById('fancyTitle');
+  const msgEl   = document.getElementById('fancyMessage');
+  const inputEl = document.getElementById('fancyInput');
+  const btnRow  = document.getElementById('fancyBtnRow');
+
+  const ICONS = { info:'ℹ️', warn:'⚠️', error:'❌', success:'✅', confirm:'🗑️', prompt:'✏️' };
+
+  function openDialog({ title, message, type='info', showInput=false, inputDefault='', inputPlaceholder='', buttons=[] }) {
+    titleEl.textContent = title || (type === 'confirm' ? 'ยืนยัน' : type === 'prompt' ? 'กรอกข้อมูล' : 'แจ้งเตือน');
+    // clean message — strip leading emoji duplicates like ⚠️ ❌
+    const cleaned = (message || '').replace(/^[⚠️❌✅ℹ️🗑️✏️\s]+/, m => m.trim().replace(/^[⚠️❌✅ℹ️🗑️✏️]+/, '').trimStart());
+    msgEl.textContent = cleaned || message;
+    inputEl.style.display = showInput ? 'block' : 'none';
+    if (showInput) { inputEl.value = inputDefault; inputEl.placeholder = inputPlaceholder; }
+    btnRow.innerHTML = '';
+    buttons.forEach(b => {
+      const btn = document.createElement('button');
+      btn.className = 'fancy-prompt-btn' + (b.primary ? ' primary' : '');
+      btn.textContent = b.label;
+      btn.onclick = b.onClick;
+      btnRow.appendChild(btn);
+    });
+    overlay.classList.add('open');
+    if (showInput) setTimeout(() => { inputEl.focus(); inputEl.select(); }, 80);
+  }
+
+  function close() { overlay.classList.remove('open'); }
+
+  // Close on overlay click (outside box)
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+  window.fancyAlert = function(message, type='info') {
+    return new Promise(resolve => {
+      openDialog({
+        message, type,
+        buttons: [{ label: 'ตกลง', primary: true, onClick: () => { close(); resolve(); } }]
+      });
+    });
+  };
+
+  window.fancyConfirm = function(message, type='confirm') {
+    return new Promise(resolve => {
+      openDialog({
+        message, type,
+        buttons: [
+          { label: 'Cancel', onClick: () => { close(); resolve(false); } },
+          { label: 'OK', primary: true, onClick: () => { close(); resolve(true); } }
+        ]
+      });
+    });
+  };
+
+  window.fancyPrompt = function(message, defaultValue='') {
+    return new Promise(resolve => {
+      function submit() { close(); resolve(inputEl.value); }
+      inputEl.onkeydown = e => { if (e.key === 'Enter') submit(); if (e.key === 'Escape') { close(); resolve(null); } };
+      openDialog({
+        message, type: 'prompt', showInput: true, inputDefault: defaultValue,
+        buttons: [
+          { label: 'Cancel', onClick: () => { close(); resolve(null); } },
+          { label: 'OK', primary: true, onClick: submit }
+        ]
+      });
+    });
+  };
+})();
+</script>
 </body>
 </html>
