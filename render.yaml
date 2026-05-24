@@ -2,8 +2,10 @@ services:
   - type: web
     name: leo-auto-backend
     runtime: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
     startCommand: python -m uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.11
+      - key: GOOGLE_API_KEY
+        value: AIzaSyA4OMdkw35WXwVUbyLahn57BRbjyng0xlQ

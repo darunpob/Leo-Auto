@@ -20,8 +20,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- 1. AI & Database Setup ---
-GOOGLE_API_KEY = "AIzaSyA4OMdkw35WXwVUbyLahn57BRbjyng0xlQ" # ⚠️ ระวังอย่าลืมซ่อน Key ก่อนขึ้น Production นะครับ
+import os
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
 client = genai.Client(api_key=GOOGLE_API_KEY)
 
 DB_FILE = "inventory.csv"
