@@ -3882,6 +3882,13 @@ document.getElementById('manageForm').onsubmit = async (e) => {
     if (res.ok) {
       closeManageModal();
       loadProducts();
+      // Restore to current page instead of going back to inventory
+      if (currentPage !== 'inventory') {
+        setTimeout(() => {
+          const navPill = document.querySelector(`[onclick*="'${currentPage}'"]`);
+          if (navPill) switchPage(currentPage, navPill);
+        }, 100);
+      }
     } else {
       const err = await res.json();
       await fancyAlert(err.detail[0]?.msg || err.detail, 'error');
@@ -3897,7 +3904,16 @@ async function deleteProduct(pn) {
   if (!await fancyConfirm(`ยืนยันลบ Part: ${pn}?`)) return;
   try {
     const res = await fetch(`${API_URL}/inventory/${encodeURIComponent(pn)}`, { method: 'DELETE' });
-    if (res.ok) { loadProducts(); }
+    if (res.ok) { 
+      loadProducts();
+      // Restore to current page
+      if (currentPage !== 'inventory') {
+        setTimeout(() => {
+          const navPill = document.querySelector(`[onclick*="'${currentPage}'"]`);
+          if (navPill) switchPage(currentPage, navPill);
+        }, 100);
+      }
+    }
     else { const err = await res.json(); await fancyAlert(err.detail, 'error'); }
   } catch { await fancyAlert('เชื่อมต่อระบบล้มเหลว', 'error'); }
 }
@@ -4315,7 +4331,11 @@ function setNav(el) {
   if (el) el.classList.add('active');
 }
 
+/* ──────────────── PAGE STATE ──────────────── */
+let currentPage = 'inventory'; // track current page
+
 function switchPage(page, el) {
+  currentPage = page; // store current page
   setNav(el);
   ['inventory','orders','analytics'].forEach(id => {
     const div = document.getElementById('page-' + id);
