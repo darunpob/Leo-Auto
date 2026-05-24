@@ -3600,40 +3600,50 @@ function updateSeriesChips(selectedBrand) {
   const seriesContainer = document.querySelectorAll('.chip-label')[1].parentElement;
   const seriesChips = seriesContainer.querySelectorAll('.chip[onclick*="series"]');
   
+  // Dynamically build the map of series for each brand from globalData
+  const brandSeriesMap = {};
+  globalData.forEach(item => {
+    const brand = (item.Brand || '').trim().toUpperCase();
+    const series = (item.Series || '').trim().toUpperCase();
+    if (brand && series) {
+        if (!brandSeriesMap[brand]) {
+            brandSeriesMap[brand] = new Set();
+        }
+        brandSeriesMap[brand].add(series);
+    }
+  });
+
+  // Convert sets to arrays for easier lookup
+  for (const brand in brandSeriesMap) {
+      brandSeriesMap[brand] = [...brandSeriesMap[brand]];
+  }
+
   if (selectedBrand === 'All') {
-    // แสดงแค่ "All"
+    // If 'All' brands are selected, show all series chips that exist in the HTML
     seriesChips.forEach(chip => {
-      if (chip.textContent.trim() === 'All') {
-        chip.style.display = 'inline-block';
-        chip.classList.add('active');
-      } else {
-        chip.style.display = 'none';
-      }
+      chip.style.display = 'inline-block';
     });
-    activeFilters.series = 'All';
   } else {
-    // แสดงแค่รุ่นของ Brand นั้น
-    const brandSeriesMap = {
-      'HINO': ['PROFIA', 'MEGA 500', 'MEGA 700'],
-      'ISUZU': ['GIGA', 'NPR 150'],
-      'FUSO': ['VICTOR 500']
-    };
+    // Get the allowed series for the selected brand
+    const allowedSeries = brandSeriesMap[selectedBrand.toUpperCase()] || [];
     
-    const allowedSeries = brandSeriesMap[selectedBrand] || [];
-    
+    // Show/hide series chips based on whether they belong to the selected brand
     seriesChips.forEach(chip => {
-      const chipText = chip.textContent.trim();
-      if (chipText === 'All' || allowedSeries.includes(chipText)) {
+      const chipText = chip.textContent.trim().toUpperCase();
+      if (chipText === 'ALL' || allowedSeries.includes(chipText)) {
         chip.style.display = 'inline-block';
       } else {
         chip.style.display = 'none';
       }
     });
-    
-    // รีเซ็ต Series เป็น All
-    activeFilters.series = 'All';
-    seriesChips.forEach(c => c.classList.remove('active'));
-    seriesChips[0].classList.add('active');
+  }
+  
+  // Reset Series filter to 'All' and activate the 'All' chip
+  activeFilters.series = 'All';
+  seriesChips.forEach(c => c.classList.remove('active'));
+  const allSeriesChip = Array.from(seriesChips).find(c => c.textContent.trim().toUpperCase() === 'ALL');
+  if (allSeriesChip) {
+    allSeriesChip.classList.add('active');
   }
 }
 
