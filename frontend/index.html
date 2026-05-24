@@ -3575,24 +3575,21 @@ function clearSearch() {
   const inp = document.getElementById('searchInput');
   if (inp) { inp.value = ''; toggleClearBtn(inp); }
   activeFilters = { brand: 'All', series: 'All' };
-  document.querySelectorAll('.chip').forEach(c => {
-    const fn = c.getAttribute('onclick') || '';
-    c.classList.toggle('active', fn.includes("'All'"));
-  });
+  updateActiveChips();
   renderGrid(globalData);
   updateStats(globalData);
 }
 
 function setFilter(el, type, val) {
   activeFilters[type] = val;
-  el.parentElement.querySelectorAll(`.chip[onclick*="'${type}'"]`).forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');
   
-  // ถ้าเลือก Brand → อัพเดท Series chips
+  // ถ้าเลือก Brand → อัพเดท Series chips และรีเซ็ต series filter
   if (type === 'brand') {
+    activeFilters.series = 'All'; // รีเซ็ตฟิลเตอร์ series
     updateSeriesChips(val);
   }
-  
+
+  updateActiveChips(); // อัปเดต active class ทั้งหมด
   filterLocal();
 }
 
@@ -3640,14 +3637,25 @@ function updateSeriesChips(selectedBrand) {
   
   // Reset Series filter to 'All' and activate the 'All' chip
   activeFilters.series = 'All';
-  seriesChips.forEach(c => c.classList.remove('active'));
-  const allSeriesChip = Array.from(seriesChips).find(c => c.textContent.trim().toUpperCase() === 'ALL');
-  if (allSeriesChip) {
-    allSeriesChip.classList.add('active');
-  }
+  updateActiveChips();
 }
 
 function filterCards() { filterLocal(); }
+
+function updateActiveChips() {
+    document.querySelectorAll('.chip').forEach(chip => {
+        const onclickAttr = chip.getAttribute('onclick');
+        if (!onclickAttr) return;
+
+        const match = onclickAttr.match(/setFilter\(this,\s*'(.*?)',\s*'(.*?)'\)/);
+        if (match) {
+            const type = match[1];
+            const value = match[2];
+            const isActive = activeFilters[type] && activeFilters[type].toUpperCase() === value.toUpperCase();
+            chip.classList.toggle('active', isActive);
+        }
+    });
+}
 
 function filterLocal() {
   const q = document.getElementById('searchInput').value.toLowerCase();
