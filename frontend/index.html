@@ -3406,6 +3406,7 @@ function toAbsoluteAssetUrl(url) {
 let globalData = [];
 let inventoryLoaded = false;
 let dpMode = 'brand'; // ใช้ใน dark prompt
+window.globalData = globalData;
 
 /* ──────────────── LOAD ──────────────── */
 function setNav(el) {
@@ -3453,12 +3454,14 @@ async function loadProducts() {
       };
     });
 
+    window.globalData = globalData;
     console.log('Inventory loaded:', globalData.length, 'items');
     return true;
   } catch (e) {
     console.error('Failed to load inventory from API, falling back to embedded data', e);
     // fallback to embedded sample if fetch fails
     globalData = EMBEDDED_DATA;
+    window.globalData = globalData;
     return false;
   }
 }
