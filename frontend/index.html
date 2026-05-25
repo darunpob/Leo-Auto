@@ -5443,6 +5443,141 @@ function loadSavedTestResults() {
   } catch(e) {}
 }
 
+// Override printBillA5 with editable A5 template (opens editor first, then print)
+function printBillA5(id) {
+  const bill = (window.billsCache || []).find(b => b.id === id);
+  if (!bill) return;
+
+  const rows = (bill.items || []).map((it, idx) => `
+    <tr>
+      <td>${idx + 1}</td>
+      <td><input class="cell-inp" value="${String(it.name || '-').replace(/"/g, '&quot;')}"></td>
+      <td><input class="cell-inp" value="${String(it.pn || '-').replace(/"/g, '&quot;')}"></td>
+      <td style="text-align:right"><input class="num-inp qty" type="number" min="0" step="1" value="${Number(it.qty || 0)}"></td>
+      <td style="text-align:right"><input class="num-inp price" type="number" min="0" step="0.01" value="${Number(it.price || 0)}"></td>
+      <td style="text-align:right" class="line-total">0</td>
+    </tr>
+  `).join('');
+
+  const title = (bill.name && String(bill.name).trim()) ? bill.name : `บิล #${bill.no}`;
+  const html = `
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <title>${title}</title>
+  <style>
+    @page { size: A5 landscape; margin: 8mm; }
+    html, body { margin: 0; padding: 0; font-family: "Tahoma", "Segoe UI", sans-serif; color: #111; }
+    .sheet { width: 100%; }
+    .toolbar { position: sticky; top: 0; z-index: 20; background: #fff; border-bottom: 1px solid #ddd; padding: 8px; display:flex; gap:8px; align-items:center; }
+    .toolbar button { border:1px solid #333; background:#f5f5f5; border-radius:6px; padding:6px 12px; cursor:pointer; font-family:inherit; }
+    .toolbar .hint { font-size: 11px; color:#555; margin-left: 8px; }
+    .head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8mm; }
+    .brand { font-size: 18px; font-weight: 700; }
+    .meta { font-size: 12px; line-height: 1.6; text-align: right; }
+    .title { font-size: 16px; font-weight: 700; margin-bottom: 2mm; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th, td { border: 1px solid #222; padding: 6px; vertical-align: top; }
+    th { background: #f2f2f2; text-align: left; }
+    .cell-inp, .meta-inp { width: 100%; border: none; outline: none; font: inherit; background: transparent; color: #111; }
+    .num-inp { width: 100%; border: none; outline: none; font: inherit; background: transparent; color: #111; text-align: right; }
+    .sum { margin-top: 6mm; display:flex; justify-content:flex-end; }
+    .sum-box { min-width: 38%; border: 1px solid #222; padding: 8px 10px; font-size: 12px; }
+    .sum-row { display:flex; justify-content:space-between; margin: 2px 0; }
+    .sum-total { font-size: 15px; font-weight: 700; border-top: 1px solid #222; padding-top: 6px; margin-top: 6px; }
+    .note { margin-top: 5mm; font-size: 10px; color:#444; display:flex; justify-content:space-between; }
+    .signs { margin-top: 8mm; display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10mm; font-size: 12px; }
+    .sig-line { margin-top: 10mm; border-top: 1px solid #222; padding-top: 2mm; text-align: center; }
+    @media print { .toolbar { display:none !important; } }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button onclick="window.print()">พิมพ์ A5</button>
+    <button onclick="window.close()">ปิด</button>
+    <span class="hint">แก้ไขชื่อ/วันที่/ราคา/ส่วนลดได้ก่อนพิมพ์</span>
+  </div>
+  <div class="sheet">
+    <div class="head">
+      <div>
+        <div class="brand">Leo Auto</div>
+        <div class="title">ใบเงินสด / CASH SALE</div>
+        <div style="font-size:11px;line-height:1.4;">ผู้ขาย: <input class="meta-inp" value="Leo Auto" style="display:inline-block;width:170px;border-bottom:1px solid #222;"></div>
+      </div>
+      <div class="meta">
+        <div><strong>${title}</strong></div>
+        <div>วันที่: <input class="meta-inp" value="${bill.date || ''}" style="display:inline-block;width:120px;border-bottom:1px solid #222;"></div>
+        <div>เลขที่บิล: <input class="meta-inp" value="${String(bill.no || '')}" style="display:inline-block;width:80px;border-bottom:1px solid #222;"></div>
+        <div>ลูกค้า: <input class="meta-inp" value="" style="display:inline-block;width:180px;border-bottom:1px solid #222;"></div>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:7%;">#</th>
+          <th style="width:33%;">รายการ</th>
+          <th style="width:20%;">Part Number</th>
+          <th style="width:10%;text-align:right;">จำนวน</th>
+          <th style="width:15%;text-align:right;">หน่วยละ</th>
+          <th style="width:15%;text-align:right;">จำนวนเงิน</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="sum">
+      <div class="sum-box">
+        <div class="sum-row"><span>รวมก่อนลด</span><strong id="subTotalTxt">฿0</strong></div>
+        <div class="sum-row"><span>ส่วนลด</span><span><input class="num-inp" id="discountInp" type="number" min="0" step="0.01" value="0"></span></div>
+        <div class="sum-row sum-total"><span>รวมทั้งสิ้น</span><span id="grandTotalTxt">฿0</span></div>
+      </div>
+    </div>
+    <div class="signs">
+      <div>ผู้รับสินค้า<div class="sig-line"><input class="meta-inp" value=""></div></div>
+      <div>ผู้รับเงิน<div class="sig-line"><input class="meta-inp" value=""></div></div>
+      <div>ผู้ขาย<div class="sig-line"><input class="meta-inp" value=""></div></div>
+    </div>
+    <div class="note">
+      <span>A5 Landscape (ใส่กระดาษด้านข้าง/แนวนอน)</span>
+      <span>ถ้าไม่ตรงให้ปรับ Scale 95-100%</span>
+    </div>
+  </div>
+  <script>
+    function recalc() {
+      const rs = [...document.querySelectorAll('tbody tr')];
+      let sub = 0;
+      rs.forEach(r => {
+        const qty = Number(r.querySelector('.qty')?.value || 0);
+        const price = Number(r.querySelector('.price')?.value || 0);
+        const line = qty * price;
+        sub += line;
+        const out = r.querySelector('.line-total');
+        if (out) out.textContent = '฿' + line.toLocaleString();
+      });
+      const discount = Math.max(0, Number(document.getElementById('discountInp')?.value || 0));
+      const grand = Math.max(0, sub - discount);
+      document.getElementById('subTotalTxt').textContent = '฿' + sub.toLocaleString();
+      document.getElementById('grandTotalTxt').textContent = '฿' + grand.toLocaleString();
+    }
+    document.addEventListener('input', (e) => {
+      if (e.target.matches('.qty,.price,#discountInp')) recalc();
+    });
+    recalc();
+  <\/script>
+</body>
+</html>`;
+
+  const w = window.open('', '_blank', 'width=1100,height=820');
+  if (!w) {
+    alert('เบราว์เซอร์บล็อก Pop-up กรุณาอนุญาต Pop-up สำหรับเว็บนี้ก่อน');
+    return;
+  }
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+}
+
 window.onload = initInventory;
 
 /* ══════════════════════════════════════
