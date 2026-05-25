@@ -3748,7 +3748,7 @@
     background:linear-gradient(180deg,#ffffff 0%,#fffdfa 100%);
     color:#1f2937;
     border-radius:16px;
-    padding:3mm 4mm;
+    padding:6.5mm 7mm;
     font-family:'Sarabun','Prompt','Segoe UI',sans-serif;
     box-shadow:0 22px 60px rgba(15,23,42,0.16);
   }
@@ -3792,13 +3792,14 @@
   }
   .print-a5-sheet input, .print-a5-sheet textarea {
     border:none;
+    border-bottom:1px solid rgba(100,116,139,0.55);
     outline:none;
     font:inherit;
     color:#0f172a;
     background:transparent;
-    padding:1px 0;
+    padding:2px 0;
   }
-  .print-a5-sheet input:focus, .print-a5-sheet textarea:focus { outline: 1px dashed #2563eb; }
+  .print-a5-sheet input:focus, .print-a5-sheet textarea:focus { border-bottom-color:#2563eb; }
   .print-a5-sheet textarea { resize:none; }
   .print-a5-sheet,
   .print-a5-sheet input,
@@ -3812,47 +3813,42 @@
   .print-a5-sheet div {
     font-family:'Prompt','Sarabun','Segoe UI',sans-serif;
   }
-  .print-a5-header { display:flex; justify-content:space-between; align-items:flex-start; gap:1mm; margin-bottom:0.8mm; }
+  .print-a5-header { display:flex; justify-content:space-between; align-items:flex-start; gap:4mm; margin-bottom:3mm; }
   .print-a5-brand { max-width:60%; }
-  .print-a5-badge { display:inline-flex; align-items:center; gap:6px; padding:3px 8px; border-radius:999px; background:#eef4ff; color:#3159b7; font-size:10px; font-weight:700; letter-spacing:.02em; border:none; }
-  .print-a5-title { margin-top:0; font-size:15px; font-weight:700; letter-spacing:-0.02em; color:#0f172a; }
+  .print-a5-badge { display:inline-flex; align-items:center; gap:8px; padding:5px 10px; border-radius:999px; background:#eef4ff; color:#3159b7; font-size:12px; font-weight:700; letter-spacing:.02em; }
+  .print-a5-title { margin-top:1mm; font-size:20px; font-weight:700; letter-spacing:-0.02em; color:#0f172a; }
   .print-a5-subtitle { display:none; }
-  .print-a5-meta { flex:0 0 41%; padding:0.5mm 1mm; border:none; border-radius:0; background:transparent; }
-  .print-a5-meta-row { display:flex; justify-content:space-between; align-items:center; gap:2px; font-size:9px; margin-bottom:1px; }
+  .print-a5-meta { flex:0 0 41%; padding:2.5mm 3mm; border:1px solid #dbe4f0; border-radius:12px; background:#f8fbff; }
+  .print-a5-meta-row { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:11px; margin-bottom:0; }
   .print-a5-meta-row:last-child { margin-bottom:0; }
   .print-a5-meta-row span { color:#64748b; white-space:nowrap; font-weight:500; }
   .print-a5-meta-row input { width:100%; text-align:right; }
-  .print-a5-party { display:grid; grid-template-columns:1fr 1fr; gap:0.8mm; margin-bottom:1mm; }
-  .print-a5-field { padding:0; border:none; border-radius:0; background:transparent; flex:1; display:flex; flex-direction:column; }
-  .print-a5-field.full-width { grid-column:1/-1; }
-  .print-a5-field label { display:block; font-size:8px; font-weight:600; color:#64748b; margin-bottom:1px; }
-  .print-a5-field input { width:100%; border-bottom:1px solid #999; padding:1px 0; font-size:9px; }
-  .print-a5-field.tax-phone { display:grid; grid-template-columns:1fr 1fr; gap:0.8mm; grid-column:1/-1; }
-  .print-a5-field.tax-phone > div { display:flex; flex-direction:column; }
-  .print-a5-field.tax-phone label { font-size:8px; margin-bottom:0.5px; }
-  .print-a5-table-wrap { border:none; border-radius:0; overflow:hidden; margin:0.5mm 0; }
-  .print-a5-table { width:100%; border-collapse:collapse; font-size:8px; line-height:1.2; }
-  .print-a5-table thead th { background:transparent; color:#334155; font-weight:700; border-bottom:1px solid #333; padding:1px 2px; }
-  .print-a5-table th, .print-a5-table td { border-bottom:none; padding:0.5px 2px; vertical-align:top; }
-  .print-a5-table tbody tr { border-bottom:1px solid #e5e7eb; }
-  .print-a5-table tbody tr:last-child { border-bottom:none; }
+  .print-a5-party { display:grid; grid-template-columns:1fr 1fr; gap:3mm; margin-bottom:3mm; }
+  .print-a5-field { padding:2.5mm 3mm; border:1px solid #e2e8f0; border-radius:10px; background:#fff; }
+  .print-a5-field label { display:block; font-size:11px; font-weight:600; color:#64748b; margin-bottom:2px; }
+  .print-a5-field input { width:100%; }
+  .print-a5-table-wrap { border:1px solid #cbd5e1; border-radius:12px; overflow:hidden; }
+  .print-a5-table { width:100%; border-collapse:collapse; font-size:11px; }
+  .print-a5-table thead th { background:#eaf1ff; color:#334155; font-weight:700; }
+  .print-a5-table th, .print-a5-table td { border-bottom:1px solid #dbe4f0; padding:4px 5px; vertical-align:top; }
+  .print-a5-table tbody tr:last-child td { border-bottom:none; }
   .print-a5-table .num { text-align:right; }
-  .print-a5-table td:first-child, .print-a5-table th:first-child { text-align:center; width:6%; }
-  .print-a5-grow { flex:1 1 auto; min-height:0; }
-  .print-a5-lower { display:grid; grid-template-columns:1.3fr 0.7fr; gap:0.8mm; margin-top:0.8mm; align-items:start; }
+  .print-a5-table td:first-child, .print-a5-table th:first-child { text-align:center; width:8%; }
+  .print-a5-grow { flex:1 1 auto; min-height:4mm; }
+  .print-a5-lower { display:grid; grid-template-columns:1.2fr 0.8fr; gap:3mm; margin-top:3mm; align-items:start; }
   .print-a5-summary { display:flex; justify-content:flex-end; }
-  .print-a5-totals { width:100%; padding:0.5mm 1mm; border:none; border-radius:0; background:transparent; }
-  .print-a5-total-row { display:flex; justify-content:space-between; align-items:center; gap:4px; font-size:9px; margin-bottom:0px; line-height:1.2; }
+  .print-a5-totals { width:100%; padding:2.5mm 3mm; border:1px solid #cbd5e1; border-radius:12px; background:#fcfdff; }
+  .print-a5-total-row { display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:11px; margin-bottom:4px; }
   .print-a5-total-row:last-child { margin-bottom:0; }
-  .print-a5-total-row.grand { margin-top:1px; padding-top:1px; border-top:1px solid #333; font-size:10px; font-weight:700; color:#0f172a; }
-  .print-a5-total-row input { width:50px; text-align:right; font-size:8px; }
-  .print-a5-note { padding:0.5mm 1mm; border:none; border-radius:0; color:#475569; }
-  .print-a5-note label { display:block; font-size:8px; font-weight:600; color:#64748b; margin-bottom:0.5px; }
-  .print-a5-note textarea { width:100%; min-height:2mm; max-height:2mm; border-bottom:none; font-size:8px; line-height:1.1; padding:0.5px; }
-  .print-a5-signatures { margin-top:0.8mm; display:grid; grid-template-columns:1fr 1fr 1fr; gap:1mm; font-size:8px; }
-  .print-a5-signatures label { display:block; margin-bottom:2mm; color:#475569; font-weight:600; font-size:7px; }
-  .print-a5-signatures input { width:100%; text-align:center; font-size:7px; }
-  .print-a5-foot { margin-top:0.5mm; display:flex; justify-content:space-between; align-items:center; font-size:7px; color:#64748b; }
+  .print-a5-total-row.grand { margin-top:4px; padding-top:4px; border-top:1px solid #cbd5e1; font-size:13px; font-weight:700; color:#0f172a; }
+  .print-a5-total-row input { width:76px; text-align:right; }
+  .print-a5-note { padding:2.2mm 2.8mm; border:1px dashed #cbd5e1; border-radius:10px; color:#475569; }
+  .print-a5-note label { display:block; font-size:11px; font-weight:600; color:#64748b; margin-bottom:2px; }
+  .print-a5-note textarea { width:100%; min-height:5mm; border-bottom:none; font-size:10px; line-height:1.1; }
+  .print-a5-signatures { margin-top:4mm; display:grid; grid-template-columns:1fr 1fr 1fr; gap:4mm; font-size:10px; }
+  .print-a5-signatures label { display:block; margin-bottom:6mm; color:#475569; font-weight:600; }
+  .print-a5-signatures input { width:100%; text-align:center; }
+  .print-a5-foot { margin-top:2mm; display:flex; justify-content:space-between; align-items:center; font-size:9px; color:#64748b; }
   .print-tax-sheet {
     border:1px solid #c9d4ea;
     background:#fff;
@@ -6860,16 +6856,6 @@ function printBillA5(id) {
               <label>ลูกค้า</label>
               <input id="p-customer" value="">
             </div>
-            <div class="print-a5-field tax-phone">
-              <div>
-                <label>เลขประจำตัวผู้เสียภาษี</label>
-                <input id="p-seller-tax" value="">
-              </div>
-              <div>
-                <label>โทร</label>
-                <input id="p-seller-phone" value="">
-              </div>
-            </div>
           </div>
           <div class="print-a5-table-wrap">
             <table class="print-a5-table">
@@ -6932,12 +6918,12 @@ function printBillA5(id) {
 
   document.getElementById('printTemplateModal')?.classList.add('open');
   sheet.oninput = (e) => {
-    if (e.target.matches('.p-qty,.p-price,#p-discount,#p-title,#p-badge,#p-date,#p-seller,#p-customer,#p-seller-tax,#p-seller-phone,#p-note,#p-receiver,#p-collector,#p-seller-sign')) {
+    if (e.target.matches('.p-qty,.p-price,#p-discount,#p-title,#p-badge,#p-date,#p-seller,#p-customer,#p-note,#p-receiver,#p-collector,#p-seller-sign')) {
       _recalcPrintA5();
     }
   };
   sheet.onchange = (e) => {
-    if (e.target.matches('#p-copy-mode,#p-copy-watermark,#p-tax-mode,.p-qty,.p-price,#p-discount,#p-title,#p-badge,#p-date,#p-seller,#p-customer,#p-seller-tax,#p-seller-phone,#p-note,#p-receiver,#p-collector,#p-seller-sign')) {
+    if (e.target.matches('#p-copy-mode,#p-copy-watermark,#p-tax-mode,.p-qty,.p-price,#p-discount,#p-title,#p-badge,#p-date,#p-seller,#p-customer,#p-note,#p-receiver,#p-collector,#p-seller-sign')) {
       _syncPrintA5Copy();
       _syncPrintA5Tax();
     }
