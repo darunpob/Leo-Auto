@@ -93,6 +93,11 @@
     min-height: 100vh;
     overflow-x: hidden;
   }
+  body.modal-lock {
+    position: fixed;
+    width: 100%;
+    overflow: hidden;
+  }
 
   .bg-orbs {
     position: fixed; inset: 0; pointer-events: none; z-index: 0;
@@ -3766,6 +3771,32 @@ let lightboxState = {
   images: [],
   currentIndex: 0
 };
+
+let _savedScrollY = 0;
+function syncModalBodyLock() {
+  const hasOpenModal = !!document.querySelector('.modal-overlay.open, #fancyOverlay.open');
+  if (hasOpenModal) {
+    if (!document.body.classList.contains('modal-lock')) {
+      _savedScrollY = window.scrollY || window.pageYOffset || 0;
+      document.body.classList.add('modal-lock');
+      document.body.style.top = `-${_savedScrollY}px`;
+    }
+    return;
+  }
+  if (document.body.classList.contains('modal-lock')) {
+    document.body.classList.remove('modal-lock');
+    document.body.style.top = '';
+    window.scrollTo(0, _savedScrollY);
+  }
+}
+
+const _modalLockObserver = new MutationObserver(syncModalBodyLock);
+_modalLockObserver.observe(document.documentElement, {
+  subtree: true,
+  attributes: true,
+  attributeFilter: ['class']
+});
+syncModalBodyLock();
 
 function openLightbox(partNumber) {
   const item = globalData.find(p => p['Part Number'] === partNumber);
