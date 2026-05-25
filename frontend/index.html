@@ -3720,6 +3720,21 @@
   }
   .print-a5-host {
     width:100%;
+    flex:1 1 auto;
+    min-height:0;
+    overflow-y:auto;
+    padding-right:6px;
+  }
+  .print-a5-host::-webkit-scrollbar {
+    width:8px;
+  }
+  .print-a5-host::-webkit-scrollbar-track {
+    background:rgba(255,255,255,0.04);
+    border-radius:999px;
+  }
+  .print-a5-host::-webkit-scrollbar-thumb {
+    background:rgba(148,163,184,0.45);
+    border-radius:999px;
   }
   .print-a5-page {
     position:relative;
@@ -3834,16 +3849,156 @@
   .print-a5-signatures label { display:block; margin-bottom:6mm; color:#475569; font-weight:600; }
   .print-a5-signatures input { width:100%; text-align:center; }
   .print-a5-foot { margin-top:2mm; display:flex; justify-content:space-between; align-items:center; font-size:9px; color:#64748b; }
+  .print-tax-sheet {
+    border:1px solid #c9d4ea;
+    background:#fff;
+  }
+  .print-tax-topline {
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items:center;
+    font-size:11px;
+    color:#334155;
+    margin-bottom:3mm;
+  }
+  .print-tax-topline .center {
+    text-align:center;
+    font-weight:700;
+    color:#1e3a8a;
+  }
+  .print-tax-topline .right {
+    text-align:right;
+  }
+  .print-tax-header {
+    text-align:center;
+    padding-bottom:3mm;
+    border-bottom:1px dashed #cbd5e1;
+    margin-bottom:3mm;
+  }
+  .print-tax-docname {
+    font-size:19px;
+    font-weight:800;
+    color:#1e3a8a;
+    letter-spacing:-0.02em;
+  }
+  .print-tax-company {
+    margin-top:1mm;
+    font-size:22px;
+    font-weight:800;
+    color:#0f172a;
+  }
+  .print-tax-meta {
+    margin-top:1mm;
+    font-size:10.5px;
+    line-height:1.5;
+    color:#475569;
+  }
+  .print-tax-grid {
+    display:grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap:3mm;
+    margin-bottom:3mm;
+  }
+  .print-tax-box {
+    border:1px solid #cbd5e1;
+    border-radius:10px;
+    padding:2.5mm 3mm;
+    background:#fcfdff;
+  }
+  .print-tax-box label {
+    display:block;
+    font-size:10px;
+    font-weight:700;
+    color:#64748b;
+    margin-bottom:1mm;
+  }
+  .print-tax-box input,
+  .print-tax-box textarea {
+    width:100%;
+    border:none;
+    border-bottom:1px solid rgba(100,116,139,0.45);
+    background:transparent;
+    font:inherit;
+    color:#0f172a;
+    outline:none;
+    padding:1px 0;
+  }
+  .print-tax-box textarea {
+    min-height:32px;
+    resize:none;
+  }
+  .print-tax-table-wrap {
+    border:1px solid #94a3b8;
+    border-radius:12px;
+    overflow:hidden;
+    margin-top:1mm;
+  }
+  .print-tax-table {
+    width:100%;
+    border-collapse:collapse;
+    font-size:10.5px;
+  }
+  .print-tax-table th {
+    background:#edf2ff;
+    color:#334155;
+    font-weight:700;
+    border-bottom:1px solid #cbd5e1;
+    padding:4px 5px;
+  }
+  .print-tax-table td {
+    border-bottom:1px solid #dbe4f0;
+    padding:4px 5px;
+    vertical-align:top;
+  }
+  .print-tax-table tbody tr:last-child td {
+    border-bottom:none;
+  }
+  .print-tax-table .num {
+    text-align:right;
+  }
+  .print-tax-table .ctr {
+    text-align:center;
+  }
+  .print-tax-total {
+    display:flex;
+    justify-content:flex-end;
+    margin-top:3mm;
+  }
+  .print-tax-total-card {
+    width:46%;
+    border:1px solid #cbd5e1;
+    border-radius:12px;
+    background:#fcfdff;
+    padding:2.5mm 3mm;
+  }
+  .print-tax-signs {
+    margin-top:4mm;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:5mm;
+  }
+  .print-tax-sign {
+    font-size:10px;
+    color:#475569;
+  }
+  .print-tax-sign .line {
+    margin-top:7mm;
+    border-top:1px dashed #94a3b8;
+    padding-top:2mm;
+    text-align:center;
+  }
   @media (max-width: 900px) {
     .print-a5-toolbar { align-items:stretch; }
     .print-a5-tool-group { margin-left:0; width:100%; }
     .print-a5-tool-select, .print-a5-tool-input { flex:1; min-width:0; }
     .print-a5-sheet { width:100%; min-height:auto; padding:8mm; }
     .print-a5-header, .print-a5-party, .print-a5-signatures, .print-a5-lower { grid-template-columns:1fr; display:grid; }
+    .print-tax-grid, .print-tax-signs { grid-template-columns:1fr; }
     .print-a5-brand { max-width:none; }
     .print-a5-summary { justify-content:stretch; }
     .print-a5-totals { width:100%; }
     .print-a5-foot { flex-direction:column; align-items:flex-start; gap:4px; }
+    .print-tax-total-card { width:100%; }
   }
   @media print {
     @page { size: A5 landscape; margin: 0; }
@@ -6314,6 +6469,63 @@ function _isPrintCopyEnabled() {
   return (document.getElementById('p-copy-mode')?.value || 'copy') !== 'off';
 }
 
+function _isPrintTaxEnabled() {
+  return (document.getElementById('p-tax-mode')?.value || 'tax') !== 'off';
+}
+
+let printTaxState = null;
+
+function _getPrintLineItems() {
+  return Array.from(document.querySelectorAll('#printA5Editor tbody tr')).map((r, idx) => {
+    const qty = Number(r.querySelector('.p-qty')?.value || 0);
+    const price = Number(r.querySelector('.p-price')?.value || 0);
+    const line = qty * price;
+    return {
+      idx,
+      name: r.querySelector('td:nth-child(2) input')?.value || '',
+      qty,
+      price,
+      line
+    };
+  });
+}
+
+function _splitBahtSatang(amount) {
+  const normalized = Math.max(0, Number(amount || 0));
+  const fixed = normalized.toFixed(2).split('.');
+  return { baht: Number(fixed[0]).toLocaleString(), satang: fixed[1] };
+}
+
+function _ensurePrintTaxState() {
+  if (!printTaxState) {
+    printTaxState = {
+      bookNo: '011',
+      receiptNo: '0535',
+      docName: 'บิลเงินสด / ใบกำกับภาษีอย่างย่อ',
+      sellerName: 'Leo Auto',
+      sellerAddress: '',
+      sellerTaxId: '',
+      sellerPhone: '',
+      customerName: '',
+      customerAddress: '',
+      customerTaxId: '',
+      date: ''
+    };
+  }
+  const customer = document.getElementById('p-customer')?.value || '';
+  const date = document.getElementById('p-date')?.value || '';
+  if (!printTaxState.customerName) printTaxState.customerName = customer;
+  if (!printTaxState.date) printTaxState.date = date;
+}
+
+function updatePrintTaxField(field, value) {
+  _ensurePrintTaxState();
+  printTaxState[field] = value;
+  if (field !== 'customerName' && field !== 'date') {
+    _syncPrintA5Tax();
+  }
+}
+
 function _syncPrintA5Copy() {
   const copySheet = document.getElementById('printA5Copy');
   const copyWrap = document.getElementById('printA5CopyPage');
@@ -6418,7 +6630,124 @@ function _syncPrintA5Copy() {
     </div>
     <div class="print-a5-foot">
       <span>${watermark}</span>
-      <span>หน้าสำเนา</span>
+      <span>สำเนา</span>
+    </div>
+  `;
+}
+
+function _syncPrintA5Tax() {
+  const taxSheet = document.getElementById('printA5Tax');
+  const taxWrap = document.getElementById('printA5TaxPage');
+  if (!taxSheet || !taxWrap) return;
+
+  const enabled = _isPrintTaxEnabled();
+  taxWrap.style.display = enabled ? '' : 'none';
+  if (!enabled) return;
+
+  _ensurePrintTaxState();
+
+  const customerSource = document.getElementById('p-customer')?.value || '';
+  const dateSource = document.getElementById('p-date')?.value || '';
+  if (!printTaxState.customerName || printTaxState.customerName === customerSource) {
+    printTaxState.customerName = customerSource;
+  }
+  if (!printTaxState.date || printTaxState.date === dateSource) {
+    printTaxState.date = dateSource;
+  }
+
+  const items = _getPrintLineItems();
+  const subtotalValue = items.reduce((sum, item) => sum + item.line, 0);
+  const discountValue = Math.max(0, Number(document.getElementById('p-discount')?.value || 0));
+  const grandValue = Math.max(0, subtotalValue - discountValue);
+  const totalSplit = _splitBahtSatang(grandValue);
+  const rows = items.map(item => {
+    const unitSplit = _splitBahtSatang(item.price);
+    const lineSplit = _splitBahtSatang(item.line);
+    return `
+      <tr>
+        <td class="ctr">${item.qty ? item.qty.toLocaleString() : ''}</td>
+        <td>${_escapePrintText(item.name || '')}</td>
+        <td class="num">${unitSplit.baht}${unitSplit.satang !== '00' ? '.' + unitSplit.satang : ''}</td>
+        <td class="num">${lineSplit.baht}</td>
+        <td class="ctr">${lineSplit.satang === '00' ? '-' : lineSplit.satang}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const fillerRows = Math.max(0, 8 - items.length);
+  const emptyRows = Array.from({ length: fillerRows }).map(() => `
+    <tr>
+      <td>&nbsp;</td><td></td><td></td><td></td><td></td>
+    </tr>
+  `).join('');
+
+  taxSheet.innerHTML = `
+    <div class="print-tax-topline">
+      <div>เล่มที่ <input value="${_escapePrintText(printTaxState.bookNo)}" oninput="updatePrintTaxField('bookNo', this.value)"></div>
+      <div class="center">บิลเงินสด</div>
+      <div class="right">เลขที่ <input value="${_escapePrintText(printTaxState.receiptNo)}" oninput="updatePrintTaxField('receiptNo', this.value)" style="width:86px;text-align:right"></div>
+    </div>
+    <div class="print-tax-header">
+      <div class="print-tax-docname"><input value="${_escapePrintText(printTaxState.docName)}" oninput="updatePrintTaxField('docName', this.value)" style="width:100%;text-align:center;font-weight:800;color:#1e3a8a"></div>
+      <div class="print-tax-company"><input value="${_escapePrintText(printTaxState.sellerName)}" oninput="updatePrintTaxField('sellerName', this.value)" style="width:100%;text-align:center;font-size:22px;font-weight:800"></div>
+      <div class="print-tax-meta">
+        <textarea oninput="updatePrintTaxField('sellerAddress', this.value)" style="text-align:center">${_escapePrintText(printTaxState.sellerAddress)}</textarea>
+        <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:4px;">
+          <span>เลขประจำตัวผู้เสียภาษี</span>
+          <input value="${_escapePrintText(printTaxState.sellerTaxId)}" oninput="updatePrintTaxField('sellerTaxId', this.value)" style="width:190px;text-align:center">
+          <span>โทร.</span>
+          <input value="${_escapePrintText(printTaxState.sellerPhone)}" oninput="updatePrintTaxField('sellerPhone', this.value)" style="width:120px;text-align:center">
+        </div>
+      </div>
+    </div>
+    <div class="print-tax-grid">
+      <div class="print-tax-box">
+        <label>นาม</label>
+        <input value="${_escapePrintText(printTaxState.customerName)}" oninput="updatePrintTaxField('customerName', this.value)">
+      </div>
+      <div class="print-tax-box">
+        <label>วันที่</label>
+        <input value="${_escapePrintText(printTaxState.date)}" oninput="updatePrintTaxField('date', this.value)">
+      </div>
+      <div class="print-tax-box">
+        <label>ที่อยู่</label>
+        <textarea oninput="updatePrintTaxField('customerAddress', this.value)">${_escapePrintText(printTaxState.customerAddress)}</textarea>
+      </div>
+      <div class="print-tax-box">
+        <label>เลขประจำตัวผู้เสียภาษี</label>
+        <input value="${_escapePrintText(printTaxState.customerTaxId)}" oninput="updatePrintTaxField('customerTaxId', this.value)">
+      </div>
+    </div>
+    <div class="print-tax-table-wrap">
+      <table class="print-tax-table">
+        <thead>
+          <tr>
+            <th style="width:12%" class="ctr">จำนวน</th>
+            <th>รายการ</th>
+            <th style="width:16%" class="num">หน่วยละ</th>
+            <th style="width:14%" class="num">จำนวนเงิน บาท</th>
+            <th style="width:8%" class="ctr">สต.</th>
+          </tr>
+        </thead>
+        <tbody>${rows}${emptyRows}</tbody>
+      </table>
+    </div>
+    <div class="print-tax-total">
+      <div class="print-tax-total-card">
+        <div class="print-a5-total-row"><span>รวมก่อนลด</span><strong>฿${subtotalValue.toLocaleString()}</strong></div>
+        <div class="print-a5-total-row"><span>ส่วนลด</span><span>฿${discountValue.toLocaleString()}</span></div>
+        <div class="print-a5-total-row grand"><span>รวมเงิน</span><span>${totalSplit.baht}${totalSplit.satang !== '00' ? '.' + totalSplit.satang : ''}</span></div>
+      </div>
+    </div>
+    <div class="print-tax-signs">
+      <div class="print-tax-sign">
+        ผู้รับเงิน
+        <div class="line">${_escapePrintText(document.getElementById('p-collector')?.value || '')}</div>
+      </div>
+      <div class="print-tax-sign">
+        ผู้รับสินค้า
+        <div class="line">${_escapePrintText(document.getElementById('p-receiver')?.value || '')}</div>
+      </div>
     </div>
   `;
 }
@@ -6441,6 +6770,7 @@ function _recalcPrintA5() {
   if (s) s.textContent = '฿' + sub.toLocaleString();
   if (g) g.textContent = '฿' + grand.toLocaleString();
   _syncPrintA5Copy();
+  _syncPrintA5Tax();
 }
 
 // Override: no popup, open editable in-page template
@@ -6480,6 +6810,11 @@ function printBillA5(id) {
         </select>
         <span class="print-a5-tool-label">ลายน้ำ</span>
         <input id="p-copy-watermark" class="print-a5-tool-input" value="สำเนา">
+        <span class="print-a5-tool-label">หน้าที่สาม</span>
+        <select id="p-tax-mode" class="print-a5-tool-select">
+          <option value="tax" selected>บิลใช้เสียภาษี</option>
+          <option value="off">ไม่แสดง</option>
+        </select>
       </div>
     </div>
     <div class="print-a5-stack">
@@ -6548,14 +6883,18 @@ function printBillA5(id) {
             </div>
           </div>
           <div class="print-a5-foot">
+            <span></span>
             <span>ต้นฉบับ</span>
-            <span>Leo Auto</span>
           </div>
         </div>
       </div>
       <div id="printA5CopyPage" class="print-a5-page">
-        <div class="print-a5-copy-title">สำเนา</div>
+        <div class="print-a5-copy-title"></div>
         <div id="printA5Copy" class="print-a5-sheet print-a5-sheet-copy"></div>
+      </div>
+      <div id="printA5TaxPage" class="print-a5-page">
+        <div class="print-a5-copy-title">บิลใช้เสียภาษี</div>
+        <div id="printA5Tax" class="print-a5-sheet print-tax-sheet"></div>
       </div>
     </div>
   `;
@@ -6565,10 +6904,14 @@ function printBillA5(id) {
     if (e.target.matches('.p-qty,.p-price,#p-discount,input,textarea')) _recalcPrintA5();
   };
   sheet.onchange = (e) => {
-    if (e.target.matches('#p-copy-mode,#p-copy-watermark,input,textarea,select')) _syncPrintA5Copy();
+    if (e.target.matches('#p-copy-mode,#p-copy-watermark,input,textarea,select')) {
+      _syncPrintA5Copy();
+      _syncPrintA5Tax();
+    }
   };
   _recalcPrintA5();
   _syncPrintA5Copy();
+  _syncPrintA5Tax();
 }
 
 // Stable entrypoint for A5 button (avoid conflicts with duplicated printBillA5 definitions)
@@ -6841,7 +7184,7 @@ function siRender() {
 </div>
 
 <div id="printTemplateModal" class="modal-overlay" onclick="if(event.target===this) closePrintTemplate()">
-  <div class="report-modal-box" style="max-width:1100px;height:90vh;padding:14px;" onclick="event.stopPropagation()">
+  <div class="report-modal-box" style="max-width:1100px;height:90vh;padding:14px;overflow:hidden;" onclick="event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-title">ใบเสร็จ A5 แนวนอน (แก้ไขก่อนพิมพ์)</div>
       <button class="modal-close" onclick="closePrintTemplate()">✕</button>
