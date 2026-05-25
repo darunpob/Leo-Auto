@@ -4398,8 +4398,36 @@ async function updateCost(partNumber, newCost) {
 ══════════════════════════════════════ */
 let billItems   = [];   // current bill items
 let billCounter = 1;    // auto-increment bill number
+let billsCache  = [];   // shared bills from backend
 
-function initOrdersPage() {
+function normalizeBackendBill(bill) {
+  const no = Number(bill.bill_no || 0);
+  const items = Array.isArray(bill.items) ? bill.items : [];
+  return {
+    id: no,
+    no,
+    name: bill.name || `บิล #${no}`,
+    date: String(bill.date || ''),
+    items: items.map(it => ({
+      pn: String(it.part_number || ''),
+      name: String(it.part_name || ''),
+      qty: Number(it.quantity || 0),
+      price: Number(it.unit_price || 0),
+      type: String(it.type || 'new')
+    })),
+    total: Number(bill.total || 0)
+  };
+}
+
+async function fetchAllBills() {
+  const res = await fetch(`${API_URL}/orders`);
+  if (!res.ok) throw new Error(`Cannot load orders (${res.status})`);
+  const raw = await res.json();
+  billsCache = Array.isArray(raw) ? raw.map(normalizeBackendBill) : [];
+  return billsCache;
+}
+
+async function initOrdersPage() {
   // Set today date if not set — use Thailand timezone (UTC+7)
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
   if (!document.getElementById('billDate').value) {
@@ -4408,9 +4436,9 @@ function initOrdersPage() {
   if (!document.getElementById('historyDate').value) {
     document.getElementById('historyDate').value = today;
   }
-  updateBillNo();
+  await updateBillNo();
   renderBillItems();
-  loadHistory();
+  await loadHistory();
   // close search on outside click
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.bill-search-wrap') && !e.target.closest('.bill-dropdown')) {
@@ -4419,8 +4447,8 @@ function initOrdersPage() {
   }, { once: false });
 }
 
-function updateBillNo() {
-  const bills = getAllBills();
+async function updateBillNo() {
+  const bills = await fetchAllBills();
   billCounter = bills.length + 1;
   document.getElementById('billNoBadge').textContent = '#' + billCounter;
 }
@@ -4820,6 +4848,119 @@ function loadBillToEditor(id) {
 }
 
 /* ══════ TEST MODE ══════ */
+/* Backend orders override: make bill history shared across devices */
+async function updateBillNo() {
+  const bills = await fetchAllBills();
+  billCounter = bills.length + 1;
+  document.getElementById('billNoBadge').textContent = '#' + billCounter;
+}
+
+async function saveBill() {
+  if (!billItems.length) { await fancyAlert('ยังไม่มีรายการในบิล', 'warn'); return; }
+  const date = document.getElementById('billDate').value;
+  if (!date) { await fancyAlert('กรุณาเลือกวันที่', 'warn'); return; }
+
+  const payload = {
+    date,
+    name: (document.getElementById('bill-name-input')?.value || '').trim(),
+    items: billItems.map(i => ({
+      part_number: i.pn,
+      quantity: Number(i.qty || 0),
+      unit_price: Number(i.price || 0),
+      type: i.type || 'new'
+    }))
+  };
+
+  const res = await fetch(`${API_URL}/orders`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    await fancyAlert('บันทึกบิลไม่สำเร็จ', 'error');
+    return;
+  }
+  const out = await res.json();
+  const no = out?.new_bill?.bill_no || '?';
+  document.getElementById('billSaveMsg').textContent = `✅ บันทึกบิล #${no} แล้ว (${date})`;
+  billItems = [];
+  renderBillItems();
+  await loadProducts();
+  await loadHistory();
+  await updateBillNo();
+}
+
+function getAllBills() { return billsCache || []; }
+function saveBills(_) {}
+
+async function loadHistory() {
+  const date = document.getElementById('historyDate').value;
+  document.getElementById('historyDateLabel').textContent = date || 'ทั้งหมด';
+  const all = await fetchAllBills();
+  const filtered = date ? all.filter(b => b.date === date) : all;
+  renderHistory(filtered);
+}
+
+async function editBillName(id) {
+  const bill = billsCache.find(b => b.id === id);
+  if (!bill) return;
+  const current = bill.name || (`บิล #${bill.no}`);
+  const name = await fancyPrompt('ตั้งชื่อบิล (ปล่อยว่างเพื่อใช้ชื่ออัตโนมัติ)', current);
+  if (name === null) return;
+  const newName = String(name).trim();
+  if (!newName) return;
+  const res = await fetch(`${API_URL}/orders/${encodeURIComponent(bill.no)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: newName })
+  });
+  if (!res.ok) { await fancyAlert('แก้ชื่อบิลไม่สำเร็จ', 'error'); return; }
+  await loadHistory();
+}
+
+function openBillDetail(id) {
+  const bill = billsCache.find(b => b.id === id);
+  if (!bill) return;
+  document.getElementById('bill-detail-name').textContent = bill.name || (`บิล #${bill.no}`);
+  document.getElementById('bill-detail-date').textContent = `📅 ${bill.date}`;
+  const itemsEl = document.getElementById('bill-detail-items');
+  itemsEl.innerHTML = bill.items.map(it => `
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.04);">
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600">${it.name}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.45);">${it.pn} · ${it.type}</div>
+      </div>
+      <div style="text-align:right;min-width:110px;">
+        <div>฿${(it.price).toLocaleString()} × ${it.qty}</div>
+        <div style="font-weight:700;margin-top:6px;">฿${(it.price*it.qty).toLocaleString()}</div>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('bill-detail-total-value').textContent = '฿' + (bill.total || 0).toLocaleString();
+  document.getElementById('billDetailModal').classList.add('open');
+}
+
+async function deleteBill(id) {
+  if (!await fancyConfirm('ลบบิลนี้ใช่ไหม? การกระทำนี้จะคืนสต็อกสินค้ากลับเข้าระบบ')) return;
+  const bill = billsCache.find(b => b.id === id);
+  if (!bill) return;
+  await restockItemsFromBill(bill);
+  const res = await fetch(`${API_URL}/orders/${encodeURIComponent(bill.no)}`, { method: 'DELETE' });
+  if (!res.ok) { await fancyAlert('ลบบิลไม่สำเร็จ', 'error'); return; }
+  await loadProducts();
+  await loadHistory();
+  await updateBillNo();
+}
+
+function loadBillToEditor(id) {
+  const bill = billsCache.find(b => b.id === id);
+  if (!bill) return;
+  billItems = bill.items.map(i => ({ ...i }));
+  renderBillItems();
+  document.getElementById('billDate').value = bill.date;
+  document.getElementById('billSaveMsg').textContent = `โหลดบิล #${bill.no} แล้ว (บันทึกจะสร้างบิลใหม่)`;
+}
+
 const testState = {
   active: false,
   timers: {
