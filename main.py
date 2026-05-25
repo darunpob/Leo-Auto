@@ -23,13 +23,25 @@ app.add_middleware(
 
 # --- 1. Database Setup ---
 DB_FILE = "inventory.csv"
+ORDERS_FILE = "orders.json"
 LOCATION_COLUMN = "Storage Location"
 COST_COLUMN = "Cost Price"
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
+client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
 # จำลองโฟลเดอร์รูปภาพถ้ายังไม่มี และเปิดให้หน้าเว็บดึงรูปไปแสดงได้
 if not os.path.exists("picture"):
     os.makedirs("picture")
 app.mount("/picture", StaticFiles(directory="picture"), name="picture")
+
+@app.get("/")
+async def root():
+    return {"status": "ok", "service": "leo-auto-backend"}
+
+@app.get("/health")
+async def health():
+    return {"status": "healthy"}
 
 # ฟังก์ชันจัดการ CSV
 def get_db():
@@ -296,6 +308,8 @@ async def delete_image(part_number: str, image_url: str):
 # [AI CHAT] แชทบอตสอบถามสต็อก
 @app.post("/api/chat")
 async def ai_chat(question: str = Form(...)):
+    if client is None:
+        raise HTTPException(status_code=503, detail="GEMINI_API_KEY is not configured")
     df = get_db()
     inventory_csv = df.to_csv(index=False)
     
@@ -322,6 +336,8 @@ async def ai_chat(question: str = Form(...)):
 # [AI VISION] สแกนรูปภาพหา Part Number
 @app.post("/api/vision")
 async def ai_vision(file: UploadFile = File(...)):
+    if client is None:
+        raise HTTPException(status_code=503, detail="GEMINI_API_KEY is not configured")
     import re
     df = get_db()
     try:
