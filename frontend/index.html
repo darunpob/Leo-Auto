@@ -2602,16 +2602,8 @@
   .bill-date-input:focus { border-color: rgba(96,165,250,0.5); }
   .bill-date-input::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.5; cursor: pointer; }
 
-  .bill-no-badge {
-    background: linear-gradient(135deg,#2563eb,#7c3aed);
-    border-radius: 8px;
-    padding: 6px 12px;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: #fff;
-    white-space: nowrap;
-  }
+  
+  .invoice-template-display, .invoice-template-buttons { display:none !important; }
 
   .bill-search-wrap {
     display: flex; align-items: center; gap: 10px;
@@ -2913,42 +2905,7 @@
   <div class="grid" id="productGrid"></div>
   </div><!-- /page-inventory -->
 
-  <!-- ══════ PAGE: ORDERS ══════ -->
-  <!-- Invoice Template Modal -->
-  <div id="invoiceTemplateModal" class="invoice-template-modal">
-    <div class="invoice-template-box">
-      <div class="invoice-template-title">🧾 สร้างบิลใหม่</div>
-      <div class="invoice-template-sub">กรุณากรอกข้อมูลพื้นฐานของบิล</div>
-      <div class="invoice-template-form">
-        <div class="invoice-template-input-group">
-          <label>ชื่อคนขาย (Seller/Shop Name)</label>
-          <input type="text" id="invoiceSellerName" class="invoice-template-input" placeholder="เช่น นายอร์ต">
-        </div>
-        <div class="invoice-template-input-group">
-          <label>วันที่ (Date)</label>
-          <input type="date" id="invoiceDate" class="invoice-template-input">
-        </div>
-        <div class="invoice-template-input-group">
-          <label>ชื่อคนรับ (Buyer/Receiver Name)</label>
-          <input type="text" id="invoiceBuyerName" class="invoice-template-input" placeholder="ชื่อลูกค้า/ผู้รับ">
-        </div>
-        <div class="invoice-template-input-group">
-          <label>ชื่อคนรับเงิน (Payment Receiver Name)</label>
-          <input type="text" id="invoicePaymentReceiver" class="invoice-template-input" placeholder="ชื่อผู้รับเงิน (โปรดระบุด้านล่างบิล)">
-        </div>
-        <div class="invoice-template-input-group">
-          <label>หมายเหตุเพิ่มเติม (Notes)</label>
-          <input type="text" id="invoiceNotes" class="invoice-template-input" placeholder="หมายเหตุ หรือเบอร์บัญชี">
-        </div>
-      </div>
-      <div class="invoice-template-buttons">
-        <button class="invoice-template-btn" onclick="closeInvoiceTemplate()">ยกเลิก</button>
-        <button class="invoice-template-btn primary" onclick="confirmInvoiceTemplate()">ถัดไป ✓</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="page-orders" style="display:none;">
+  <!-- ------ PAGE: ORDERS ------ -->  <div id="page-orders" style="display:none;">
     <div class="orders-layout">
 
       <!-- LEFT: Bill Editor -->
@@ -2963,31 +2920,7 @@
               <input type="date" id="billDate" class="bill-date-input">
               <div class="bill-no-badge" id="billNoBadge">#1</div>
             </div>
-          </div>
-
-          <!-- Invoice Template Info Display -->
-          <div id="invoiceTemplateInfo" style="background:rgba(96,165,250,0.1);border:0.5px solid rgba(96,165,250,0.3);border-radius:12px;padding:12px;margin-bottom:12px;font-size:12px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-              <div style="font-weight:600;color:rgba(255,255,255,0.8);">📋 ข้อมูลบิล</div>
-              <button onclick="openInvoiceTemplate()" style="background:rgba(96,165,250,0.2);border:0.5px solid rgba(96,165,250,0.4);color:#93c5fd;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(96,165,250,0.3)'" onmouseout="this.style.background='rgba(96,165,250,0.2)'">✏️ แก้ไข</button>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-              <div>
-                <div style="color:rgba(255,255,255,0.5);font-size:10px;margin-bottom:2px;">ชื่อคนขาย:</div>
-                <div id="templateSellerDisplay" style="color:#93c5fd;font-weight:500;">—</div>
-              </div>
-              <div>
-                <div style="color:rgba(255,255,255,0.5);font-size:10px;margin-bottom:2px;">ชื่อคนรับ:</div>
-                <div id="templateBuyerDisplay" style="color:#93c5fd;font-weight:500;">—</div>
-              </div>
-              <div style="grid-column:1/-1;">
-                <div style="color:rgba(255,255,255,0.5);font-size:10px;margin-bottom:2px;">ชื่อคนรับเงิน:</div>
-                <div id="templatePaymentDisplay" style="color:#93c5fd;font-weight:500;">—</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Part Search -->
+          </div>          <!-- Part Search -->
           <div class="bill-search-wrap">
             <span class="search-icon" style="color:rgba(255,255,255,0.35)">🔍</span>
             <input type="text" id="billSearchInput" class="bill-search-input" placeholder="ค้นหาสินค้าเพื่อเพิ่มในบิล…" oninput="billSearch()">
@@ -3607,11 +3540,12 @@
   .print-a5-table .num { text-align:right; }
   @media print {
     @page { size: A5 landscape; margin: 8mm; }
-    body * { visibility: hidden !important; }
-    #printTemplateModal, #printTemplateModal * { visibility: visible !important; }
-    #printTemplateModal { display:block !important; position:static !important; background:transparent !important; padding:0 !important; }
+    html, body { background:#fff !important; }
+    .app-wrapper, .floating-dock, .bg-orbs, .fancy-prompt-overlay { display:none !important; }
+    #printTemplateModal { display:block !important; position:static !important; background:#fff !important; padding:0 !important; }
     #printTemplateModal .report-modal-box { max-width:none !important; width:100% !important; height:auto !important; box-shadow:none !important; border:none !important; background:transparent !important; padding:0 !important; }
     #printTemplateModal .modal-header, #printA5Tools { display:none !important; }
+    #printA5Sheet { box-shadow:none !important; border-radius:0 !important; }
   }
 </style>
 <script>
@@ -4756,9 +4690,7 @@ function openInvoiceTemplate() {
   }, 100);
 }
 
-function closeInvoiceTemplate() {
-  document.getElementById('invoiceTemplateModal').classList.remove('open');
-}
+function closeInvoiceTemplate() {  document.getElementById('invoiceTemplateModal')?.classList.remove('open');}
 
 function confirmInvoiceTemplate() {
   const sellerName = document.getElementById('invoiceSellerName').value.trim();
@@ -4781,11 +4713,7 @@ function confirmInvoiceTemplate() {
   renderBillItems();
 }
 
-function updateTemplateDisplay() {
-  document.getElementById('templateSellerDisplay').textContent = invoiceTemplate.sellerName || '—';
-  document.getElementById('templateBuyerDisplay').textContent = invoiceTemplate.buyerName || '—';
-  document.getElementById('templatePaymentDisplay').textContent = invoiceTemplate.paymentReceiver || '—';
-}
+function updateTemplateDisplay() {  const seller = document.getElementById('templateSellerDisplay');  const buyer = document.getElementById('templateBuyerDisplay');  const payment = document.getElementById('templatePaymentDisplay');  if (seller) seller.textContent = invoiceTemplate.sellerName || '�';  if (buyer) buyer.textContent = invoiceTemplate.buyerName || '�';  if (payment) payment.textContent = invoiceTemplate.paymentReceiver || '�';}
 
 
 
@@ -5357,7 +5285,7 @@ function openBillDetail(id) {
   document.getElementById('billDetailModal').classList.add('open');
 }
 
-function printBillA5(id) {
+function printBillA5_legacy1(id) {
   const bill = billsCache.find(b => b.id === id);
   if (!bill) return;
 
@@ -5715,7 +5643,7 @@ function loadSavedTestResults() {
 }
 
 // Override printBillA5 with editable A5 template (opens editor first, then print)
-function printBillA5(id) {
+function printBillA5_legacy2(id) {
   const bill = (billsCache || []).find(b => b.id === id);
   if (!bill) return;
 
@@ -5882,7 +5810,6 @@ function printBillA5(id) {
     <tr>
       <td>${idx + 1}</td>
       <td><input value="${String(it.name || '').replace(/"/g, '&quot;')}" style="width:100%"></td>
-      <td><input value="${String(it.pn || '').replace(/"/g, '&quot;')}" style="width:100%"></td>
       <td class="num"><input class="p-qty" type="number" min="0" step="1" value="${Number(it.qty || 0)}" style="width:100%;text-align:right"></td>
       <td class="num"><input class="p-price" type="number" min="0" step="0.01" value="${Number(it.price || 0)}" style="width:100%;text-align:right"></td>
       <td class="num p-line">฿0</td>
@@ -5908,7 +5835,7 @@ function printBillA5(id) {
     </div>
     <table class="print-a5-table">
       <thead>
-        <tr><th style="width:7%;">#</th><th style="width:33%;">รายการ</th><th style="width:20%;">Part Number</th><th style="width:10%;" class="num">จำนวน</th><th style="width:15%;" class="num">หน่วยละ</th><th style="width:15%;" class="num">จำนวนเงิน</th></tr>
+        <tr><th style="width:7%;">#</th><th style="width:48%;">??????</th><th style="width:10%;" class="num">?????</th><th style="width:15%;" class="num">???????</th><th style="width:20%;" class="num">?????????</th></tr>
       </thead>
       <tbody>${rows}</tbody>
     </table>
@@ -6288,3 +6215,10 @@ function siRender() {
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
