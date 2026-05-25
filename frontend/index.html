@@ -1,10 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -87,7 +88,7 @@
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    font-family: 'Prompt', 'Sarabun', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background: #0a0a0f;
     color: #f5f5f7;
     min-height: 100vh;
@@ -3530,22 +3531,116 @@
   }
 </style>
 <style>
-  .print-a5-toolbar { display:flex; gap:8px; margin-bottom:10px; }
-  .print-a5-btn { border:0.5px solid rgba(255,255,255,0.22); background:rgba(255,255,255,0.08); color:#fff; border-radius:8px; padding:7px 12px; font-size:12px; cursor:pointer; font-family:inherit; }
-  .print-a5-btn.primary { background:linear-gradient(135deg,#2563eb,#7c3aed); border:none; }
-  .print-a5-sheet { background:#fff; color:#111; border-radius:10px; padding:10mm; font-family:Tahoma, "Segoe UI", sans-serif; }
-  .print-a5-sheet input { border:none; border-bottom:1px solid #222; outline:none; font:inherit; color:#111; background:transparent; }
-  .print-a5-table { width:100%; border-collapse: collapse; font-size:11px; }
-  .print-a5-table th, .print-a5-table td { border:1px solid #222; padding:5px; }
+  .print-a5-toolbar { display:flex; gap:10px; margin-bottom:14px; }
+  .print-a5-btn { border:1px solid rgba(255,255,255,0.16); background:rgba(255,255,255,0.08); color:#fff; border-radius:12px; padding:9px 16px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:transform .18s ease, background .18s ease, box-shadow .18s ease; }
+  .print-a5-btn:hover { transform:translateY(-1px); background:rgba(255,255,255,0.12); }
+  .print-a5-btn.primary { background:linear-gradient(135deg,#2563eb,#7c3aed); border:none; box-shadow:0 12px 28px rgba(79,70,229,0.28); }
+  .print-a5-sheet {
+    width:148mm;
+    min-height:210mm;
+    margin:0 auto;
+    background:linear-gradient(180deg,#ffffff 0%,#fffdfa 100%);
+    color:#1f2937;
+    border-radius:18px;
+    padding:12mm;
+    font-family:'Sarabun','Prompt','Segoe UI',sans-serif;
+    box-shadow:0 22px 60px rgba(15,23,42,0.16);
+  }
+  .print-a5-sheet input, .print-a5-sheet textarea {
+    border:none;
+    border-bottom:1px solid rgba(100,116,139,0.55);
+    outline:none;
+    font:inherit;
+    color:#0f172a;
+    background:transparent;
+    padding:2px 0;
+  }
+  .print-a5-sheet input:focus, .print-a5-sheet textarea:focus { border-bottom-color:#2563eb; }
+  .print-a5-sheet textarea { resize:none; }
+  .print-a5-header { display:flex; justify-content:space-between; gap:10mm; margin-bottom:8mm; }
+  .print-a5-brand { max-width:58%; }
+  .print-a5-badge { display:inline-flex; align-items:center; gap:8px; padding:5px 10px; border-radius:999px; background:#eef4ff; color:#3159b7; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+  .print-a5-title { margin-top:4mm; font-family:'Prompt','Sarabun',sans-serif; font-size:23px; font-weight:700; letter-spacing:-0.03em; color:#0f172a; }
+  .print-a5-subtitle { font-size:11px; color:#475569; margin-top:2px; }
+  .print-a5-meta { flex:1; padding:5mm; border:1px solid #dbe4f0; border-radius:14px; background:#f8fbff; }
+  .print-a5-meta-row { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:11px; margin-bottom:8px; }
+  .print-a5-meta-row:last-child { margin-bottom:0; }
+  .print-a5-meta-row span { color:#64748b; white-space:nowrap; }
+  .print-a5-meta-row input { width:100%; text-align:right; }
+  .print-a5-party { display:grid; grid-template-columns:1fr 1fr; gap:8mm; margin-bottom:7mm; }
+  .print-a5-field { padding:4mm 4.5mm; border:1px solid #e2e8f0; border-radius:12px; background:#fff; }
+  .print-a5-field label { display:block; font-size:10px; font-weight:700; color:#64748b; margin-bottom:3px; text-transform:uppercase; letter-spacing:.04em; }
+  .print-a5-field input { width:100%; }
+  .print-a5-table-wrap { border:1px solid #cbd5e1; border-radius:14px; overflow:hidden; }
+  .print-a5-table { width:100%; border-collapse:collapse; font-size:11px; }
+  .print-a5-table thead th { background:#eaf1ff; color:#334155; font-weight:700; }
+  .print-a5-table th, .print-a5-table td { border-bottom:1px solid #dbe4f0; padding:7px 8px; vertical-align:top; }
+  .print-a5-table tbody tr:last-child td { border-bottom:none; }
   .print-a5-table .num { text-align:right; }
+  .print-a5-table td:first-child, .print-a5-table th:first-child { text-align:center; width:8%; }
+  .print-a5-summary { margin-top:7mm; display:flex; justify-content:flex-end; }
+  .print-a5-totals { width:68mm; padding:5mm; border:1px solid #cbd5e1; border-radius:14px; background:#fcfdff; }
+  .print-a5-total-row { display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:11px; margin-bottom:6px; }
+  .print-a5-total-row:last-child { margin-bottom:0; }
+  .print-a5-total-row.grand { margin-top:7px; padding-top:7px; border-top:1px solid #cbd5e1; font-size:13px; font-weight:700; color:#0f172a; }
+  .print-a5-total-row input { width:90px; text-align:right; }
+  .print-a5-note { margin-top:6mm; padding:4mm 4.5mm; border:1px dashed #cbd5e1; border-radius:12px; color:#475569; }
+  .print-a5-note label { display:block; font-size:10px; font-weight:700; color:#64748b; margin-bottom:3px; text-transform:uppercase; letter-spacing:.04em; }
+  .print-a5-note textarea { width:100%; min-height:18mm; border-bottom:none; }
+  .print-a5-signatures { margin-top:10mm; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8mm; font-size:11px; }
+  .print-a5-signatures label { display:block; margin-bottom:11mm; color:#475569; font-weight:600; }
+  .print-a5-signatures input { width:100%; text-align:center; }
+  .print-a5-foot { margin-top:6mm; display:flex; justify-content:space-between; align-items:center; font-size:10px; color:#64748b; }
+  @media (max-width: 900px) {
+    .print-a5-sheet { width:100%; min-height:auto; padding:8mm; }
+    .print-a5-header, .print-a5-party, .print-a5-signatures { grid-template-columns:1fr; display:grid; }
+    .print-a5-brand { max-width:none; }
+    .print-a5-summary { justify-content:stretch; }
+    .print-a5-totals { width:100%; }
+    .print-a5-foot { flex-direction:column; align-items:flex-start; gap:4px; }
+  }
   @media print {
-    @page { size: A5 landscape; margin: 8mm; }
-    html, body { background:#fff !important; }
-    .app-wrapper, .floating-dock, .bg-orbs, .fancy-prompt-overlay { display:none !important; }
-    #printTemplateModal { display:block !important; position:static !important; background:#fff !important; padding:0 !important; }
-    #printTemplateModal .report-modal-box { max-width:none !important; width:100% !important; height:auto !important; box-shadow:none !important; border:none !important; background:transparent !important; padding:0 !important; }
+    @page { size: A5 portrait; margin: 6mm; }
+    html, body {
+      width:auto !important;
+      height:auto !important;
+      overflow:visible !important;
+      background:#fff !important;
+    }
+    body.modal-lock { position:static !important; overflow:visible !important; }
+    body * { visibility:hidden !important; }
+    #printTemplateModal, #printTemplateModal * { visibility:visible !important; }
+    #printTemplateModal {
+      display:block !important;
+      position:absolute !important;
+      inset:0 !important;
+      background:#fff !important;
+      padding:0 !important;
+      margin:0 !important;
+    }
+    #printTemplateModal .report-modal-box {
+      max-width:none !important;
+      width:auto !important;
+      height:auto !important;
+      min-height:0 !important;
+      box-shadow:none !important;
+      border:none !important;
+      background:transparent !important;
+      padding:0 !important;
+      margin:0 !important;
+      overflow:visible !important;
+    }
     #printTemplateModal .modal-header, #printA5Tools { display:none !important; }
-    #printA5Sheet { box-shadow:none !important; border-radius:0 !important; }
+    #printA5Sheet {
+      width:100% !important;
+      min-height:0 !important;
+      margin:0 !important;
+      padding:0 !important;
+      border-radius:0 !important;
+      box-shadow:none !important;
+      background:#fff !important;
+    }
+    #printA5Sheet input, #printA5Sheet textarea { border-bottom-color:#94a3b8 !important; }
   }
 </style>
 <script>
@@ -4713,7 +4808,7 @@ function confirmInvoiceTemplate() {
   renderBillItems();
 }
 
-function updateTemplateDisplay() {  const seller = document.getElementById('templateSellerDisplay');  const buyer = document.getElementById('templateBuyerDisplay');  const payment = document.getElementById('templatePaymentDisplay');  if (seller) seller.textContent = invoiceTemplate.sellerName || '�';  if (buyer) buyer.textContent = invoiceTemplate.buyerName || '�';  if (payment) payment.textContent = invoiceTemplate.paymentReceiver || '�';}
+function updateTemplateDisplay() {  const seller = document.getElementById('templateSellerDisplay');  const buyer = document.getElementById('templateBuyerDisplay');  const payment = document.getElementById('templatePaymentDisplay');  if (seller) seller.textContent = invoiceTemplate.sellerName || '-';  if (buyer) buyer.textContent = invoiceTemplate.buyerName || '-';  if (payment) payment.textContent = invoiceTemplate.paymentReceiver || '-';}
 
 
 
@@ -5806,10 +5901,16 @@ function printBillA5(id) {
   const bill = (billsCache || []).find(b => b.id === id);
   if (!bill) return;
 
+  const escapeAttr = (value) => String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
   const rows = (bill.items || []).map((it, idx) => `
     <tr>
       <td>${idx + 1}</td>
-      <td><input value="${String(it.name || '').replace(/"/g, '&quot;')}" style="width:100%"></td>
+      <td><input value="${escapeAttr(it.name || '')}" style="width:100%"></td>
       <td class="num"><input class="p-qty" type="number" min="0" step="1" value="${Number(it.qty || 0)}" style="width:100%;text-align:right"></td>
       <td class="num"><input class="p-price" type="number" min="0" step="0.01" value="${Number(it.price || 0)}" style="width:100%;text-align:right"></td>
       <td class="num p-line">฿0</td>
@@ -5817,46 +5918,81 @@ function printBillA5(id) {
   `).join('');
 
   const title = (bill.name && String(bill.name).trim()) ? bill.name : `บิล #${bill.no}`;
+  const today = bill.date || new Date().toISOString().slice(0, 10);
   const sheet = document.getElementById('printA5Sheet');
   if (!sheet) return;
   sheet.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8mm;">
+    <div class="print-a5-header">
+      <div class="print-a5-brand">
+        <div class="print-a5-badge">Leo Auto Receipt</div>
+        <div class="print-a5-title">ใบเสร็จรับเงิน / Cash Sale</div>
+        <div class="print-a5-subtitle">แบบฟอร์มพิมพ์ A5 แนวตั้ง แก้ไขรายละเอียดก่อนพิมพ์ได้</div>
+      </div>
+      <div class="print-a5-meta">
+        <div class="print-a5-meta-row"><span>เลขที่เอกสาร</span><input id="p-billno" value="${escapeAttr(String(bill.no || ''))}"></div>
+        <div class="print-a5-meta-row"><span>วันที่</span><input id="p-date" value="${escapeAttr(today)}"></div>
+        <div class="print-a5-meta-row"><span>ชื่อบิล</span><input id="p-title" value="${escapeAttr(title)}"></div>
+      </div>
+    </div>
+    <div class="print-a5-party">
+      <div class="print-a5-field">
+        <label>ผู้ขาย</label>
+        <input id="p-seller" value="Leo Auto">
+      </div>
+      <div class="print-a5-field">
+        <label>ลูกค้า</label>
+        <input id="p-customer" value="">
+      </div>
+    </div>
+    <div class="print-a5-table-wrap">
+      <table class="print-a5-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>รายการ</th>
+            <th class="num">จำนวน</th>
+            <th class="num">ราคา/ชิ้น</th>
+            <th class="num">รวม</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div class="print-a5-summary">
+      <div class="print-a5-totals">
+        <div class="print-a5-total-row"><span>รวมก่อนลด</span><strong id="p-subtotal">฿0</strong></div>
+        <div class="print-a5-total-row"><span>ส่วนลด</span><input id="p-discount" type="number" min="0" step="0.01" value="0"></div>
+        <div class="print-a5-total-row grand"><span>ยอดสุทธิ</span><span id="p-grand">฿0</span></div>
+      </div>
+    </div>
+    <div class="print-a5-note">
+      <label>หมายเหตุ</label>
+      <textarea id="p-note" placeholder="เช่น รับเงินสดครบแล้ว / นัดรับสินค้า / ข้อมูลเพิ่มเติม"></textarea>
+    </div>
+    <div class="print-a5-signatures">
       <div>
-        <div style="font-size:18px;font-weight:700;">Leo Auto</div>
-        <div style="font-size:16px;font-weight:700;">ใบเงินสด / CASH SALE</div>
-        <div style="font-size:11px;margin-top:4px;">ผู้ขาย: <input id="p-seller" value="Leo Auto" style="width:180px;"></div>
+        <label>ผู้รับสินค้า</label>
+        <input id="p-receiver" value="">
       </div>
-      <div style="font-size:12px;line-height:1.6;text-align:right;">
-        <div><strong>${title}</strong></div>
-        <div>วันที่: <input id="p-date" value="${bill.date || ''}" style="width:120px;"></div>
-        <div>เลขที่บิล: <input id="p-billno" value="${String(bill.no || '')}" style="width:80px;"></div>
-        <div>ลูกค้า: <input id="p-customer" value="" style="width:180px;"></div>
+      <div>
+        <label>ผู้รับเงิน</label>
+        <input id="p-collector" value="">
       </div>
-    </div>
-    <table class="print-a5-table">
-      <thead>
-        <tr><th style="width:7%;">#</th><th style="width:48%;">??????</th><th style="width:10%;" class="num">?????</th><th style="width:15%;" class="num">???????</th><th style="width:20%;" class="num">?????????</th></tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
-    <div style="margin-top:6mm;display:flex;justify-content:flex-end;">
-      <div style="min-width:40%;border:1px solid #222;padding:8px 10px;font-size:12px;">
-        <div style="display:flex;justify-content:space-between;"><span>รวมก่อนลด</span><strong id="p-subtotal">฿0</strong></div>
-        <div style="display:flex;justify-content:space-between;margin-top:4px;"><span>ส่วนลด</span><input id="p-discount" type="number" min="0" step="0.01" value="0" style="width:120px;text-align:right"></div>
-        <div style="display:flex;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid #222;font-weight:700;"><span>รวมทั้งสิ้น</span><span id="p-grand">฿0</span></div>
+      <div>
+        <label>ผู้ขาย</label>
+        <input id="p-seller-sign" value="">
       </div>
     </div>
-    <div style="margin-top:8mm;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10mm;font-size:12px;">
-      <div>ผู้รับสินค้า<div style="margin-top:10mm;border-top:1px solid #222;"><input id="p-receiver" value="" style="width:100%;border:none;"></div></div>
-      <div>ผู้รับเงิน<div style="margin-top:10mm;border-top:1px solid #222;"><input id="p-collector" value="" style="width:100%;border:none;"></div></div>
-      <div>ผู้ขาย<div style="margin-top:10mm;border-top:1px solid #222;"><input id="p-seller-sign" value="" style="width:100%;border:none;"></div></div>
+    <div class="print-a5-foot">
+      <span>เอกสารนี้จัดทำจากระบบ Leo Auto</span>
+      <span>ขนาดพิมพ์ A5 แนวตั้ง</span>
     </div>
   `;
 
   document.getElementById('printTemplateModal')?.classList.add('open');
-  sheet.addEventListener('input', (e) => {
+  sheet.oninput = (e) => {
     if (e.target.matches('.p-qty,.p-price,#p-discount')) _recalcPrintA5();
-  }, { once: true });
+  };
   _recalcPrintA5();
 }
 
@@ -6132,7 +6268,7 @@ function siRender() {
 <div id="printTemplateModal" class="modal-overlay" onclick="if(event.target===this) closePrintTemplate()">
   <div class="report-modal-box" style="max-width:1100px;height:90vh;padding:14px;" onclick="event.stopPropagation()">
     <div class="modal-header">
-      <div class="modal-title">🖨️ Template บิล A5 (แก้ไขก่อนพิมพ์)</div>
+      <div class="modal-title">ใบเสร็จ A5 แนวตั้ง (แก้ไขก่อนพิมพ์)</div>
       <button class="modal-close" onclick="closePrintTemplate()">✕</button>
     </div>
     <div id="printA5Tools" class="print-a5-toolbar">
