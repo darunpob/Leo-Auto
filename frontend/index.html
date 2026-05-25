@@ -3857,9 +3857,9 @@
     display:grid;
     grid-template-columns: 1fr 1fr 1fr;
     align-items:center;
-    font-size:10px;
+    font-size:11px;
     color:#334155;
-    margin-bottom:2mm;
+    margin-bottom:3mm;
   }
   .print-tax-topline .center {
     text-align:center;
@@ -3871,45 +3871,46 @@
   }
   .print-tax-header {
     text-align:center;
-    padding-bottom:2mm;
+    padding-bottom:3mm;
     border-bottom:1px dashed #cbd5e1;
-    margin-bottom:2mm;
+    margin-bottom:3mm;
   }
   .print-tax-docname {
-    font-size:16px;
+    font-size:19px;
     font-weight:800;
     color:#1e3a8a;
     letter-spacing:-0.02em;
   }
   .print-tax-company {
     margin-top:1mm;
-    font-size:18px;
+    font-size:22px;
     font-weight:800;
     color:#0f172a;
   }
   .print-tax-meta {
     margin-top:1mm;
-    font-size:9.5px;
+    font-size:10.5px;
+    line-height:1.5;
     color:#475569;
   }
   .print-tax-grid {
     display:grid;
     grid-template-columns: 1.1fr 0.9fr;
-    gap:2mm;
-    margin-bottom:2mm;
+    gap:3mm;
+    margin-bottom:3mm;
   }
   .print-tax-box {
     border:1px solid #cbd5e1;
-    border-radius:8px;
-    padding:2mm 2.5mm;
+    border-radius:10px;
+    padding:2.5mm 3mm;
     background:#fcfdff;
   }
   .print-tax-box label {
     display:block;
-    font-size:9px;
+    font-size:10px;
     font-weight:700;
     color:#64748b;
-    margin-bottom:0.5mm;
+    margin-bottom:1mm;
   }
   .print-tax-box input,
   .print-tax-box textarea {
@@ -3928,25 +3929,25 @@
   }
   .print-tax-table-wrap {
     border:1px solid #94a3b8;
-    border-radius:8px;
+    border-radius:12px;
     overflow:hidden;
     margin-top:1mm;
   }
   .print-tax-table {
     width:100%;
     border-collapse:collapse;
-    font-size:9.5px;
+    font-size:10.5px;
   }
   .print-tax-table th {
     background:#edf2ff;
     color:#334155;
     font-weight:700;
     border-bottom:1px solid #cbd5e1;
-    padding:3px 4px;
+    padding:4px 5px;
   }
   .print-tax-table td {
     border-bottom:1px solid #dbe4f0;
-    padding:3px 4px;
+    padding:4px 5px;
     vertical-align:top;
   }
   .print-tax-table tbody tr:last-child td {
@@ -3961,29 +3962,29 @@
   .print-tax-total {
     display:flex;
     justify-content:flex-end;
-    margin-top:2mm;
+    margin-top:3mm;
   }
   .print-tax-total-card {
-    width:50%;
+    width:46%;
     border:1px solid #cbd5e1;
-    border-radius:8px;
+    border-radius:12px;
     background:#fcfdff;
-    padding:2mm 2.5mm;
+    padding:2.5mm 3mm;
   }
   .print-tax-signs {
-    margin-top:2mm;
+    margin-top:4mm;
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:4mm;
+    gap:5mm;
   }
   .print-tax-sign {
-    font-size:9px;
+    font-size:10px;
     color:#475569;
   }
   .print-tax-sign .line {
-    margin-top:5mm;
+    margin-top:7mm;
     border-top:1px dashed #94a3b8;
-    padding-top:1mm;
+    padding-top:2mm;
     text-align:center;
   }
   @media (max-width: 900px) {
@@ -4049,7 +4050,7 @@
     }
     .print-a5-page {
       width:210mm !important;
-      min-height:120mm !important;
+      min-height:148mm !important;
       margin:0 !important;
       padding:0 !important;
       break-after: page;
@@ -4063,9 +4064,9 @@
     }
     .print-a5-sheet {
       width:210mm !important;
-      min-height:120mm !important;
+      min-height:148mm !important;
       margin:0 !important;
-      padding:5mm 6mm !important;
+      padding:8mm 9mm !important;
       border-radius:0 !important;
       box-shadow:none !important;
       background:#fff !important;
@@ -4076,7 +4077,7 @@
       break-before: page;
     }
     .print-a5-watermark {
-      font-size:42px !important;
+      font-size:54px !important;
       color:rgba(30,64,175,0.07) !important;
     }
     #printA5Sheet input, #printA5Sheet textarea { border-bottom-color:#94a3b8 !important; }
@@ -6460,18 +6461,33 @@ function _escapePrintText(value) {
     .replace(/"/g, '&quot;');
 }
 
+function _getPrintWatermarkText() {
+  return (document.getElementById('p-copy-watermark')?.value || 'สำเนา').trim() || 'สำเนา';
+}
+
+function _isPrintCopyEnabled() {
+  return (document.getElementById('p-copy-mode')?.value || 'copy') !== 'off';
+}
+
+function _isPrintTaxEnabled() {
+  return (document.getElementById('p-tax-mode')?.value || 'tax') !== 'off';
+}
+
 let printTaxState = null;
-let currentPrintBill = null;
 
 function _getPrintLineItems() {
-  if (!currentPrintBill) return [];
-  return (currentPrintBill.items || []).map((it, idx) => ({
-    idx,
-    name: it.name || '',
-    qty: Number(it.qty || 0),
-    price: Number(it.price || 0),
-    line: Number(it.qty || 0) * Number(it.price || 0)
-  }));
+  return Array.from(document.querySelectorAll('#printA5Editor tbody tr')).map((r, idx) => {
+    const qty = Number(r.querySelector('.p-qty')?.value || 0);
+    const price = Number(r.querySelector('.p-price')?.value || 0);
+    const line = qty * price;
+    return {
+      idx,
+      name: r.querySelector('td:nth-child(2) input')?.value || '',
+      qty,
+      price,
+      line
+    };
+  });
 }
 
 function _splitBahtSatang(amount) {
@@ -6489,17 +6505,17 @@ function _ensurePrintTaxState() {
       sellerName: 'ร้านลีโอ ออโต้',
       sellerAddress: 'เลขที่ 32/249-250 หมู่ 6 ถนนพหลโยธิน ต.คลองหนึ่ง อ.คลองหลวง จ.ปทุมธานี 12120',
       sellerTaxId: '3450100241329',
-      sellerPhone: '02-9018295',
+      sellerPhone: '02-901829',
       customerName: '',
       customerAddress: '',
       customerTaxId: '',
       date: ''
     };
   }
-  if (currentPrintBill) {
-    if (!printTaxState.customerName) printTaxState.customerName = currentPrintBill.customer || '';
-    if (!printTaxState.date) printTaxState.date = currentPrintBill.date || new Date().toISOString().slice(0, 10);
-  }
+  const customer = document.getElementById('p-customer')?.value || '';
+  const date = document.getElementById('p-date')?.value || '';
+  if (!printTaxState.customerName) printTaxState.customerName = customer;
+  if (!printTaxState.date) printTaxState.date = date;
 }
 
 function updatePrintTaxField(field, value) {
@@ -6507,11 +6523,134 @@ function updatePrintTaxField(field, value) {
   printTaxState[field] = value;
 }
 
+function _syncPrintA5Copy() {
+  const copySheet = document.getElementById('printA5Copy');
+  const copyWrap = document.getElementById('printA5CopyPage');
+  if (!copySheet || !copyWrap) return;
+
+  const enabled = _isPrintCopyEnabled();
+  copyWrap.style.display = enabled ? '' : 'none';
+  if (!enabled) return;
+
+  const watermark = _escapePrintText(_getPrintWatermarkText());
+  const title = _escapePrintText(document.getElementById('p-title')?.value || 'ใบเสร็จรับเงิน / Cash Sale');
+  const badge = _escapePrintText(document.getElementById('p-badge')?.value || 'บิลเงินสด');
+  const date = _escapePrintText(document.getElementById('p-date')?.value || '');
+  const seller = _escapePrintText(document.getElementById('p-seller')?.value || '');
+  const customer = _escapePrintText(document.getElementById('p-customer')?.value || '');
+  const note = _escapePrintText(document.getElementById('p-note')?.value || '');
+  const receiver = _escapePrintText(document.getElementById('p-receiver')?.value || '');
+  const collector = _escapePrintText(document.getElementById('p-collector')?.value || '');
+  const sellerSign = _escapePrintText(document.getElementById('p-seller-sign')?.value || '');
+  const subtotal = _escapePrintText(document.getElementById('p-subtotal')?.textContent || '฿0');
+  const discount = Number(document.getElementById('p-discount')?.value || 0);
+  const grand = _escapePrintText(document.getElementById('p-grand')?.textContent || '฿0');
+
+  const rows = Array.from(document.querySelectorAll('#printA5Editor tbody tr')).map((r, idx) => {
+    const name = _escapePrintText(r.querySelector('td:nth-child(2) input')?.value || '');
+    const qty = Number(r.querySelector('.p-qty')?.value || 0).toLocaleString();
+    const price = Number(r.querySelector('.p-price')?.value || 0).toLocaleString();
+    const line = _escapePrintText(r.querySelector('.p-line')?.textContent || '฿0');
+    return `
+      <tr>
+        <td>${idx + 1}</td>
+        <td><div class="print-a5-static-text">${name}</div></td>
+        <td class="num"><div class="print-a5-static-text" style="text-align:right">${qty}</div></td>
+        <td class="num"><div class="print-a5-static-text" style="text-align:right">${price}</div></td>
+        <td class="num">${line}</td>
+      </tr>
+    `;
+  }).join('');
+
+  copySheet.innerHTML = `
+    <div class="print-a5-watermark">${watermark}</div>
+    <div class="print-a5-header">
+      <div class="print-a5-brand">
+        <div class="print-a5-badge">${badge}</div>
+        <div class="print-a5-title">${title}</div>
+      </div>
+      <div class="print-a5-meta">
+        <div class="print-a5-meta-row"><span>วันที่</span><div class="print-a5-static-text" style="text-align:right">${date}</div></div>
+      </div>
+    </div>
+    <div class="print-a5-party">
+      <div class="print-a5-field">
+        <label>ผู้ขาย</label>
+        <div class="print-a5-static-text">${seller}</div>
+      </div>
+      <div class="print-a5-field">
+        <label>ลูกค้า</label>
+        <div class="print-a5-static-text">${customer}</div>
+      </div>
+    </div>
+    <div class="print-a5-table-wrap">
+      <table class="print-a5-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>รายการ</th>
+            <th class="num">จำนวน</th>
+            <th class="num">ราคา/ชิ้น</th>
+            <th class="num">รวม</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div class="print-a5-grow"></div>
+    <div class="print-a5-lower">
+      <div class="print-a5-note">
+        <label>หมายเหตุ</label>
+        <div style="min-height:20px;white-space:pre-wrap;line-height:1.3;">${note}</div>
+      </div>
+      <div class="print-a5-summary">
+        <div class="print-a5-totals">
+          <div class="print-a5-total-row"><span>รวมก่อนลด</span><strong>${subtotal}</strong></div>
+          <div class="print-a5-total-row"><span>ส่วนลด</span><span>฿${discount.toLocaleString()}</span></div>
+          <div class="print-a5-total-row grand"><span>ยอดสุทธิ</span><span>${grand}</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="print-a5-signatures">
+      <div>
+        <label>ผู้รับสินค้า</label>
+        <div class="print-a5-static-text" style="text-align:center">${receiver}</div>
+      </div>
+      <div>
+        <label>ผู้รับเงิน</label>
+        <div class="print-a5-static-text" style="text-align:center">${collector}</div>
+      </div>
+      <div>
+        <label>ผู้ขาย</label>
+        <div class="print-a5-static-text" style="text-align:center">${sellerSign}</div>
+      </div>
+    </div>
+    <div class="print-a5-foot">
+      <span>${watermark}</span>
+      <span>สำเนา</span>
+    </div>
+  `;
+}
+
 function _syncPrintA5Tax() {
   const taxSheet = document.getElementById('printA5Tax');
-  if (!taxSheet) return;
+  const taxWrap = document.getElementById('printA5TaxPage');
+  if (!taxSheet || !taxWrap) return;
+
+  const enabled = _isPrintTaxEnabled();
+  taxWrap.style.display = enabled ? '' : 'none';
+  if (!enabled) return;
 
   _ensurePrintTaxState();
+
+  const customerSource = document.getElementById('p-customer')?.value || '';
+  const dateSource = document.getElementById('p-date')?.value || '';
+  if (!printTaxState.customerName || printTaxState.customerName === customerSource) {
+    printTaxState.customerName = customerSource;
+  }
+  if (!printTaxState.date || printTaxState.date === dateSource) {
+    printTaxState.date = dateSource;
+  }
 
   const items = _getPrintLineItems();
   const subtotalValue = items.reduce((sum, item) => sum + item.line, 0);
@@ -6549,10 +6688,8 @@ function _syncPrintA5Tax() {
       <div class="print-tax-docname"><input value="${_escapePrintText(printTaxState.docName)}" oninput="updatePrintTaxField('docName', this.value)" style="width:100%;text-align:center;font-weight:800;color:#1e3a8a"></div>
       <div class="print-tax-company"><input value="${_escapePrintText(printTaxState.sellerName)}" oninput="updatePrintTaxField('sellerName', this.value)" style="width:100%;text-align:center;font-size:22px;font-weight:800"></div>
       <div class="print-tax-meta">
-        <div style="text-align:center;margin-bottom:2px;">
-          <input value="${_escapePrintText(printTaxState.sellerAddress)}" oninput="updatePrintTaxField('sellerAddress', this.value)" style="width:100%;text-align:center">
-        </div>
-        <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;">
+        <textarea oninput="updatePrintTaxField('sellerAddress', this.value)" style="text-align:center">${_escapePrintText(printTaxState.sellerAddress)}</textarea>
+        <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:4px;">
           <span>เลขประจำตัวผู้เสียภาษี</span>
           <input value="${_escapePrintText(printTaxState.sellerTaxId)}" oninput="updatePrintTaxField('sellerTaxId', this.value)" style="width:190px;text-align:center">
           <span>โทร.</span>
@@ -6599,17 +6736,38 @@ function _syncPrintA5Tax() {
         <div class="print-a5-total-row grand"><span>รวมเงิน</span><span>${totalSplit.baht}${totalSplit.satang !== '00' ? '.' + totalSplit.satang : ''}</span></div>
       </div>
     </div>
-<div class="print-tax-signs">
-       <div class="print-tax-sign">
-         ผู้รับเงิน
-         <div class="line">${_escapePrintText(printTaxState.collector || '')}</div>
-       </div>
-       <div class="print-tax-sign">
-         ผู้รับสินค้า
-         <div class="line">${_escapePrintText(printTaxState.receiver || '')}</div>
-       </div>
-     </div>
-`;
+    <div class="print-tax-signs">
+      <div class="print-tax-sign">
+        ผู้รับเงิน
+        <div class="line">${_escapePrintText(document.getElementById('p-collector')?.value || '')}</div>
+      </div>
+      <div class="print-tax-sign">
+        ผู้รับสินค้า
+        <div class="line">${_escapePrintText(document.getElementById('p-receiver')?.value || '')}</div>
+      </div>
+    </div>
+  `;
+}
+
+function _recalcPrintA5() {
+  const rows = document.querySelectorAll('#printA5Editor tbody tr');
+  let sub = 0;
+  rows.forEach(r => {
+    const q = Number(r.querySelector('.p-qty')?.value || 0);
+    const p = Number(r.querySelector('.p-price')?.value || 0);
+    const line = q * p;
+    sub += line;
+    const o = r.querySelector('.p-line');
+    if (o) o.textContent = '฿' + line.toLocaleString();
+  });
+  const disc = Math.max(0, Number(document.getElementById('p-discount')?.value || 0));
+  const grand = Math.max(0, sub - disc);
+  const s = document.getElementById('p-subtotal');
+  const g = document.getElementById('p-grand');
+  if (s) s.textContent = '฿' + sub.toLocaleString();
+  if (g) g.textContent = '฿' + grand.toLocaleString();
+  _syncPrintA5Copy();
+  _syncPrintA5Tax();
 }
 
 // Override: no popup, open editable in-page template
@@ -6617,24 +6775,141 @@ function printBillA5(id) {
   const bill = (billsCache || []).find(b => b.id === id);
   if (!bill) return;
 
-currentPrintBill = bill;
+  const escapeAttr = (value) => String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 
+  const rows = (bill.items || []).map((it, idx) => `
+    <tr>
+      <td>${idx + 1}</td>
+      <td><input value="${escapeAttr(it.name || '')}" style="width:100%"></td>
+      <td class="num"><input class="p-qty" type="number" min="0" step="1" value="${Number(it.qty || 0)}" style="width:100%;text-align:right"></td>
+      <td class="num"><input class="p-price" type="number" min="0" step="0.01" value="${Number(it.price || 0)}" style="width:100%;text-align:right"></td>
+      <td class="num p-line">฿0</td>
+    </tr>
+  `).join('');
+
+  const title = (bill.name && String(bill.name).trim()) ? bill.name : `บิล #${bill.no}`;
+  const today = bill.date || new Date().toISOString().slice(0, 10);
   const sheet = document.getElementById('printA5Sheet');
   if (!sheet) return;
   sheet.innerHTML = `
-     <div class="print-a5-toolbar">
-       <button class="print-a5-btn primary" onclick="window.print()">พิมพ์ A5</button>
-       <button class="print-a5-btn" onclick="closePrintTemplate()">ปิด</button>
-     </div>
-     <div class="print-a5-stack">
-       <div class="print-a5-page">
-         <div class="print-a5-copy-title"></div>
-         <div id="printA5Tax" class="print-a5-sheet print-tax-sheet"></div>
-       </div>
-     </div>
-   `;
+    <div class="print-a5-toolbar">
+      <button class="print-a5-btn primary" onclick="window.print()">พิมพ์ A5</button>
+      <button class="print-a5-btn" onclick="closePrintTemplate()">ปิด</button>
+      <div class="print-a5-tool-group">
+        <span class="print-a5-tool-label">หน้าที่สอง</span>
+        <select id="p-copy-mode" class="print-a5-tool-select">
+          <option value="copy" selected>แสดงหน้าสำเนา</option>
+          <option value="off">ไม่แสดง</option>
+        </select>
+        <span class="print-a5-tool-label">ลายน้ำ</span>
+        <input id="p-copy-watermark" class="print-a5-tool-input" value="สำเนา">
+        <span class="print-a5-tool-label">หน้าที่สาม</span>
+        <select id="p-tax-mode" class="print-a5-tool-select">
+          <option value="tax" selected>บิลใช้เสียภาษี</option>
+          <option value="off">ไม่แสดง</option>
+        </select>
+      </div>
+    </div>
+    <div class="print-a5-stack">
+      <div class="print-a5-page">
+        <div class="print-a5-copy-title">ต้นฉบับ</div>
+        <div id="printA5Editor" class="print-a5-sheet">
+          <div class="print-a5-header">
+            <div class="print-a5-brand">
+              <div class="print-a5-badge"><input id="p-badge" value="บิลเงินสด" style="width:110px"></div>
+              <div class="print-a5-title"><input id="p-title" value="ใบเสร็จรับเงิน / Cash Sale" style="width:100%"></div>
+            </div>
+            <div class="print-a5-meta">
+              <div class="print-a5-meta-row"><span>วันที่</span><input id="p-date" value="${escapeAttr(today)}"></div>
+            </div>
+          </div>
+          <div class="print-a5-party">
+            <div class="print-a5-field">
+              <label>ผู้ขาย</label>
+              <input id="p-seller" value="Leo Auto">
+            </div>
+            <div class="print-a5-field">
+              <label>ลูกค้า</label>
+              <input id="p-customer" value="">
+            </div>
+          </div>
+          <div class="print-a5-table-wrap">
+            <table class="print-a5-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>รายการ</th>
+                  <th class="num">จำนวน</th>
+                  <th class="num">ราคา/ชิ้น</th>
+                  <th class="num">รวม</th>
+                </tr>
+              </thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+          <div class="print-a5-grow"></div>
+          <div class="print-a5-lower">
+            <div class="print-a5-note">
+              <label>หมายเหตุ</label>
+              <textarea id="p-note" placeholder="เช่น รับเงินสดครบแล้ว / นัดรับสินค้า / ข้อมูลเพิ่มเติม"></textarea>
+            </div>
+            <div class="print-a5-summary">
+              <div class="print-a5-totals">
+                <div class="print-a5-total-row"><span>รวมก่อนลด</span><strong id="p-subtotal">฿0</strong></div>
+                <div class="print-a5-total-row"><span>ส่วนลด</span><input id="p-discount" type="number" min="0" step="0.01" value="0"></div>
+                <div class="print-a5-total-row grand"><span>ยอดสุทธิ</span><span id="p-grand">฿0</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="print-a5-signatures">
+            <div>
+              <label>ผู้รับสินค้า</label>
+              <input id="p-receiver" value="">
+            </div>
+            <div>
+              <label>ผู้รับเงิน</label>
+              <input id="p-collector" value="">
+            </div>
+            <div>
+              <label>ผู้ขาย</label>
+              <input id="p-seller-sign" value="">
+            </div>
+          </div>
+          <div class="print-a5-foot">
+            <span></span>
+            <span>ต้นฉบับ</span>
+          </div>
+        </div>
+      </div>
+      <div id="printA5CopyPage" class="print-a5-page">
+        <div class="print-a5-copy-title"></div>
+        <div id="printA5Copy" class="print-a5-sheet print-a5-sheet-copy"></div>
+      </div>
+      <div id="printA5TaxPage" class="print-a5-page">
+        <div class="print-a5-copy-title">บิลใช้เสียภาษี</div>
+        <div id="printA5Tax" class="print-a5-sheet print-tax-sheet"></div>
+      </div>
+    </div>
+  `;
 
   document.getElementById('printTemplateModal')?.classList.add('open');
+  sheet.oninput = (e) => {
+    if (e.target.matches('.p-qty,.p-price,#p-discount,#p-title,#p-badge,#p-date,#p-seller,#p-customer,#p-note,#p-receiver,#p-collector,#p-seller-sign')) {
+      _recalcPrintA5();
+    }
+  };
+  sheet.onchange = (e) => {
+    if (e.target.matches('#p-copy-mode,#p-copy-watermark,#p-tax-mode,.p-qty,.p-price,#p-discount,#p-title,#p-badge,#p-date,#p-seller,#p-customer,#p-note,#p-receiver,#p-collector,#p-seller-sign')) {
+      _syncPrintA5Copy();
+      _syncPrintA5Tax();
+    }
+  };
+  _recalcPrintA5();
+  _syncPrintA5Copy();
   _syncPrintA5Tax();
 }
 
@@ -6989,3 +7264,10 @@ function siRender() {
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
