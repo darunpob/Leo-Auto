@@ -902,6 +902,113 @@
   #bill-detail-total-label { font-size: 14px; color: rgba(255,255,255,0.6); }
   #bill-detail-total-value { font-size: 22px; font-weight: 700; margin-left: 12px; }
 
+  /* --- Invoice Template Modal --- */
+  .invoice-template-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .invoice-template-modal.open {
+    display: flex;
+  }
+  .invoice-template-box {
+    background: rgba(16, 16, 28, 0.98);
+    border: 0.5px solid rgba(255, 255, 255, 0.14);
+    border-radius: 22px;
+    width: 100%;
+    max-width: 600px;
+    padding: 28px;
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.75), 0 0 0 0.5px rgba(255, 255, 255, 0.07);
+    animation: modalIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .invoice-template-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 12px;
+    color: rgba(255, 255, 255, 0.92);
+  }
+  .invoice-template-sub {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.55);
+    margin-bottom: 20px;
+  }
+  .invoice-template-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .invoice-template-form > div:nth-child(3),
+  .invoice-template-form > div:nth-child(4),
+  .invoice-template-form > div:nth-child(5) {
+    grid-column: 1 / -1;
+  }
+  .invoice-template-input-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .invoice-template-input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    color: white;
+    border: 0.5px solid rgba(255, 255, 255, 0.14);
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .invoice-template-input:focus {
+    border-color: rgba(96, 165, 250, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .invoice-template-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
+  .invoice-template-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  .invoice-template-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.68);
+    background: rgba(255, 255, 255, 0.07);
+  }
+  .invoice-template-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+  }
+  .invoice-template-btn.primary {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    border: none;
+    color: #fff;
+  }
+  .invoice-template-btn.primary:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.5);
+  }
+
   /* --- Orders View --- */
   .orders-grid {
     display: grid;
@@ -2807,6 +2914,40 @@
   </div><!-- /page-inventory -->
 
   <!-- ══════ PAGE: ORDERS ══════ -->
+  <!-- Invoice Template Modal -->
+  <div id="invoiceTemplateModal" class="invoice-template-modal">
+    <div class="invoice-template-box">
+      <div class="invoice-template-title">🧾 สร้างบิลใหม่</div>
+      <div class="invoice-template-sub">กรุณากรอกข้อมูลพื้นฐานของบิล</div>
+      <div class="invoice-template-form">
+        <div class="invoice-template-input-group">
+          <label>ชื่อคนขาย (Seller/Shop Name)</label>
+          <input type="text" id="invoiceSellerName" class="invoice-template-input" placeholder="เช่น นายอร์ต">
+        </div>
+        <div class="invoice-template-input-group">
+          <label>วันที่ (Date)</label>
+          <input type="date" id="invoiceDate" class="invoice-template-input">
+        </div>
+        <div class="invoice-template-input-group">
+          <label>ชื่อคนรับ (Buyer/Receiver Name)</label>
+          <input type="text" id="invoiceBuyerName" class="invoice-template-input" placeholder="ชื่อลูกค้า/ผู้รับ">
+        </div>
+        <div class="invoice-template-input-group">
+          <label>ชื่อคนรับเงิน (Payment Receiver Name)</label>
+          <input type="text" id="invoicePaymentReceiver" class="invoice-template-input" placeholder="ชื่อผู้รับเงิน (โปรดระบุด้านล่างบิล)">
+        </div>
+        <div class="invoice-template-input-group">
+          <label>หมายเหตุเพิ่มเติม (Notes)</label>
+          <input type="text" id="invoiceNotes" class="invoice-template-input" placeholder="หมายเหตุ หรือเบอร์บัญชี">
+        </div>
+      </div>
+      <div class="invoice-template-buttons">
+        <button class="invoice-template-btn" onclick="closeInvoiceTemplate()">ยกเลิก</button>
+        <button class="invoice-template-btn primary" onclick="confirmInvoiceTemplate()">ถัดไป ✓</button>
+      </div>
+    </div>
+  </div>
+
   <div id="page-orders" style="display:none;">
     <div class="orders-layout">
 
@@ -2821,6 +2962,28 @@
             <div style="display:flex;gap:8px;align-items:center;">
               <input type="date" id="billDate" class="bill-date-input">
               <div class="bill-no-badge" id="billNoBadge">#1</div>
+            </div>
+          </div>
+
+          <!-- Invoice Template Info Display -->
+          <div id="invoiceTemplateInfo" style="background:rgba(96,165,250,0.1);border:0.5px solid rgba(96,165,250,0.3);border-radius:12px;padding:12px;margin-bottom:12px;font-size:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <div style="font-weight:600;color:rgba(255,255,255,0.8);">📋 ข้อมูลบิล</div>
+              <button onclick="openInvoiceTemplate()" style="background:rgba(96,165,250,0.2);border:0.5px solid rgba(96,165,250,0.4);color:#93c5fd;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(96,165,250,0.3)'" onmouseout="this.style.background='rgba(96,165,250,0.2)'">✏️ แก้ไข</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div>
+                <div style="color:rgba(255,255,255,0.5);font-size:10px;margin-bottom:2px;">ชื่อคนขาย:</div>
+                <div id="templateSellerDisplay" style="color:#93c5fd;font-weight:500;">—</div>
+              </div>
+              <div>
+                <div style="color:rgba(255,255,255,0.5);font-size:10px;margin-bottom:2px;">ชื่อคนรับ:</div>
+                <div id="templateBuyerDisplay" style="color:#93c5fd;font-weight:500;">—</div>
+              </div>
+              <div style="grid-column:1/-1;">
+                <div style="color:rgba(255,255,255,0.5);font-size:10px;margin-bottom:2px;">ชื่อคนรับเงิน:</div>
+                <div id="templatePaymentDisplay" style="color:#93c5fd;font-weight:500;">—</div>
+              </div>
             </div>
           </div>
 
@@ -4562,6 +4725,60 @@ let billItems   = [];   // current bill items
 let billCounter = 1;    // auto-increment bill number
 let billsCache  = [];   // shared bills from backend
 
+// Invoice Template Data
+let invoiceTemplate = {
+  sellerName: '',
+  buyerName: '',
+  paymentReceiver: '',
+  date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' }),
+  notes: ''
+};
+
+function openInvoiceTemplate() {
+  const modal = document.getElementById('invoiceTemplateModal');
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
+  document.getElementById('invoiceDate').value = today;
+  document.getElementById('invoiceSellerName').value = invoiceTemplate.sellerName || '';
+  document.getElementById('invoiceBuyerName').value = invoiceTemplate.buyerName || '';
+  document.getElementById('invoicePaymentReceiver').value = invoiceTemplate.paymentReceiver || '';
+  document.getElementById('invoiceNotes').value = invoiceTemplate.notes || '';
+  modal.classList.add('open');
+  setTimeout(() => document.getElementById('invoiceSellerName').focus(), 100);
+}
+
+function closeInvoiceTemplate() {
+  document.getElementById('invoiceTemplateModal').classList.remove('open');
+}
+
+function confirmInvoiceTemplate() {
+  const sellerName = document.getElementById('invoiceSellerName').value.trim();
+  const buyerName = document.getElementById('invoiceBuyerName').value.trim();
+  const paymentReceiver = document.getElementById('invoicePaymentReceiver').value.trim();
+  const date = document.getElementById('invoiceDate').value;
+  const notes = document.getElementById('invoiceNotes').value.trim();
+  
+  if (!sellerName || !buyerName || !paymentReceiver || !date) {
+    showScanToast('⚠️ กรุณากรอกข้อมูลทั้งหมด', 'error');
+    return;
+  }
+  
+  invoiceTemplate = { sellerName, buyerName, paymentReceiver, date, notes };
+  document.getElementById('billDate').value = date;
+  updateTemplateDisplay();
+  closeInvoiceTemplate();
+  // Reset bill for new order
+  billItems = [];
+  renderBillItems();
+}
+
+function updateTemplateDisplay() {
+  document.getElementById('templateSellerDisplay').textContent = invoiceTemplate.sellerName || '—';
+  document.getElementById('templateBuyerDisplay').textContent = invoiceTemplate.buyerName || '—';
+  document.getElementById('templatePaymentDisplay').textContent = invoiceTemplate.paymentReceiver || '—';
+}
+
+
+
 function normalizeBackendBill(bill) {
   const no = Number(bill.bill_no || 0);
   const items = Array.isArray(bill.items) ? bill.items : [];
@@ -4599,6 +4816,14 @@ async function initOrdersPage() {
   if (!document.getElementById('historyDate').value) {
     document.getElementById('historyDate').value = '';
   }
+  
+  // Show invoice template modal if no seller name set
+  if (!invoiceTemplate.sellerName) {
+    openInvoiceTemplate();
+  } else {
+    updateTemplateDisplay();
+  }
+  
   await updateBillNo();
   renderBillItems();
   await loadHistory();
@@ -4695,12 +4920,26 @@ function renderBillItems() {
         <input class="bill-qty-val" type="number" min="1" value="${it.qty}" onchange="setQty(${idx},this.value)">
         <div class="bill-qty-btn" onclick="changeQty(${idx},1)">+</div>
       </div>
-      <div class="bill-row-price">฿${it.price.toLocaleString()}</div>
+      <div class="bill-row-price" onclick="editPrice(${idx})" style="cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;" onmouseover="this.style.background='rgba(96,165,250,0.15)'" onmouseout="this.style.background='transparent'" title="คลิกเพื่อแก้ไขราคา">฿${it.price.toLocaleString()}</div>
       <div class="bill-row-total">฿${(it.price*it.qty).toLocaleString()}</div>
       <div class="bill-row-del" onclick="removeBillItem(${idx})">✕</div>
     </div>
   `).join('');
   updateBillTotals();
+}
+
+function editPrice(idx) {
+  const item = billItems[idx];
+  const newPrice = prompt(`แก้ไขราคาสำหรับ ${item.name}:\n(ราคาเดิม: ฿${item.price.toLocaleString()})`, item.price.toString());
+  if (newPrice !== null) {
+    const priceNum = Number(newPrice);
+    if (!isNaN(priceNum) && priceNum > 0) {
+      item.price = priceNum;
+      renderBillItems();
+    } else {
+      showScanToast('❌ ราคาต้องเป็นตัวเลขที่มากกว่า 0', 'error');
+    }
+  }
 }
 
 function changeQty(idx, delta) {
@@ -4751,7 +4990,11 @@ async function saveBill() {
     no: bills.length + 1,
     date,
     items: billItems.map(i => ({...i})),
-    total: billItems.reduce((s,i)=>s+i.price*i.qty,0)
+    total: billItems.reduce((s,i)=>s+i.price*i.qty,0),
+    sellerName: invoiceTemplate.sellerName,
+    buyerName: invoiceTemplate.buyerName,
+    paymentReceiver: invoiceTemplate.paymentReceiver,
+    notes: invoiceTemplate.notes
   };
   bills.push(bill);
   saveBills(bills);
@@ -4768,8 +5011,12 @@ async function saveBill() {
     }
   })();
 
-  document.getElementById('billSaveMsg').textContent = `✅ บันทึกบิล #${bill.no} แล้ว (${date})`;
+  document.getElementById('billSaveMsg').textContent = `✅ บันทึกบิล #${bill.no} แล้ว (${date}) - ${invoiceTemplate.sellerName}`;
   billItems = [];
+  document.getElementById('billSaveMsg').style.color = '#34d399';
+  setTimeout(() => {
+    document.getElementById('billSaveMsg').textContent = '';
+  }, 3000);
   renderBillItems();
   updateBillNo();
 
