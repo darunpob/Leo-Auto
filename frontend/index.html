@@ -5196,7 +5196,7 @@ let billsCache  = [];   // shared bills from backend
 
 // Invoice Template Data
 let invoiceTemplate = {
-  sellerName: '',
+  sellerName: 'Leo Auto',
   buyerName: '',
   paymentReceiver: '',
   date: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' }),
@@ -6502,10 +6502,10 @@ function _ensurePrintTaxState() {
       bookNo: '011',
       receiptNo: '0535',
       docName: 'บิลเงินสด / ใบกำกับภาษีอย่างย่อ',
-      sellerName: 'Leo Auto',
-      sellerAddress: '',
-      sellerTaxId: '',
-      sellerPhone: '',
+      sellerName: 'ร้านลีโอ ออโต้',
+      sellerAddress: 'เลขที่ 32/249-250 หมู่ 6 ถนนพหลโยธิน ต.คลองหนึ่ง อ.คลองหลวง จ.ปทุมธานี 12120',
+      sellerTaxId: '3450100241329',
+      sellerPhone: '02-901829',
       customerName: '',
       customerAddress: '',
       customerTaxId: '',
@@ -6521,9 +6521,6 @@ function _ensurePrintTaxState() {
 function updatePrintTaxField(field, value) {
   _ensurePrintTaxState();
   printTaxState[field] = value;
-  if (field !== 'customerName' && field !== 'date') {
-    _syncPrintA5Tax();
-  }
 }
 
 function _syncPrintA5Copy() {
@@ -6901,10 +6898,12 @@ function printBillA5(id) {
 
   document.getElementById('printTemplateModal')?.classList.add('open');
   sheet.oninput = (e) => {
-    if (e.target.matches('.p-qty,.p-price,#p-discount,input,textarea')) _recalcPrintA5();
+    if (e.target.matches('.p-qty,.p-price,#p-discount,#p-title,#p-badge,#p-date,#p-seller,#p-customer,#p-note,#p-receiver,#p-collector,#p-seller-sign')) {
+      _recalcPrintA5();
+    }
   };
   sheet.onchange = (e) => {
-    if (e.target.matches('#p-copy-mode,#p-copy-watermark,input,textarea,select')) {
+    if (e.target.matches('#p-copy-mode,#p-copy-watermark,#p-tax-mode,.p-qty,.p-price,#p-discount,#p-title,#p-badge,#p-date,#p-seller,#p-customer,#p-note,#p-receiver,#p-collector,#p-seller-sign')) {
       _syncPrintA5Copy();
       _syncPrintA5Tax();
     }
