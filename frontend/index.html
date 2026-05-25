@@ -3852,6 +3852,8 @@
   .print-tax-sheet {
     border:1px solid #c9d4ea;
     background:#fff;
+    padding-left:5mm;
+    padding-right:5mm;
   }
   .print-tax-topline {
     display:grid;
@@ -3892,6 +3894,19 @@
     font-size:10.5px;
     line-height:1.5;
     color:#475569;
+  }
+  .print-tax-meta-inline {
+    display:grid;
+    grid-template-columns:auto minmax(180px, 1fr) auto minmax(120px, 150px);
+    gap:8px;
+    justify-content:center;
+    align-items:center;
+    margin-top:4px;
+    white-space:nowrap;
+  }
+  .print-tax-meta-inline input {
+    min-width:0;
+    text-align:center;
   }
   .print-tax-grid {
     display:grid;
@@ -3994,7 +4009,12 @@
     .print-a5-sheet { width:100%; min-height:auto; padding:8mm; }
     .print-a5-header, .print-a5-party, .print-a5-signatures, .print-a5-lower { grid-template-columns:1fr; display:grid; }
     .print-tax-grid, .print-tax-signs { grid-template-columns:1fr; }
-    .print-a5-brand { max-width:none; }
+    .print-tax-meta-inline {
+      grid-template-columns:1fr;
+      white-space:normal;
+      justify-items:stretch;
+    }
+  .print-a5-brand { max-width:none; }
     .print-a5-summary { justify-content:stretch; }
     .print-a5-totals { width:100%; }
     .print-a5-foot { flex-direction:column; align-items:flex-start; gap:4px; }
@@ -6689,11 +6709,11 @@ function _syncPrintA5Tax() {
       <div class="print-tax-company"><input value="${_escapePrintText(printTaxState.sellerName)}" oninput="updatePrintTaxField('sellerName', this.value)" style="width:100%;text-align:center;font-size:22px;font-weight:800"></div>
       <div class="print-tax-meta">
         <textarea oninput="updatePrintTaxField('sellerAddress', this.value)" style="text-align:center">${_escapePrintText(printTaxState.sellerAddress)}</textarea>
-        <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:4px;">
+        <div class="print-tax-meta-inline">
           <span>เลขประจำตัวผู้เสียภาษี</span>
-          <input value="${_escapePrintText(printTaxState.sellerTaxId)}" oninput="updatePrintTaxField('sellerTaxId', this.value)" style="width:190px;text-align:center">
+          <input value="${_escapePrintText(printTaxState.sellerTaxId)}" oninput="updatePrintTaxField('sellerTaxId', this.value)">
           <span>โทร.</span>
-          <input value="${_escapePrintText(printTaxState.sellerPhone)}" oninput="updatePrintTaxField('sellerPhone', this.value)" style="width:120px;text-align:center">
+          <input value="${_escapePrintText(printTaxState.sellerPhone)}" oninput="updatePrintTaxField('sellerPhone', this.value)">
         </div>
       </div>
     </div>
