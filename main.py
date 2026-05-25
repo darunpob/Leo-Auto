@@ -22,8 +22,11 @@ app.add_middleware(
 )
 
 # --- 1. Database Setup ---
-DB_FILE = "inventory.csv"
-ORDERS_FILE = "orders.json"
+DEFAULT_DATA_DIR = "/data" if os.path.isdir("/data") else "."
+DATA_DIR = os.getenv("DATA_DIR", DEFAULT_DATA_DIR)
+PICTURE_DIR = os.path.join(DATA_DIR, "picture")
+DB_FILE = os.path.join(DATA_DIR, "inventory.csv")
+ORDERS_FILE = os.path.join(DATA_DIR, "orders.json")
 LOCATION_COLUMN = "Storage Location"
 COST_COLUMN = "Cost Price"
 
@@ -31,9 +34,9 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
 # จำลองโฟลเดอร์รูปภาพถ้ายังไม่มี และเปิดให้หน้าเว็บดึงรูปไปแสดงได้
-if not os.path.exists("picture"):
-    os.makedirs("picture")
-app.mount("/picture", StaticFiles(directory="picture"), name="picture")
+os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(PICTURE_DIR, exist_ok=True)
+app.mount("/picture", StaticFiles(directory=PICTURE_DIR), name="picture")
 
 @app.get("/")
 async def root():
@@ -61,7 +64,7 @@ def get_db():
     # Build a lookup of available images once
     picture_files = []
     try:
-        picture_files = os.listdir("picture")
+        picture_files = os.listdir(PICTURE_DIR)
     except Exception:
         picture_files = []
 
@@ -155,10 +158,10 @@ async def add_product(
                 ext = image.filename.split(".")[-1]
                 # สร้างชื่อไฟล์ที่ไม่ซ้ำกัน
                 safe_filename = f"{part_number}_{i+1}.{ext}"
-                file_path = f"picture/{safe_filename}"
+                file_path = os.path.join(PICTURE_DIR, safe_filename)
                 with open(file_path, "wb") as buffer:
                     shutil.copyfileobj(image.file, buffer)
-                image_urls.append(file_path)
+                image_urls.append(f"picture/{safe_filename}")
             
     new_data = {
         "Part Number": part_number,
@@ -234,10 +237,10 @@ async def update_product(
                 ext = image.filename.split(".")[-1]
                 # สร้างชื่อไฟล์ใหม่ต่อจาก index เดิม
                 safe_filename = f"{part_number}_{max_index + i + 1}.{ext}"
-                file_path = f"picture/{safe_filename}"
+                file_path = os.path.join(PICTURE_DIR, safe_filename)
                 with open(file_path, "wb") as buffer:
                     shutil.copyfileobj(image.file, buffer)
-                image_urls.append(file_path)
+                image_urls.append(f"picture/{safe_filename}")
     
     # ลบรายการ URL ที่ว่างเปล่าออก
     image_urls = [url for url in image_urls if url]
@@ -259,8 +262,12 @@ async def delete_product(part_number: str):
     if pd.notna(image_urls_str) and image_urls_str:
         image_urls = image_urls_str.split(',')
         for url in image_urls:
-            if os.path.exists(url):
-                os.remove(url)
+            rel_url = str(url).replace("\\", "/").lstrip("/")
+            if rel_url.startswith("picture/"):
+                rel_url = rel_url[len("picture/"):]
+            file_path = os.path.join(PICTURE_DIR, rel_url)
+            if os.path.exists(file_path):
+                os.remove(file_path)
 
     df = df[df['Part Number'] != part_number]
     save_db(df)
@@ -288,8 +295,12 @@ async def delete_image(part_number: str, image_url: str):
         raise HTTPException(status_code=404, detail="ไม่พบ URL รูปภาพที่ระบุ")
 
     # ลบไฟล์รูปภาพออกจาก physical storage
-    if os.path.exists(image_url):
-        os.remove(image_url)
+    rel_url = str(image_url).replace("\\", "/").lstrip("/")
+    if rel_url.startswith("picture/"):
+        rel_url = rel_url[len("picture/"):]
+    file_path = os.path.join(PICTURE_DIR, rel_url)
+    if os.path.exists(file_path):
+        os.remove(file_path)
     
     # ลบ URL ออกจากรายการและอัปเดต DataFrame
     image_urls.remove(image_url)
