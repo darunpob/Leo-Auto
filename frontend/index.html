@@ -3559,22 +3559,34 @@
   }
   .print-a5-sheet input:focus, .print-a5-sheet textarea:focus { border-bottom-color:#2563eb; }
   .print-a5-sheet textarea { resize:none; }
+  .print-a5-sheet,
+  .print-a5-sheet input,
+  .print-a5-sheet textarea,
+  .print-a5-sheet table,
+  .print-a5-sheet th,
+  .print-a5-sheet td,
+  .print-a5-sheet label,
+  .print-a5-sheet span,
+  .print-a5-sheet strong,
+  .print-a5-sheet div {
+    font-family:'Prompt','Sarabun','Segoe UI',sans-serif;
+  }
   .print-a5-header { display:flex; justify-content:space-between; gap:7mm; margin-bottom:5mm; }
   .print-a5-brand { max-width:58%; }
-  .print-a5-badge { display:inline-flex; align-items:center; gap:8px; padding:5px 10px; border-radius:999px; background:#eef4ff; color:#3159b7; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
-  .print-a5-title { margin-top:2mm; font-family:'Prompt','Sarabun',sans-serif; font-size:18px; font-weight:700; letter-spacing:-0.03em; color:#0f172a; }
-  .print-a5-subtitle { font-size:9px; color:#475569; margin-top:1px; }
+  .print-a5-badge { display:inline-flex; align-items:center; gap:8px; padding:5px 10px; border-radius:999px; background:#eef4ff; color:#3159b7; font-size:12px; font-weight:700; letter-spacing:.02em; }
+  .print-a5-title { margin-top:2mm; font-size:22px; font-weight:700; letter-spacing:-0.02em; color:#0f172a; }
+  .print-a5-subtitle { font-size:11px; color:#475569; margin-top:1px; font-weight:500; }
   .print-a5-meta { flex:1; padding:3.5mm 4mm; border:1px solid #dbe4f0; border-radius:14px; background:#f8fbff; }
-  .print-a5-meta-row { display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:9px; margin-bottom:5px; }
+  .print-a5-meta-row { display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:11px; margin-bottom:5px; }
   .print-a5-meta-row:last-child { margin-bottom:0; }
-  .print-a5-meta-row span { color:#64748b; white-space:nowrap; }
+  .print-a5-meta-row span { color:#64748b; white-space:nowrap; font-weight:500; }
   .print-a5-meta-row input { width:100%; text-align:right; }
   .print-a5-party { display:grid; grid-template-columns:1fr 1fr; gap:5mm; margin-bottom:5mm; }
   .print-a5-field { padding:3mm 3.5mm; border:1px solid #e2e8f0; border-radius:12px; background:#fff; }
-  .print-a5-field label { display:block; font-size:9px; font-weight:700; color:#64748b; margin-bottom:2px; text-transform:uppercase; letter-spacing:.04em; }
+  .print-a5-field label { display:block; font-size:11px; font-weight:600; color:#64748b; margin-bottom:2px; }
   .print-a5-field input { width:100%; }
   .print-a5-table-wrap { border:1px solid #cbd5e1; border-radius:14px; overflow:hidden; }
-  .print-a5-table { width:100%; border-collapse:collapse; font-size:9px; }
+  .print-a5-table { width:100%; border-collapse:collapse; font-size:11px; }
   .print-a5-table thead th { background:#eaf1ff; color:#334155; font-weight:700; }
   .print-a5-table th, .print-a5-table td { border-bottom:1px solid #dbe4f0; padding:5px 6px; vertical-align:top; }
   .print-a5-table tbody tr:last-child td { border-bottom:none; }
@@ -3584,17 +3596,17 @@
   .print-a5-lower { display:grid; grid-template-columns:1.2fr 0.8fr; gap:5mm; margin-top:5mm; align-items:start; }
   .print-a5-summary { display:flex; justify-content:flex-end; }
   .print-a5-totals { width:100%; padding:3.5mm 4mm; border:1px solid #cbd5e1; border-radius:14px; background:#fcfdff; }
-  .print-a5-total-row { display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:9px; margin-bottom:5px; }
+  .print-a5-total-row { display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:11px; margin-bottom:5px; }
   .print-a5-total-row:last-child { margin-bottom:0; }
-  .print-a5-total-row.grand { margin-top:6px; padding-top:6px; border-top:1px solid #cbd5e1; font-size:11px; font-weight:700; color:#0f172a; }
+  .print-a5-total-row.grand { margin-top:6px; padding-top:6px; border-top:1px solid #cbd5e1; font-size:13px; font-weight:700; color:#0f172a; }
   .print-a5-total-row input { width:76px; text-align:right; }
   .print-a5-note { padding:3mm 3.5mm; border:1px dashed #cbd5e1; border-radius:12px; color:#475569; }
-  .print-a5-note label { display:block; font-size:9px; font-weight:700; color:#64748b; margin-bottom:2px; text-transform:uppercase; letter-spacing:.04em; }
-  .print-a5-note textarea { width:100%; min-height:14mm; border-bottom:none; }
-  .print-a5-signatures { margin-top:6mm; display:grid; grid-template-columns:1fr 1fr 1fr; gap:6mm; font-size:9px; }
+  .print-a5-note label { display:block; font-size:11px; font-weight:600; color:#64748b; margin-bottom:2px; }
+  .print-a5-note textarea { width:100%; min-height:7mm; border-bottom:none; font-size:11px; line-height:1.2; }
+  .print-a5-signatures { margin-top:6mm; display:grid; grid-template-columns:1fr 1fr 1fr; gap:6mm; font-size:11px; }
   .print-a5-signatures label { display:block; margin-bottom:8mm; color:#475569; font-weight:600; }
   .print-a5-signatures input { width:100%; text-align:center; }
-  .print-a5-foot { margin-top:4mm; display:flex; justify-content:space-between; align-items:center; font-size:8px; color:#64748b; }
+  .print-a5-foot { margin-top:4mm; display:flex; justify-content:space-between; align-items:center; font-size:10px; color:#64748b; }
   @media (max-width: 900px) {
     .print-a5-sheet { width:100%; min-height:auto; padding:8mm; }
     .print-a5-header, .print-a5-party, .print-a5-signatures, .print-a5-lower { grid-template-columns:1fr; display:grid; }
