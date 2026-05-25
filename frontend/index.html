@@ -4001,7 +4001,7 @@
     .print-tax-total-card { width:100%; }
   }
   @media print {
-    @page { size: A4 portrait; margin: 0; }
+    @page { size: A5 landscape; margin: 0; }
     html, body {
       width:auto !important;
       height:auto !important;
@@ -4050,8 +4050,7 @@
     }
     .print-a5-page {
       width:210mm !important;
-      min-height:297mm !important;
-      height:auto !important;
+      min-height:148mm !important;
       margin:0 !important;
       padding:0 !important;
       break-after: page;
@@ -4064,11 +4063,10 @@
       page-break-after: auto !important;
     }
     .print-a5-sheet {
-      width:100% !important;
-      min-height:100% !important;
-      box-sizing:border-box !important;
+      width:210mm !important;
+      min-height:148mm !important;
       margin:0 !important;
-      padding:5mm 6mm !important;
+      padding:8mm 9mm !important;
       border-radius:0 !important;
       box-shadow:none !important;
       background:#fff !important;
@@ -4079,7 +4077,7 @@
       break-before: page;
     }
     .print-a5-watermark {
-      font-size:48px !important;
+      font-size:54px !important;
       color:rgba(30,64,175,0.07) !important;
     }
     #printA5Sheet input, #printA5Sheet textarea { border-bottom-color:#94a3b8 !important; }
@@ -6690,14 +6688,12 @@ function _syncPrintA5Tax() {
       <div class="print-tax-docname"><input value="${_escapePrintText(printTaxState.docName)}" oninput="updatePrintTaxField('docName', this.value)" style="width:100%;text-align:center;font-weight:800;color:#1e3a8a"></div>
       <div class="print-tax-company"><input value="${_escapePrintText(printTaxState.sellerName)}" oninput="updatePrintTaxField('sellerName', this.value)" style="width:100%;text-align:center;font-size:22px;font-weight:800"></div>
       <div class="print-tax-meta">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-          <input value="${_escapePrintText(printTaxState.sellerAddress)}" oninput="updatePrintTaxField('sellerAddress', this.value)" style="min-width:340px;max-width:420px;width:38vw;text-align:center;font-size:10.5px;margin-bottom:2px;" placeholder="ที่อยู่ผู้ขาย">
-          <div style="display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;">
-            <span>เลขประจำตัวผู้เสียภาษี</span>
-            <input value="${_escapePrintText(printTaxState.sellerTaxId)}" oninput="updatePrintTaxField('sellerTaxId', this.value)" style="width:160px;text-align:center" placeholder="เลขประจำตัวผู้เสียภาษี">
-            <span>โทร.</span>
-            <input value="${_escapePrintText(printTaxState.sellerPhone)}" oninput="updatePrintTaxField('sellerPhone', this.value)" style="width:110px;text-align:center" placeholder="โทรศัพท์">
-          </div>
+        <textarea oninput="updatePrintTaxField('sellerAddress', this.value)" style="text-align:center">${_escapePrintText(printTaxState.sellerAddress)}</textarea>
+        <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:4px;">
+          <span>เลขประจำตัวผู้เสียภาษี</span>
+          <input value="${_escapePrintText(printTaxState.sellerTaxId)}" oninput="updatePrintTaxField('sellerTaxId', this.value)" style="width:190px;text-align:center">
+          <span>โทร.</span>
+          <input value="${_escapePrintText(printTaxState.sellerPhone)}" oninput="updatePrintTaxField('sellerPhone', this.value)" style="width:120px;text-align:center">
         </div>
       </div>
     </div>
@@ -7275,6 +7271,3 @@ function siRender() {
 
 
 
-git add frontend/index.html
-git commit -m "Update frontend/index.html with latest changes"git add frontend/index.html
-git commit -m "Update frontend/index.html with latest changes"
