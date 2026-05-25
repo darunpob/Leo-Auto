@@ -3846,7 +3846,7 @@
     .print-a5-foot { flex-direction:column; align-items:flex-start; gap:4px; }
   }
   @media print {
-    @page { size: A5 landscape; margin: 5mm; }
+    @page { size: A5 landscape; margin: 0; }
     html, body {
       width:auto !important;
       height:auto !important;
@@ -3877,6 +3877,13 @@
       overflow:visible !important;
     }
     #printTemplateModal .modal-header, #printA5Tools { display:none !important; }
+    .print-a5-toolbar,
+    .print-a5-copy-title {
+      display:none !important;
+    }
+    .print-a5-stack {
+      gap:0 !important;
+    }
     #printA5Sheet {
       width:100% !important;
       min-height:0 !important;
@@ -3886,9 +3893,38 @@
       box-shadow:none !important;
       background:#fff !important;
     }
-    .print-a5-toolbar { display:none !important; }
-    .print-a5-page { break-after: page; page-break-after: always; }
-    .print-a5-page:last-child { break-after: auto; page-break-after: auto; }
+    .print-a5-page {
+      width:210mm !important;
+      min-height:148mm !important;
+      margin:0 !important;
+      padding:0 !important;
+      break-after: page;
+      page-break-after: always;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .print-a5-page:last-child {
+      break-after: auto !important;
+      page-break-after: auto !important;
+    }
+    .print-a5-sheet {
+      width:210mm !important;
+      min-height:148mm !important;
+      margin:0 !important;
+      padding:8mm 9mm !important;
+      border-radius:0 !important;
+      box-shadow:none !important;
+      background:#fff !important;
+      overflow:hidden !important;
+    }
+    .print-a5-sheet-copy {
+      page-break-before: always;
+      break-before: page;
+    }
+    .print-a5-watermark {
+      font-size:54px !important;
+      color:rgba(30,64,175,0.07) !important;
+    }
     #printA5Sheet input, #printA5Sheet textarea { border-bottom-color:#94a3b8 !important; }
   }
 </style>
