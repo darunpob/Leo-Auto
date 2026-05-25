@@ -4735,7 +4735,13 @@ let invoiceTemplate = {
 };
 
 function openInvoiceTemplate() {
+  console.log("Opening invoice template modal...");
   const modal = document.getElementById('invoiceTemplateModal');
+  console.log("Modal element:", modal);
+  if (!modal) {
+    console.error("Modal not found!");
+    return;
+  }
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
   document.getElementById('invoiceDate').value = today;
   document.getElementById('invoiceSellerName').value = invoiceTemplate.sellerName || '';
@@ -4743,7 +4749,11 @@ function openInvoiceTemplate() {
   document.getElementById('invoicePaymentReceiver').value = invoiceTemplate.paymentReceiver || '';
   document.getElementById('invoiceNotes').value = invoiceTemplate.notes || '';
   modal.classList.add('open');
-  setTimeout(() => document.getElementById('invoiceSellerName').focus(), 100);
+  console.log("Modal classes after add:", modal.className);
+  setTimeout(() => {
+    const input = document.getElementById('invoiceSellerName');
+    if (input) input.focus();
+  }, 100);
 }
 
 function closeInvoiceTemplate() {
