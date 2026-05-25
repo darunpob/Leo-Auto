@@ -6501,11 +6501,11 @@ function _ensurePrintTaxState() {
     printTaxState = {
       bookNo: '011',
       receiptNo: '0535',
-      docName: 'บิลเงินสด / ใบกำกับภาษีอย่างย่อ',
+      docName: 'บิลเงินสด / ใบกำกับภาษี',
       sellerName: 'ร้านลีโอ ออโต้',
       sellerAddress: 'เลขที่ 32/249-250 หมู่ 6 ถนนพหลโยธิน ต.คลองหนึ่ง อ.คลองหลวง จ.ปทุมธานี 12120',
       sellerTaxId: '3450100241329',
-      sellerPhone: '02-901829',
+      sellerPhone: '02-9018295',
       customerName: '',
       customerAddress: '',
       customerTaxId: '',
@@ -6680,9 +6680,6 @@ function _syncPrintA5Tax() {
 
   taxSheet.innerHTML = `
     <div class="print-tax-topline">
-      <div>เล่มที่ <input value="${_escapePrintText(printTaxState.bookNo)}" oninput="updatePrintTaxField('bookNo', this.value)"></div>
-      <div class="center">บิลเงินสด</div>
-      <div class="right">เลขที่ <input value="${_escapePrintText(printTaxState.receiptNo)}" oninput="updatePrintTaxField('receiptNo', this.value)" style="width:86px;text-align:right"></div>
     </div>
     <div class="print-tax-header">
       <div class="print-tax-docname"><input value="${_escapePrintText(printTaxState.docName)}" oninput="updatePrintTaxField('docName', this.value)" style="width:100%;text-align:center;font-weight:800;color:#1e3a8a"></div>
