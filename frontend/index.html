@@ -2771,7 +2771,7 @@
   <!-- HERO -->
   <div class="hero">
     <h1>Leo Auto BY ART<br><span></span></h1>
-    <p>4 brands · 8 series · real-time availability</p>
+    <p id="heroMeta">0 brands · 0 series · real-time availability</p>
     <div class="search-bar">
       <span class="search-icon">🔍</span>
       <input type="text" id="searchInput" placeholder="ค้นหา Part Number หรือชื่อชิ้นส่วน…" oninput="filterCards();toggleClearBtn(this)">
@@ -3661,13 +3661,34 @@ function updateStats(data) {
  /* ──────────────── FILTER CHIPS (dynamic) ──────────────── */
 let activeFilters = { brand: 'All', series: 'All' };
 
+function getUniqueBrandSeries(data) {
+  const brandMap = new Map();
+  const seriesMap = new Map();
+  (data || []).forEach(i => {
+    const rawBrand = String(i?.Brand ?? '').trim();
+    const rawSeries = String(i?.Series ?? '').trim();
+    if (rawBrand) brandMap.set(rawBrand.toUpperCase(), rawBrand);
+    if (rawSeries) seriesMap.set(rawSeries.toUpperCase(), rawSeries);
+  });
+  return {
+    brands: [...brandMap.values()].sort(),
+    series: [...seriesMap.values()].sort()
+  };
+}
+
+function updateHeroMeta() {
+  const el = document.getElementById('heroMeta');
+  if (!el) return;
+  const { brands, series } = getUniqueBrandSeries(globalData);
+  el.textContent = `${brands.length} brands · ${series.length} series · real-time availability`;
+}
+
 function buildFilterChips() {
   const row = document.getElementById('filterChipsRow');
   if (!row) return;
 
   // Collect unique brands and series from live data
-  const brands = [...new Map(globalData.map(i => [i.Brand.trim().toUpperCase(), i.Brand.trim()])).values()].sort();
-  const allSeries = [...new Map(globalData.map(i => [i.Series.trim().toUpperCase(), i.Series.trim()])).values()].sort();
+  const { brands, series: allSeries } = getUniqueBrandSeries(globalData);
 
   let html = '';
   // Brand chips
@@ -3685,6 +3706,7 @@ function buildFilterChips() {
   });
 
   row.innerHTML = html;
+  updateHeroMeta();
   // restore active state
   updateActiveChips();
 }
