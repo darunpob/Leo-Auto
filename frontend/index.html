@@ -2665,6 +2665,8 @@
   }
   .hist-btn-load { background:rgba(37,99,235,0.2); border:0.5px solid rgba(96,165,250,0.4); color:#93c5fd; }
   .hist-btn-load:hover { background:rgba(37,99,235,0.4); }
+  .hist-btn-print { background:rgba(16,185,129,0.16); border:0.5px solid rgba(52,211,153,0.35); color:#6ee7b7; }
+  .hist-btn-print:hover { background:rgba(16,185,129,0.32); color:#bbf7d0; }
   .hist-btn-del { background:rgba(220,38,38,0.1); border:0.5px solid rgba(220,38,38,0.25); color:rgba(248,113,113,0.8); }
   .hist-btn-del:hover { background:rgba(220,38,38,0.25); color:#fca5a5; }
 
@@ -4856,6 +4858,7 @@ function renderHistory(bills) {
       <div class="hist-del-btn">
         <button class="hist-btn hist-btn-view" onclick="openBillDetail(${bill.id})">📋 รายละเอียด</button>
         <button class="hist-btn hist-btn-load" onclick="loadBillToEditor(${bill.id})">📂 โหลดบิล</button>
+        <button class="hist-btn hist-btn-print" onclick="printBillA5(${bill.id})">🖨️ A5</button>
         <button class="hist-btn hist-btn-del" onclick="deleteBill(${bill.id})">🗑 ลบ</button>
       </div>
     </div>
@@ -5081,6 +5084,92 @@ function openBillDetail(id) {
   `).join('');
   document.getElementById('bill-detail-total-value').textContent = '฿' + (bill.total || 0).toLocaleString();
   document.getElementById('billDetailModal').classList.add('open');
+}
+
+function printBillA5(id) {
+  const bill = billsCache.find(b => b.id === id);
+  if (!bill) return;
+
+  const rows = (bill.items || []).map((it, idx) => `
+    <tr>
+      <td>${idx + 1}</td>
+      <td>${it.name || '-'}</td>
+      <td>${it.pn || '-'}</td>
+      <td style="text-align:right">${Number(it.qty || 0).toLocaleString()}</td>
+      <td style="text-align:right">฿${Number(it.price || 0).toLocaleString()}</td>
+      <td style="text-align:right">฿${(Number(it.price || 0) * Number(it.qty || 0)).toLocaleString()}</td>
+    </tr>
+  `).join('');
+
+  const title = (bill.name && String(bill.name).trim()) ? bill.name : `บิล #${bill.no}`;
+  const html = `
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <title>${title}</title>
+  <style>
+    @page { size: A5 landscape; margin: 8mm; }
+    html, body { margin: 0; padding: 0; font-family: "Tahoma", "Segoe UI", sans-serif; color: #111; }
+    .sheet { width: 100%; }
+    .head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8mm; }
+    .brand { font-size: 18px; font-weight: 700; }
+    .meta { font-size: 12px; line-height: 1.6; text-align: right; }
+    .title { font-size: 16px; font-weight: 700; margin-bottom: 2mm; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th, td { border: 1px solid #222; padding: 6px; vertical-align: top; }
+    th { background: #f2f2f2; text-align: left; }
+    .sum { margin-top: 6mm; display:flex; justify-content:flex-end; }
+    .sum-box { min-width: 38%; border: 1px solid #222; padding: 8px 10px; font-size: 12px; }
+    .sum-row { display:flex; justify-content:space-between; margin: 2px 0; }
+    .sum-total { font-size: 15px; font-weight: 700; border-top: 1px solid #222; padding-top: 6px; margin-top: 6px; }
+    .note { margin-top: 5mm; font-size: 10px; color:#444; }
+  </style>
+</head>
+<body>
+  <div class="sheet">
+    <div class="head">
+      <div>
+        <div class="brand">Leo Auto</div>
+        <div class="title">ใบเสร็จ / ใบส่งของ</div>
+      </div>
+      <div class="meta">
+        <div><strong>${title}</strong></div>
+        <div>วันที่: ${bill.date || '-'}</div>
+        <div>จำนวนรายการ: ${(bill.items || []).length}</div>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:7%;">#</th>
+          <th style="width:33%;">รายการ</th>
+          <th style="width:20%;">Part Number</th>
+          <th style="width:10%;text-align:right;">จำนวน</th>
+          <th style="width:15%;text-align:right;">ราคา/ชิ้น</th>
+          <th style="width:15%;text-align:right;">รวม</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="sum">
+      <div class="sum-box">
+        <div class="sum-row"><span>ยอดรวมสุทธิ</span><strong>฿${Number(bill.total || 0).toLocaleString()}</strong></div>
+        <div class="sum-row sum-total"><span>รวมทั้งสิ้น</span><span>฿${Number(bill.total || 0).toLocaleString()}</span></div>
+      </div>
+    </div>
+    <div class="note">A5 Landscape (สำหรับใส่กระดาษแนวนอน/ข้าง)</div>
+  </div>
+</body>
+</html>`;
+
+  const w = window.open('', '_blank', 'width=980,height=700');
+  if (!w) return;
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(() => w.print(), 250);
 }
 
 async function deleteBill(id) {
