@@ -27,6 +27,10 @@ DATA_DIR = os.getenv("DATA_DIR", DEFAULT_DATA_DIR)
 PICTURE_DIR = os.path.join(DATA_DIR, "picture")
 DB_FILE = os.path.join(DATA_DIR, "inventory.csv")
 ORDERS_FILE = os.path.join(DATA_DIR, "orders.json")
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+SEED_DB_FILE = os.path.join(APP_DIR, "inventory.csv")
+SEED_ORDERS_FILE = os.path.join(APP_DIR, "orders.json")
+SEED_PICTURE_DIR = os.path.join(APP_DIR, "picture")
 LOCATION_COLUMN = "Storage Location"
 COST_COLUMN = "Cost Price"
 
@@ -36,6 +40,19 @@ client = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 # จำลองโฟลเดอร์รูปภาพถ้ายังไม่มี และเปิดให้หน้าเว็บดึงรูปไปแสดงได้
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(PICTURE_DIR, exist_ok=True)
+
+# Seed persistent volume on first run so existing repo data is not lost after enabling /data.
+if not os.path.exists(DB_FILE) and os.path.exists(SEED_DB_FILE):
+    shutil.copy2(SEED_DB_FILE, DB_FILE)
+if not os.path.exists(ORDERS_FILE) and os.path.exists(SEED_ORDERS_FILE):
+    shutil.copy2(SEED_ORDERS_FILE, ORDERS_FILE)
+if os.path.isdir(SEED_PICTURE_DIR) and not any(os.scandir(PICTURE_DIR)):
+    for name in os.listdir(SEED_PICTURE_DIR):
+        src = os.path.join(SEED_PICTURE_DIR, name)
+        dst = os.path.join(PICTURE_DIR, name)
+        if os.path.isfile(src) and not os.path.exists(dst):
+            shutil.copy2(src, dst)
+
 app.mount("/picture", StaticFiles(directory=PICTURE_DIR), name="picture")
 
 @app.get("/")
