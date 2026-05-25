@@ -5875,7 +5875,7 @@ function _recalcPrintA5() {
 
 // Override: no popup, open editable in-page template
 function printBillA5(id) {
-  const bill = (window.billsCache || []).find(b => b.id === id);
+  const bill = (billsCache || []).find(b => b.id === id);
   if (!bill) return;
 
   const rows = (bill.items || []).map((it, idx) => `
