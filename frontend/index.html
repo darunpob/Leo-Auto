@@ -378,6 +378,41 @@
       font-size: 10px;
       padding: 2px 8px;
     }
+
+    /* Analytics mobile layout */
+    #page-analytics {
+      padding-bottom: 130px;
+      overflow-x: hidden;
+    }
+    #si-kpi-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 10px !important;
+    }
+    #si-tabs {
+      margin-bottom: 14px !important;
+    }
+    #si-main-grid {
+      grid-template-columns: 1fr !important;
+      gap: 12px !important;
+    }
+    #si-right-panel {
+      gap: 12px !important;
+    }
+    #si-table-head {
+      padding: 12px 12px 10px !important;
+      gap: 8px;
+      align-items: flex-start !important;
+      flex-direction: column;
+    }
+    #si-search {
+      width: 100% !important;
+    }
+    #si-table-card {
+      min-width: 0;
+    }
+    #si-table {
+      min-width: 740px;
+    }
   }
   .stock-ok { background: rgba(52,211,153,0.15); color: #6ee7b7; border: 0.5px solid rgba(52,211,153,0.25); }
   .stock-low { background: rgba(251,191,36,0.15); color: #fcd34d; border: 0.5px solid rgba(251,191,36,0.25); }
@@ -2899,11 +2934,11 @@
     </div>
 
     <!-- Main content: table + insight panel -->
-    <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start;">
+    <div id="si-main-grid" style="display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start;">
 
       <!-- Stock Table -->
-      <div class="an-card" style="padding:0;overflow:hidden;">
-        <div style="padding:18px 20px 14px;border-bottom:0.5px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;">
+      <div id="si-table-card" class="an-card" style="padding:0;overflow:hidden;">
+        <div id="si-table-head" style="padding:18px 20px 14px;border-bottom:0.5px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;">
           <div>
             <div class="an-card-title" id="si-table-title">รายการสินค้าทั้งหมด</div>
             <div class="an-card-sub" style="margin-bottom:0;" id="si-table-sub">—</div>
@@ -2932,7 +2967,7 @@
       </div>
 
       <!-- Right Panel: Charts + Insight -->
-      <div style="display:flex;flex-direction:column;gap:14px;">
+      <div id="si-right-panel" style="display:flex;flex-direction:column;gap:14px;">
 
         <!-- Stock distribution donut -->
         <div class="an-card">
