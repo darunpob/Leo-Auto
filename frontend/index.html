@@ -3394,6 +3394,7 @@
 <script>
 window.API_BASE_URL = 'https://leo-auto-backend-production.up.railway.app';
 window.API_URL = `${window.API_BASE_URL}/api`;
+const API_URL = window.API_URL;
 
 function toAbsoluteAssetUrl(url) {
   const u = String(url || '').trim();
@@ -3403,6 +3404,7 @@ function toAbsoluteAssetUrl(url) {
 }
 
 let globalData = [];
+let inventoryLoaded = false;
 let dpMode = 'brand'; // ใช้ใน dark prompt
 
 /* ──────────────── LOAD ──────────────── */
@@ -3463,7 +3465,9 @@ async function loadProducts() {
 
 // Render grid and update UI after loading
 async function refreshInventoryUI() {
+  inventoryLoaded = false;
   const success = await loadProducts();
+  inventoryLoaded = true;
   renderGrid(globalData);
   updateStats(globalData);
   buildFilterChips();
@@ -5260,12 +5264,31 @@ let siSortAsc = true;
 function renderStockDashboard() {
   const raw = window.globalData || [];
 
-  // ถ้ายังไม่มีข้อมูล รอแล้วลองใหม่
-  if (!raw.length) {
+  // Distinguish "still loading" vs "loaded but empty inventory".
+  if (!inventoryLoaded) {
     document.getElementById('si-total').textContent = '…';
     document.getElementById('si-table-sub').textContent = 'กำลังโหลดข้อมูล…';
     document.getElementById('si-tbody').innerHTML = '';
-    setTimeout(() => { if ((window.globalData||[]).length) renderStockDashboard(); }, 800);
+    setTimeout(() => { if (inventoryLoaded) renderStockDashboard(); }, 800);
+    return;
+  }
+
+  if (!raw.length) {
+    document.getElementById('si-total').textContent = '0';
+    document.getElementById('si-total-meta').textContent = '0 ชิ้นรวม · ยังไม่มีสินค้า';
+    document.getElementById('si-low').textContent = '0';
+    document.getElementById('si-low-meta').textContent = 'ไม่มีสินค้าเหลือน้อย';
+    document.getElementById('si-deadstock').textContent = '0';
+    document.getElementById('si-dead-meta').textContent = 'ไม่มี dead stock';
+    document.getElementById('si-value').textContent = '฿0';
+    document.getElementById('si-value-meta').textContent = 'มูลค่ารวมยังเท่ากับ 0';
+    document.getElementById('si-table-sub').textContent = 'ยังไม่มีรายการสินค้า';
+    document.getElementById('si-dist-bars').innerHTML = '';
+    document.getElementById('si-hotlist').innerHTML = '<div style="color:rgba(255,255,255,0.25);font-size:12px;text-align:center;padding:12px;">ยังไม่มีข้อมูลสินค้า</div>';
+    document.getElementById('si-brand-bars').innerHTML = '';
+    document.getElementById('si-tbody').innerHTML = '';
+    const empty = document.getElementById('si-empty');
+    if (empty) empty.style.display = 'block';
     return;
   }
   const data = raw.map(p => ({
