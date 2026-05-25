@@ -3539,6 +3539,8 @@
     width:210mm;
     min-height:148mm;
     margin:0 auto;
+    display:flex;
+    flex-direction:column;
     background:linear-gradient(180deg,#ffffff 0%,#fffdfa 100%);
     color:#1f2937;
     border-radius:18px;
@@ -3578,6 +3580,7 @@
   .print-a5-table tbody tr:last-child td { border-bottom:none; }
   .print-a5-table .num { text-align:right; }
   .print-a5-table td:first-child, .print-a5-table th:first-child { text-align:center; width:8%; }
+  .print-a5-grow { flex:1 1 auto; min-height:8mm; }
   .print-a5-lower { display:grid; grid-template-columns:1.2fr 0.8fr; gap:5mm; margin-top:5mm; align-items:start; }
   .print-a5-summary { display:flex; justify-content:flex-end; }
   .print-a5-totals { width:100%; padding:3.5mm 4mm; border:1px solid #cbd5e1; border-radius:14px; background:#fcfdff; }
@@ -5959,6 +5962,7 @@ function printBillA5(id) {
         <tbody>${rows}</tbody>
       </table>
     </div>
+    <div class="print-a5-grow"></div>
     <div class="print-a5-lower">
       <div class="print-a5-note">
         <label>หมายเหตุ</label>
@@ -5987,8 +5991,8 @@ function printBillA5(id) {
       </div>
     </div>
     <div class="print-a5-foot">
-      <span>เอกสารนี้จัดทำจากระบบ Leo Auto</span>
-      <span>ขนาดพิมพ์ A5 แนวนอน</span>
+      <span> </span>
+      <span> </span>
     </div>
   `;
 
