@@ -3523,6 +3523,14 @@ async function refreshInventoryUI() {
 // Load on page init
 async function initInventory() {
   await refreshInventoryUI();
+  const validPages = ['inventory', 'orders', 'analytics'];
+  let savedPage = 'inventory';
+  try {
+    const p = localStorage.getItem('leo_last_page');
+    if (validPages.includes(p)) savedPage = p;
+  } catch {}
+  const navEl = document.querySelector(`.nav-pill[data-view="${savedPage}"]`);
+  switchPage(savedPage, navEl);
 }
 
 /* ──────────────── RENDER ──────────────── */
@@ -4451,9 +4459,12 @@ function setNav(el) {
 let currentPage = 'inventory'; // track current page
 
 function switchPage(page, el) {
+  const validPages = ['inventory', 'orders', 'analytics'];
+  if (!validPages.includes(page)) page = 'inventory';
   currentPage = page; // store current page
+  try { localStorage.setItem('leo_last_page', page); } catch {}
   setNav(el);
-  ['inventory','orders','analytics'].forEach(id => {
+  validPages.forEach(id => {
     const div = document.getElementById('page-' + id);
     if (div) div.style.display = (id === page) ? '' : 'none';
   });
