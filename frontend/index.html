@@ -3792,14 +3792,13 @@
   }
   .print-a5-sheet input, .print-a5-sheet textarea {
     border:none;
-    border-bottom:1px solid rgba(100,116,139,0.55);
     outline:none;
     font:inherit;
     color:#0f172a;
     background:transparent;
-    padding:2px 0;
+    padding:1px 0;
   }
-  .print-a5-sheet input:focus, .print-a5-sheet textarea:focus { border-bottom-color:#2563eb; }
+  .print-a5-sheet input:focus, .print-a5-sheet textarea:focus { outline: 1px dashed #2563eb; }
   .print-a5-sheet textarea { resize:none; }
   .print-a5-sheet,
   .print-a5-sheet input,
@@ -3823,13 +3822,14 @@
   .print-a5-meta-row:last-child { margin-bottom:0; }
   .print-a5-meta-row span { color:#64748b; white-space:nowrap; font-weight:500; }
   .print-a5-meta-row input { width:100%; text-align:right; }
-  .print-a5-party { display:grid; grid-template-columns:1fr 1fr; gap:1.5mm; margin-bottom:2mm; }
-  .print-a5-field { padding:1.5mm 2mm; border:none; border-radius:0; background:transparent; flex:1; }
+  .print-a5-party { display:grid; grid-template-columns:1fr 1fr; gap:1.5mm; margin-bottom:1.5mm; }
+  .print-a5-field { padding:0; border:none; border-radius:0; background:transparent; flex:1; display:flex; flex-direction:column; }
   .print-a5-field.full-width { grid-column:1/-1; }
-  .print-a5-field label { display:block; font-size:10px; font-weight:600; color:#64748b; margin-bottom:1px; }
-  .print-a5-field input { width:100%; }
-  .print-a5-field.tax-phone { display:grid; grid-template-columns:1fr 1fr; gap:2mm; }
-  .print-a5-field.tax-phone > div { flex:1; }
+  .print-a5-field label { display:block; font-size:10px; font-weight:600; color:#64748b; margin-bottom:2px; }
+  .print-a5-field input { width:100%; border-bottom:1px solid #666; padding:2px 0; }
+  .print-a5-field.tax-phone { display:grid; grid-template-columns:1fr 1fr; gap:1.5mm; grid-column:1/-1; }
+  .print-a5-field.tax-phone > div { display:flex; flex-direction:column; }
+  .print-a5-field.tax-phone label { font-size:9px; margin-bottom:1px; }
   .print-a5-table-wrap { border:none; border-radius:0; overflow:hidden; margin:1mm 0; }
   .print-a5-table { width:100%; border-collapse:collapse; font-size:10px; }
   .print-a5-table thead th { background:transparent; color:#334155; font-weight:700; border-bottom:1px solid #333; }
