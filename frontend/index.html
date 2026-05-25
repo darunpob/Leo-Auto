@@ -4817,12 +4817,8 @@ async function initOrdersPage() {
     document.getElementById('historyDate').value = '';
   }
   
-  // Show invoice template modal if no seller name set
-  if (!invoiceTemplate.sellerName) {
-    openInvoiceTemplate();
-  } else {
-    updateTemplateDisplay();
-  }
+  // Don't auto-open modal - let user click edit button
+  updateTemplateDisplay();
   
   await updateBillNo();
   renderBillItems();
