@@ -4469,8 +4469,9 @@ async function initOrdersPage() {
   if (!document.getElementById('billDate').value) {
     document.getElementById('billDate').value = today;
   }
+  // History defaults to "all dates" so old bills are visible across redeploys/devices.
   if (!document.getElementById('historyDate').value) {
-    document.getElementById('historyDate').value = today;
+    document.getElementById('historyDate').value = '';
   }
   await updateBillNo();
   renderBillItems();
