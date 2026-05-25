@@ -3433,6 +3433,24 @@
     flex: 1 !important; overflow: auto !important; max-height: none !important;
   }
 </style>
+<style>
+  .print-a5-toolbar { display:flex; gap:8px; margin-bottom:10px; }
+  .print-a5-btn { border:0.5px solid rgba(255,255,255,0.22); background:rgba(255,255,255,0.08); color:#fff; border-radius:8px; padding:7px 12px; font-size:12px; cursor:pointer; font-family:inherit; }
+  .print-a5-btn.primary { background:linear-gradient(135deg,#2563eb,#7c3aed); border:none; }
+  .print-a5-sheet { background:#fff; color:#111; border-radius:10px; padding:10mm; font-family:Tahoma, "Segoe UI", sans-serif; }
+  .print-a5-sheet input { border:none; border-bottom:1px solid #222; outline:none; font:inherit; color:#111; background:transparent; }
+  .print-a5-table { width:100%; border-collapse: collapse; font-size:11px; }
+  .print-a5-table th, .print-a5-table td { border:1px solid #222; padding:5px; }
+  .print-a5-table .num { text-align:right; }
+  @media print {
+    @page { size: A5 landscape; margin: 8mm; }
+    body * { visibility: hidden !important; }
+    #printTemplateModal, #printTemplateModal * { visibility: visible !important; }
+    #printTemplateModal { display:block !important; position:static !important; background:transparent !important; padding:0 !important; }
+    #printTemplateModal .report-modal-box { max-width:none !important; width:100% !important; height:auto !important; box-shadow:none !important; border:none !important; background:transparent !important; padding:0 !important; }
+    #printTemplateModal .modal-header, #printA5Tools { display:none !important; }
+  }
+</style>
 <script>
 window.API_BASE_URL = 'https://leo-auto-backend-production.up.railway.app';
 window.API_URL = `${window.API_BASE_URL}/api`;
@@ -5578,6 +5596,90 @@ function printBillA5(id) {
   w.focus();
 }
 
+function closePrintTemplate() {
+  const m = document.getElementById('printTemplateModal');
+  if (m) m.classList.remove('open');
+}
+
+function _recalcPrintA5() {
+  const rows = document.querySelectorAll('#printA5Sheet tbody tr');
+  let sub = 0;
+  rows.forEach(r => {
+    const q = Number(r.querySelector('.p-qty')?.value || 0);
+    const p = Number(r.querySelector('.p-price')?.value || 0);
+    const line = q * p;
+    sub += line;
+    const o = r.querySelector('.p-line');
+    if (o) o.textContent = '฿' + line.toLocaleString();
+  });
+  const disc = Math.max(0, Number(document.getElementById('p-discount')?.value || 0));
+  const grand = Math.max(0, sub - disc);
+  const s = document.getElementById('p-subtotal');
+  const g = document.getElementById('p-grand');
+  if (s) s.textContent = '฿' + sub.toLocaleString();
+  if (g) g.textContent = '฿' + grand.toLocaleString();
+}
+
+// Override: no popup, open editable in-page template
+function printBillA5(id) {
+  const bill = (window.billsCache || []).find(b => b.id === id);
+  if (!bill) return;
+
+  const rows = (bill.items || []).map((it, idx) => `
+    <tr>
+      <td>${idx + 1}</td>
+      <td><input value="${String(it.name || '').replace(/"/g, '&quot;')}" style="width:100%"></td>
+      <td><input value="${String(it.pn || '').replace(/"/g, '&quot;')}" style="width:100%"></td>
+      <td class="num"><input class="p-qty" type="number" min="0" step="1" value="${Number(it.qty || 0)}" style="width:100%;text-align:right"></td>
+      <td class="num"><input class="p-price" type="number" min="0" step="0.01" value="${Number(it.price || 0)}" style="width:100%;text-align:right"></td>
+      <td class="num p-line">฿0</td>
+    </tr>
+  `).join('');
+
+  const title = (bill.name && String(bill.name).trim()) ? bill.name : `บิล #${bill.no}`;
+  const sheet = document.getElementById('printA5Sheet');
+  if (!sheet) return;
+  sheet.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8mm;">
+      <div>
+        <div style="font-size:18px;font-weight:700;">Leo Auto</div>
+        <div style="font-size:16px;font-weight:700;">ใบเงินสด / CASH SALE</div>
+        <div style="font-size:11px;margin-top:4px;">ผู้ขาย: <input id="p-seller" value="Leo Auto" style="width:180px;"></div>
+      </div>
+      <div style="font-size:12px;line-height:1.6;text-align:right;">
+        <div><strong>${title}</strong></div>
+        <div>วันที่: <input id="p-date" value="${bill.date || ''}" style="width:120px;"></div>
+        <div>เลขที่บิล: <input id="p-billno" value="${String(bill.no || '')}" style="width:80px;"></div>
+        <div>ลูกค้า: <input id="p-customer" value="" style="width:180px;"></div>
+      </div>
+    </div>
+    <table class="print-a5-table">
+      <thead>
+        <tr><th style="width:7%;">#</th><th style="width:33%;">รายการ</th><th style="width:20%;">Part Number</th><th style="width:10%;" class="num">จำนวน</th><th style="width:15%;" class="num">หน่วยละ</th><th style="width:15%;" class="num">จำนวนเงิน</th></tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="margin-top:6mm;display:flex;justify-content:flex-end;">
+      <div style="min-width:40%;border:1px solid #222;padding:8px 10px;font-size:12px;">
+        <div style="display:flex;justify-content:space-between;"><span>รวมก่อนลด</span><strong id="p-subtotal">฿0</strong></div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;"><span>ส่วนลด</span><input id="p-discount" type="number" min="0" step="0.01" value="0" style="width:120px;text-align:right"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid #222;font-weight:700;"><span>รวมทั้งสิ้น</span><span id="p-grand">฿0</span></div>
+      </div>
+    </div>
+    <div style="margin-top:8mm;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10mm;font-size:12px;">
+      <div>ผู้รับสินค้า<div style="margin-top:10mm;border-top:1px solid #222;"><input id="p-receiver" value="" style="width:100%;border:none;"></div></div>
+      <div>ผู้รับเงิน<div style="margin-top:10mm;border-top:1px solid #222;"><input id="p-collector" value="" style="width:100%;border:none;"></div></div>
+      <div>ผู้ขาย<div style="margin-top:10mm;border-top:1px solid #222;"><input id="p-seller-sign" value="" style="width:100%;border:none;"></div></div>
+    </div>
+  `;
+
+  document.getElementById('printTemplateModal')?.classList.add('open');
+  sheet.addEventListener('input', (e) => {
+    if (e.target.matches('.p-qty,.p-price,#p-discount')) _recalcPrintA5();
+  }, { once: true });
+  _recalcPrintA5();
+}
+
 window.onload = initInventory;
 
 /* ══════════════════════════════════════
@@ -5829,6 +5931,20 @@ function siRender() {
     <div class="fancy-prompt-message" id="fancyMessage"></div>
     <input class="fancy-prompt-input" id="fancyInput" type="text" style="display:none">
     <div class="fancy-prompt-btnrow" id="fancyBtnRow"></div>
+  </div>
+</div>
+
+<div id="printTemplateModal" class="modal-overlay" onclick="if(event.target===this) closePrintTemplate()">
+  <div class="report-modal-box" style="max-width:1100px;height:90vh;padding:14px;" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">🖨️ Template บิล A5 (แก้ไขก่อนพิมพ์)</div>
+      <button class="modal-close" onclick="closePrintTemplate()">✕</button>
+    </div>
+    <div id="printA5Tools" class="print-a5-toolbar">
+      <button class="print-a5-btn primary" onclick="window.print()">พิมพ์ A5</button>
+      <button class="print-a5-btn" onclick="closePrintTemplate()">ปิด</button>
+    </div>
+    <div id="printA5Sheet" class="print-a5-sheet"></div>
   </div>
 </div>
 
