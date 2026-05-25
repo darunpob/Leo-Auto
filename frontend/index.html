@@ -2700,6 +2700,22 @@
     width:32px; text-align:center;
   }
   .bill-row-price { flex:1; text-align:right; font-size:12px; color:rgba(255,255,255,0.5); }
+  .bill-row-payment { flex:1; display:flex; justify-content:flex-end; }
+  .bill-payment-select, .detail-payment-select {
+    width: 100%;
+    max-width: 110px;
+    background: rgba(255,255,255,0.08);
+    border: 0.5px solid rgba(255,255,255,0.12);
+    border-radius: 9px;
+    color: #f5f5f7;
+    font-family: inherit;
+    font-size: 11px;
+    padding: 7px 10px;
+    outline: none;
+  }
+  .bill-payment-select:focus, .detail-payment-select:focus {
+    border-color: rgba(96,165,250,0.5);
+  }
   .bill-row-total { flex:1; text-align:right; font-size:13px; font-weight:600; color:#f5f5f7; }
   .bill-row-del {
     width:24px; height:24px; border-radius:6px; flex-shrink:0;
@@ -2774,9 +2790,104 @@
     margin-top: 10px; display:flex; gap:12px;
     background:rgba(255,255,255,0.04); border:0.5px solid rgba(255,255,255,0.08);
     border-radius:12px; padding:12px 14px;
+    flex-wrap: wrap;
   }
   .history-sum-item { flex:1; font-size:12px; color:rgba(255,255,255,0.5); display:flex; flex-direction:column; gap:3px; }
   .history-sum-item span:last-child { font-size:15px; font-weight:700; color:#f5f5f7; }
+  .bill-method-badge {
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    padding:3px 8px;
+    border-radius:999px;
+    font-size:10px;
+    font-weight:600;
+    margin-top:6px;
+  }
+  .bill-method-badge.transfer {
+    background: rgba(59,130,246,0.16);
+    color: #93c5fd;
+    border: 0.5px solid rgba(96,165,250,0.25);
+  }
+  .bill-method-badge.cash {
+    background: rgba(16,185,129,0.16);
+    color: #6ee7b7;
+    border: 0.5px solid rgba(52,211,153,0.25);
+  }
+  .detail-bill-name-input, .detail-item-name-input, .detail-item-price-input {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 0.5px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    color: #f5f5f7;
+    font-family: inherit;
+    outline: none;
+  }
+  .detail-bill-name-input {
+    padding: 10px 12px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .detail-item-name-input, .detail-item-price-input {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .detail-bill-name-input:focus, .detail-item-name-input:focus, .detail-item-price-input:focus {
+    border-color: rgba(96,165,250,0.5);
+  }
+  .detail-section-label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 8px;
+    display: block;
+  }
+  .detail-item-card {
+    padding: 12px 0;
+    border-bottom: 1px dashed rgba(255,255,255,0.06);
+  }
+  .detail-item-card:last-child {
+    border-bottom: none;
+  }
+  .detail-item-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.8fr) 120px 110px;
+    gap: 10px;
+    align-items: end;
+    margin-top: 10px;
+  }
+  .detail-meta-line {
+    font-size: 11px;
+    color: rgba(255,255,255,0.42);
+    margin-top: 4px;
+  }
+  .detail-summary-grid {
+    display: grid;
+    gap: 10px;
+  }
+  .detail-actions {
+    display:flex;
+    gap:10px;
+    margin-top:16px;
+  }
+  .detail-save-btn, .detail-close-btn {
+    flex:1;
+    padding: 11px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .detail-save-btn {
+    border: none;
+    color: #fff;
+    background: linear-gradient(135deg,#2563eb,#7c3aed);
+  }
+  .detail-close-btn {
+    background: rgba(255,255,255,0.07);
+    border: 0.5px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.72);
+  }
   .theme-toggle-btn {
     position: fixed;
     bottom: 24px;
@@ -2935,6 +3046,7 @@
               <span style="flex:2">รายการ</span>
               <span style="flex:1;text-align:center">จำนวน</span>
               <span style="flex:1;text-align:right">ราคา/ชิ้น</span>
+              <span style="flex:1;text-align:right">ชำระ</span>
               <span style="flex:1;text-align:right">รวม</span>
               <span style="width:32px"></span>
             </div>
@@ -2947,6 +3059,8 @@
           <div class="bill-footer">
             <div class="bill-totals">
               <div class="bill-total-row"><span>รวมรายการ</span><span id="billSubtotal">฿0</span></div>
+              <div class="bill-total-row"><span>ยอดโอน</span><span id="billTransferTotal">฿0</span></div>
+              <div class="bill-total-row"><span>ยอดเงินสด</span><span id="billCashTotal">฿0</span></div>
               <div class="bill-total-row bill-grand"><span>ยอดรวมทั้งหมด</span><span id="billGrand">฿0</span></div>
             </div>
             <div style="display:flex;gap:10px;margin-top:16px;">
@@ -2977,6 +3091,8 @@
           <!-- Summary bar -->
           <div class="history-summary" id="historySummary" style="display:none;">
             <div class="history-sum-item"><span>บิลทั้งหมด</span><span id="sumBillCount">0</span></div>
+            <div class="history-sum-item"><span>ยอดโอน</span><span id="sumTransferTotal" style="color:#93c5fd;font-weight:700;">฿0</span></div>
+            <div class="history-sum-item"><span>ยอดเงินสด</span><span id="sumCashTotal" style="color:#6ee7b7;font-weight:700;">฿0</span></div>
             <div class="history-sum-item"><span>ยอดรวม</span><span id="sumTotal" style="color:#34d399;font-weight:700;">฿0</span></div>
           </div>
         </div>
@@ -3421,17 +3537,24 @@
 <div id="billDetailModal" class="modal-overlay">
   <div class="report-modal-box" style="max-width: 500px;">
     <div class="modal-header">
-      <div id="bill-detail-name" class="modal-title">Bill Details</div>
+      <div class="modal-title">รายละเอียดบิล</div>
       <button class="modal-close" onclick="document.getElementById('billDetailModal').classList.remove('open')">✕</button>
     </div>
     <div id="bill-detail-content" style="padding: 20px 24px;">
-      <p id="bill-detail-date" style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: -10px; margin-bottom: 15px;"></p>
+      <label class="detail-section-label" for="bill-detail-name-input">ชื่อบิล</label>
+      <input id="bill-detail-name-input" class="detail-bill-name-input" type="text" placeholder="เช่น บิลลูกค้าหน้าร้าน">
+      <p id="bill-detail-date" style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 12px; margin-bottom: 15px;"></p>
       <div id="bill-detail-items">
         <!-- Items will be rendered here -->
       </div>
-      <div id="bill-detail-summary" style="margin-top: 16px; padding-top: 16px; border-top: 0.5px solid rgba(255,255,255,0.1); text-align: right;">
-        <span id="bill-detail-total-label" style="font-size: 14px; color: rgba(255,255,255,0.6);">ยอดรวม</span>
-        <span id="bill-detail-total-value" style="font-size: 22px; font-weight: 700; margin-left: 12px;"></span>
+      <div id="bill-detail-summary" class="detail-summary-grid" style="margin-top: 16px; padding-top: 16px; border-top: 0.5px solid rgba(255,255,255,0.1);">
+        <div class="bill-total-row"><span>ยอดโอน</span><span id="bill-detail-transfer-value">฿0</span></div>
+        <div class="bill-total-row"><span>ยอดเงินสด</span><span id="bill-detail-cash-value">฿0</span></div>
+        <div class="bill-total-row bill-grand"><span id="bill-detail-total-label">ยอดรวม</span><span id="bill-detail-total-value">฿0</span></div>
+      </div>
+      <div class="detail-actions">
+        <button class="detail-close-btn" onclick="document.getElementById('billDetailModal').classList.remove('open')">ปิด</button>
+        <button class="detail-save-btn" onclick="saveBillDetailEdits()">บันทึกการแก้ไข</button>
       </div>
     </div>
   </div>
@@ -4826,24 +4949,116 @@ function confirmInvoiceTemplate() {
 
 function updateTemplateDisplay() {  const seller = document.getElementById('templateSellerDisplay');  const buyer = document.getElementById('templateBuyerDisplay');  const payment = document.getElementById('templatePaymentDisplay');  if (seller) seller.textContent = invoiceTemplate.sellerName || '-';  if (buyer) buyer.textContent = invoiceTemplate.buyerName || '-';  if (payment) payment.textContent = invoiceTemplate.paymentReceiver || '-';}
 
+let billDetailDraft = null;
 
+function normalizePaymentMethod(method) {
+  return String(method || '').toLowerCase() === 'cash' ? 'cash' : 'transfer';
+}
+
+function paymentMethodLabel(method) {
+  return normalizePaymentMethod(method) === 'cash' ? 'เงินสด' : 'โอน';
+}
+
+function paymentMethodBadge(method) {
+  const normalized = normalizePaymentMethod(method);
+  return `<span class="bill-method-badge ${normalized}">${paymentMethodLabel(normalized)}</span>`;
+}
+
+function computeBillTotals(items) {
+  const safeItems = Array.isArray(items) ? items : [];
+  const transfer = safeItems
+    .filter(it => normalizePaymentMethod(it.paymentMethod) === 'transfer')
+    .reduce((sum, it) => sum + (Number(it.price || 0) * Number(it.qty || 0)), 0);
+  const cash = safeItems
+    .filter(it => normalizePaymentMethod(it.paymentMethod) === 'cash')
+    .reduce((sum, it) => sum + (Number(it.price || 0) * Number(it.qty || 0)), 0);
+  return { transfer, cash, grand: transfer + cash };
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function updateBillDetailSummary() {
+  if (!billDetailDraft) return;
+  const totals = computeBillTotals(billDetailDraft.items);
+  document.getElementById('bill-detail-transfer-value').textContent = '฿' + totals.transfer.toLocaleString();
+  document.getElementById('bill-detail-cash-value').textContent = '฿' + totals.cash.toLocaleString();
+  document.getElementById('bill-detail-total-value').textContent = '฿' + totals.grand.toLocaleString();
+}
+
+function updateBillDetailItem(idx, field, value) {
+  if (!billDetailDraft || !billDetailDraft.items[idx]) return;
+  if (field === 'price') {
+    const numeric = Number(value);
+    billDetailDraft.items[idx].price = Number.isFinite(numeric) && numeric >= 0 ? numeric : 0;
+  } else if (field === 'paymentMethod') {
+    billDetailDraft.items[idx].paymentMethod = normalizePaymentMethod(value);
+  } else {
+    billDetailDraft.items[idx][field] = String(value || '');
+  }
+  const rowTotal = document.getElementById(`bill-detail-row-total-${idx}`);
+  if (rowTotal) {
+    rowTotal.textContent = '฿' + (Number(billDetailDraft.items[idx].price || 0) * Number(billDetailDraft.items[idx].qty || 0)).toLocaleString();
+  }
+  updateBillDetailSummary();
+}
+
+function renderBillDetailEditor() {
+  if (!billDetailDraft) return;
+  document.getElementById('bill-detail-name-input').value = billDetailDraft.name || (`บิล #${billDetailDraft.no}`);
+  document.getElementById('bill-detail-date').textContent = `📅 ${billDetailDraft.date}`;
+  document.getElementById('bill-detail-items').innerHTML = billDetailDraft.items.map((it, idx) => `
+    <div class="detail-item-card">
+      <label class="detail-section-label">รายการที่ ${idx + 1}</label>
+      <input class="detail-item-name-input" type="text" value="${escapeHtml(it.name)}" oninput="updateBillDetailItem(${idx}, 'name', this.value)">
+      <div class="detail-meta-line">${escapeHtml(it.pn)} · ${it.type === 'used' ? 'เก่า' : 'ใหม่'} · จำนวน ${Number(it.qty || 0).toLocaleString()}</div>
+      <div class="detail-item-grid">
+        <div>
+          <span class="detail-section-label">ราคา/ชิ้น</span>
+          <input class="detail-item-price-input" type="number" min="0" step="0.01" value="${Number(it.price || 0)}" oninput="updateBillDetailItem(${idx}, 'price', this.value)">
+        </div>
+        <div>
+          <span class="detail-section-label">รับชำระ</span>
+          <select class="detail-payment-select" onchange="updateBillDetailItem(${idx}, 'paymentMethod', this.value)">
+            <option value="transfer" ${normalizePaymentMethod(it.paymentMethod) === 'transfer' ? 'selected' : ''}>โอน</option>
+            <option value="cash" ${normalizePaymentMethod(it.paymentMethod) === 'cash' ? 'selected' : ''}>เงินสด</option>
+          </select>
+        </div>
+        <div style="text-align:right;">
+          <span class="detail-section-label">รวม</span>
+          <div id="bill-detail-row-total-${idx}" style="font-size:14px;font-weight:700;">฿${(Number(it.price || 0) * Number(it.qty || 0)).toLocaleString()}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  updateBillDetailSummary();
+}
 
 function normalizeBackendBill(bill) {
   const no = Number(bill.bill_no || 0);
   const items = Array.isArray(bill.items) ? bill.items : [];
+  const normalizedItems = items.map(it => ({
+    pn: String(it.part_number || ''),
+    name: String(it.part_name || ''),
+    qty: Number(it.quantity || 0),
+    price: Number(it.unit_price || 0),
+    type: String(it.type || 'new'),
+    paymentMethod: normalizePaymentMethod(it.payment_method)
+  }));
+  const totals = computeBillTotals(normalizedItems);
   return {
     id: no,
     no,
     name: bill.name || `บิล #${no}`,
     date: String(bill.date || ''),
-    items: items.map(it => ({
-      pn: String(it.part_number || ''),
-      name: String(it.part_name || ''),
-      qty: Number(it.quantity || 0),
-      price: Number(it.unit_price || 0),
-      type: String(it.type || 'new')
-    })),
-    total: Number(bill.total || 0)
+    items: normalizedItems,
+    total: Number(bill.total || totals.grand)
   };
 }
 
@@ -4936,7 +5151,7 @@ function addToBill(pn) {
   if (existing) {
     existing.qty++;
   } else {
-    billItems.push({ pn, name: item['Part Name'], price: Number(item.Price), qty: 1, type: 'new' });
+    billItems.push({ pn, name: item['Part Name'], price: Number(item.Price), qty: 1, type: 'new', paymentMethod: 'transfer' });
   }
   document.getElementById('billSearchInput').value = '';
   document.getElementById('billSearchResults').style.display = 'none';
@@ -4966,6 +5181,12 @@ function renderBillItems() {
         <div class="bill-qty-btn" onclick="changeQty(${idx},1)">+</div>
       </div>
       <div class="bill-row-price" onclick="editPrice(${idx})" style="cursor:pointer;padding:4px 8px;border-radius:6px;transition:all 0.2s;" onmouseover="this.style.background='rgba(96,165,250,0.15)'" onmouseout="this.style.background='transparent'" title="คลิกเพื่อแก้ไขราคา">฿${it.price.toLocaleString()}</div>
+      <div class="bill-row-payment">
+        <select class="bill-payment-select" onchange="changePaymentMethod(${idx}, this.value)">
+          <option value="transfer" ${normalizePaymentMethod(it.paymentMethod) === 'transfer' ? 'selected' : ''}>โอน</option>
+          <option value="cash" ${normalizePaymentMethod(it.paymentMethod) === 'cash' ? 'selected' : ''}>เงินสด</option>
+        </select>
+      </div>
       <div class="bill-row-total">฿${(it.price*it.qty).toLocaleString()}</div>
       <div class="bill-row-del" onclick="removeBillItem(${idx})">✕</div>
     </div>
@@ -5010,10 +5231,18 @@ function changeItemType(idx, type) {
   renderBillItems();
 }
 
+function changePaymentMethod(idx, method) {
+  if (!billItems[idx]) return;
+  billItems[idx].paymentMethod = normalizePaymentMethod(method);
+  updateBillTotals();
+}
+
 function updateBillTotals() {
-  const sub = billItems.reduce((s,i) => s + i.price*i.qty, 0);
-  document.getElementById('billSubtotal').textContent = '฿'+sub.toLocaleString();
-  document.getElementById('billGrand').textContent    = '฿'+sub.toLocaleString();
+  const totals = computeBillTotals(billItems);
+  document.getElementById('billSubtotal').textContent = '฿'+totals.grand.toLocaleString();
+  document.getElementById('billTransferTotal').textContent = '฿'+totals.transfer.toLocaleString();
+  document.getElementById('billCashTotal').textContent = '฿'+totals.cash.toLocaleString();
+  document.getElementById('billGrand').textContent    = '฿'+totals.grand.toLocaleString();
 }
 
 async function clearBill() {
@@ -5154,13 +5383,15 @@ function renderHistory(bills) {
         </div>
         <div style="text-align:right;">
           <div class="hist-bill-total">฿${bill.total.toLocaleString()}</div>
+          <div>${paymentMethodBadge('transfer')} ฿${computeBillTotals(bill.items).transfer.toLocaleString()}</div>
+          <div>${paymentMethodBadge('cash')} ฿${computeBillTotals(bill.items).cash.toLocaleString()}</div>
           <div class="hist-bill-count">${bill.items.length} รายการ ▾</div>
         </div>
       </div>
       <div class="hist-items" id="hist-items-${bill.id}">
         ${bill.items.map(it=>`
           <div class="hist-item-row">
-            <span>${it.name} <span style="color:rgba(255,255,255,0.35)">×${it.qty}</span></span>
+            <span>${it.name} <span style="color:rgba(255,255,255,0.35)">×${it.qty}</span> ${paymentMethodBadge(it.paymentMethod)}</span>
             <span style="font-weight:600;color:#f5f5f7;">฿${(it.price*it.qty).toLocaleString()}</span>
           </div>
         `).join('')}
@@ -5176,7 +5407,11 @@ function renderHistory(bills) {
 
   // Summary
   const total = bills.reduce((s,b)=>s+b.total,0);
+  const transferTotal = bills.reduce((sum, bill) => sum + computeBillTotals(bill.items).transfer, 0);
+  const cashTotal = bills.reduce((sum, bill) => sum + computeBillTotals(bill.items).cash, 0);
   document.getElementById('sumBillCount').textContent = bills.length + ' บิล';
+  document.getElementById('sumTransferTotal').textContent = '฿'+transferTotal.toLocaleString();
+  document.getElementById('sumCashTotal').textContent = '฿'+cashTotal.toLocaleString();
   document.getElementById('sumTotal').textContent = '฿'+total.toLocaleString();
   summary.style.display = 'flex';
 }
@@ -5321,9 +5556,11 @@ async function saveBill() {
     name: (document.getElementById('bill-name-input')?.value || '').trim(),
     items: billItems.map(i => ({
       part_number: i.pn,
+      part_name: i.name,
       quantity: Number(i.qty || 0),
       unit_price: Number(i.price || 0),
-      type: i.type || 'new'
+      type: i.type || 'new',
+      payment_method: normalizePaymentMethod(i.paymentMethod)
     }))
   };
 
@@ -5377,23 +5614,45 @@ async function editBillName(id) {
 function openBillDetail(id) {
   const bill = billsCache.find(b => b.id === id);
   if (!bill) return;
-  document.getElementById('bill-detail-name').textContent = bill.name || (`บิล #${bill.no}`);
-  document.getElementById('bill-detail-date').textContent = `📅 ${bill.date}`;
-  const itemsEl = document.getElementById('bill-detail-items');
-  itemsEl.innerHTML = bill.items.map(it => `
-    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,0.04);">
-      <div style="flex:1;min-width:0;">
-        <div style="font-weight:600">${it.name}</div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.45);">${it.pn} · ${it.type}</div>
-      </div>
-      <div style="text-align:right;min-width:110px;">
-        <div>฿${(it.price).toLocaleString()} × ${it.qty}</div>
-        <div style="font-weight:700;margin-top:6px;">฿${(it.price*it.qty).toLocaleString()}</div>
-      </div>
-    </div>
-  `).join('');
-  document.getElementById('bill-detail-total-value').textContent = '฿' + (bill.total || 0).toLocaleString();
+  billDetailDraft = {
+    id: bill.id,
+    no: bill.no,
+    name: bill.name,
+    date: bill.date,
+    items: bill.items.map(it => ({ ...it, paymentMethod: normalizePaymentMethod(it.paymentMethod) }))
+  };
+  renderBillDetailEditor();
   document.getElementById('billDetailModal').classList.add('open');
+}
+
+async function saveBillDetailEdits() {
+  if (!billDetailDraft) return;
+  const billNameInput = document.getElementById('bill-detail-name-input');
+  const updatedName = String(billNameInput?.value || '').trim() || (`บิล #${billDetailDraft.no}`);
+  const payload = {
+    name: updatedName,
+    items: billDetailDraft.items.map(it => ({
+      part_number: it.pn,
+      part_name: String(it.name || '').trim() || it.pn,
+      quantity: Number(it.qty || 0),
+      unit_price: Number(it.price || 0),
+      type: it.type || 'new',
+      payment_method: normalizePaymentMethod(it.paymentMethod)
+    }))
+  };
+  const res = await fetch(`${API_URL}/orders/${encodeURIComponent(billDetailDraft.no)}/detail`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    await fancyAlert('บันทึกการแก้ไขบิลไม่สำเร็จ', 'error');
+    return;
+  }
+  document.getElementById('billDetailModal').classList.remove('open');
+  billDetailDraft = null;
+  await loadHistory();
+  await updateBillNo();
 }
 
 function printBillA5_legacy1(id) {

@@ -484,6 +484,52 @@ def _save_orders(data):
 def _compute_bill_total(items):
     return sum(it.get("quantity", 0) * it.get("unit_price", 0) for it in items)
 
+def _normalize_payment_method(value):
+    return "cash" if str(value or "").strip().lower() == "cash" else "transfer"
+
+def _normalize_order_items(items, inventory_df=None):
+    if not isinstance(items, list) or not items:
+        raise HTTPException(status_code=422, detail="items must be a non-empty array")
+
+    norm_items = []
+    for it in items:
+        pn = str(it.get("part_number", "")).strip()
+        qty = it.get("quantity")
+        unit = it.get("unit_price")
+        item_type = str(it.get("type", "new") or "new")
+        custom_name = str(it.get("part_name", "")).strip()
+
+        if not pn:
+            raise HTTPException(status_code=422, detail="Missing item.part_number")
+        try:
+            qty_f = float(qty)
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=422, detail="Invalid item.quantity")
+        try:
+            unit_f = float(unit)
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=422, detail="Invalid item.unit_price")
+        if qty_f <= 0:
+            raise HTTPException(status_code=422, detail="item.quantity must be > 0")
+        if unit_f < 0:
+            raise HTTPException(status_code=422, detail="item.unit_price must be >= 0")
+
+        part_name = custom_name
+        if inventory_df is not None and not part_name:
+            part_name_series = inventory_df.loc[inventory_df['Part Number'] == pn, 'Part Name']
+            part_name = part_name_series.iloc[0] if not part_name_series.empty else ""
+
+        norm_items.append({
+            "part_number": pn,
+            "quantity": int(qty_f) if qty_f == int(qty_f) else qty_f,
+            "unit_price": unit_f,
+            "part_name": part_name,
+            "type": item_type,
+            "payment_method": _normalize_payment_method(it.get("payment_method"))
+        })
+
+    return norm_items
+
 
 # [CREATE] บันทึกบิลขายรายวัน (รับ JSON)
 @app.post("/api/orders")
@@ -529,40 +575,7 @@ async def create_order(data: dict):
     # --- End Stock Deduction ---
     save_db(inventory_df) # <--- ⭐️ บันทึกไฟล์ CSV ที่อัปเดตสต็อกแล้ว
 
-    # normalize items for saving
-    norm_items = []
-    for it in items:
-        pn = str(it.get("part_number"))
-        qty = it.get("quantity")
-        unit = it.get("unit_price")
-        item_type = it.get("type", "new")
-
-        if not pn:
-            raise HTTPException(status_code=422, detail="Missing item.part_number")
-        try:
-            qty_f = float(qty)
-        except (ValueError, TypeError):
-            raise HTTPException(status_code=422, detail="Invalid item.quantity")
-        try:
-            unit_f = float(unit)
-        except (ValueError, TypeError):
-            raise HTTPException(status_code=422, detail="Invalid item.unit_price")
-        if qty_f <= 0:
-            raise HTTPException(status_code=422, detail="item.quantity must be > 0")
-        if unit_f < 0:
-            raise HTTPException(status_code=422, detail="item.unit_price must be >= 0")
-        
-        # Find part name from inventory
-        part_name_series = inventory_df.loc[inventory_df['Part Number'] == pn, 'Part Name']
-        part_name = part_name_series.iloc[0] if not part_name_series.empty else ""
-
-        norm_items.append({
-            "part_number": pn,
-            "quantity": int(qty_f) if qty_f == int(qty_f) else qty_f,
-            "unit_price": unit_f,
-            "part_name": part_name,
-            "type": item_type
-        })
+    norm_items = _normalize_order_items(items, inventory_df)
 
     bills = _load_orders()
     next_no = 1
@@ -635,6 +648,27 @@ async def delete_order(bill_no: int):
 
     _save_orders(bills_to_keep)
     return {"message": f"ลบบิล #{bill_no} สำเร็จ"}
+
+@app.put("/api/orders/{bill_no}/detail")
+async def update_order_detail(bill_no: int, data: dict):
+    bills = _load_orders()
+    updated_bill = None
+    for bill in bills:
+        if bill.get("bill_no") == bill_no:
+            new_name = str(data.get("name") or "").strip()
+            if new_name:
+                bill["name"] = new_name
+            if "items" in data:
+                bill["items"] = _normalize_order_items(data.get("items", []))
+                bill["total"] = _compute_bill_total(bill["items"])
+            updated_bill = bill
+            break
+
+    if updated_bill is None:
+        raise HTTPException(status_code=404, detail=f"Bill #{bill_no} not found")
+
+    _save_orders(bills)
+    return {"message": f"อัปเดตรายละเอียดบิล #{bill_no} สำเร็จ", "bill": updated_bill}
 
 if __name__ == "__main__":
     import uvicorn
