@@ -5716,7 +5716,7 @@ function loadSavedTestResults() {
 
 // Override printBillA5 with editable A5 template (opens editor first, then print)
 function printBillA5(id) {
-  const bill = (window.billsCache || []).find(b => b.id === id);
+  const bill = (billsCache || []).find(b => b.id === id);
   if (!bill) return;
 
   const rows = (bill.items || []).map((it, idx) => `
