@@ -5129,7 +5129,7 @@ function renderHistory(bills) {
       <div class="hist-del-btn">
         <button class="hist-btn hist-btn-view" onclick="openBillDetail(${bill.id})">📋 รายละเอียด</button>
         <button class="hist-btn hist-btn-load" onclick="loadBillToEditor(${bill.id})">📂 โหลดบิล</button>
-        <button class="hist-btn hist-btn-print" onclick="printBillA5(${bill.id})">🖨️ A5</button>
+        <button class="hist-btn hist-btn-print" onclick="openPrintTemplateA5(${bill.id})">🖨️ A5</button>
         <button class="hist-btn hist-btn-del" onclick="deleteBill(${bill.id})">🗑 ลบ</button>
       </div>
     </div>
@@ -5931,6 +5931,21 @@ function printBillA5(id) {
     if (e.target.matches('.p-qty,.p-price,#p-discount')) _recalcPrintA5();
   }, { once: true });
   _recalcPrintA5();
+}
+
+// Stable entrypoint for A5 button (avoid conflicts with duplicated printBillA5 definitions)
+function openPrintTemplateA5(id) {
+  const bill = (billsCache || []).find(b => b.id === id);
+  if (!bill) {
+    alert('ไม่พบบิลสำหรับพิมพ์');
+    return;
+  }
+  // Reuse the latest in-page template renderer
+  printBillA5(id);
+  const modal = document.getElementById('printTemplateModal');
+  if (modal && !modal.classList.contains('open')) {
+    modal.classList.add('open');
+  }
 }
 
 window.onload = initInventory;
