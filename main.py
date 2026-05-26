@@ -72,7 +72,7 @@ def get_db():
     if not os.path.exists(DB_FILE):
         return pd.DataFrame(columns=["Part Number", "Part Name", "Brand", "Series", "Price", "Stock", "Used_Price", "Used_Stock", "Image_URL", LOCATION_COLUMN, COST_COLUMN])
 
-    df = pd.read_csv(DB_FILE).fillna("")
+    df = pd.read_csv(DB_FILE, encoding='utf-8-sig').fillna("")
     df['Part Number'] = df['Part Number'].astype(str)
 
     # helper: normalize filename matching (handles extra spaces before .png)
@@ -171,10 +171,15 @@ async def add_product(
     used_stock: int = Form(0),
     cost_price: float = Form(0),
     location: str = Form(""),
-    stock_lh: int = Form(0),
-    stock_rh: int = Form(0),
+    stock_lh: str = Form("0"),
+    stock_rh: str = Form("0"),
     images: list[UploadFile] = File([])
 ):
+    def _to_int(v, default=0):
+        try: return int(str(v).strip()) if str(v).strip() else default
+        except: return default
+    stock_lh_val = _to_int(stock_lh)
+    stock_rh_val = _to_int(stock_rh)
     df = get_db()
     if part_number in df['Part Number'].values:
         raise HTTPException(status_code=400, detail="Part Number นี้มีอยู่แล้วในระบบ!")
@@ -203,8 +208,8 @@ async def add_product(
         "Image_URL": ",".join(image_urls),
         LOCATION_COLUMN: location,
         COST_COLUMN: cost_price,
-        "Stock_LH": stock_lh,
-        "Stock_RH": stock_rh
+        "Stock_LH": stock_lh_val,
+        "Stock_RH": stock_rh_val
     }
     df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
     save_db(df)
@@ -223,11 +228,18 @@ async def update_product(
     used_stock: int = Form(0),
     cost_price: float = Form(0),
     location: str = Form(""),
-    stock_lh: int = Form(0),
-    stock_rh: int = Form(0),
+    stock_lh: str = Form("0"),
+    stock_rh: str = Form("0"),
     images: list[UploadFile] = File([])
 ):
+    def _to_int(v, default=0):
+        try: return int(str(v).strip()) if str(v).strip() else default
+        except: return default
+    stock_lh_val = _to_int(stock_lh)
+    stock_rh_val = _to_int(stock_rh)
+    part_number = part_number.strip()
     df = get_db()
+    df['Part Number'] = df['Part Number'].astype(str).str.strip()
     if part_number not in df['Part Number'].values:
         raise HTTPException(status_code=404, detail="ไม่พบสินค้าในระบบ")
     
@@ -243,8 +255,8 @@ async def update_product(
     df.at[idx, "Used_Stock"] = used_stock
     df.at[idx, LOCATION_COLUMN] = location
     df.at[idx, COST_COLUMN] = cost_price
-    df.at[idx, "Stock_LH"] = stock_lh
-    df.at[idx, "Stock_RH"] = stock_rh
+    df.at[idx, "Stock_LH"] = stock_lh_val
+    df.at[idx, "Stock_RH"] = stock_rh_val
 
     # จัดการรูปภาพ
     existing_urls = df.at[idx, "Image_URL"]
@@ -286,7 +298,9 @@ async def update_product(
 # [DELETE] ลบสินค้า
 @app.delete("/api/inventory/{part_number}")
 async def delete_product(part_number: str):
+    part_number = part_number.strip()
     df = get_db()
+    df['Part Number'] = df['Part Number'].astype(str).str.strip()
     if part_number not in df['Part Number'].values:
         raise HTTPException(status_code=404, detail="ไม่พบสินค้าในระบบ")
     
