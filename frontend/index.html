@@ -3839,7 +3839,7 @@
   .print-a5-meta { flex:0 0 41%; padding:1.5mm 2.5mm; border:1px solid #dbe4f0; border-radius:10px; background:#f8fbff; }
   .print-a5-meta-row { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:11px; margin-bottom:0; }
   .print-a5-meta-row:last-child { margin-bottom:0; }
-  .print-a5-meta-row span { color:#64748b; white-space:nowrap; font-weight:500; }
+  .print-a5-meta-row span { color:#64748b; white-space:nowrap; font-weight:500; text-align:right; }
   .print-a5-meta-row input { width:100%; text-align:right; }
   .print-a5-party { display:grid; grid-template-columns:1fr 1fr; gap:2mm; margin-bottom:2mm; }
   .print-a5-field { padding:1.5mm 2mm; border:1px solid #e2e8f0; border-radius:8px; background:#fff; }
@@ -6581,6 +6581,8 @@ function _syncPrintA5Copy() {
   const title = _escapePrintText(document.getElementById('p-title')?.value || 'ใบเสร็จรับเงิน / Cash Sale');
   const badge = _escapePrintText(document.getElementById('p-badge')?.value || 'บิลเงินสด');
   const date = _escapePrintText(document.getElementById('p-date')?.value || '');
+  const book = _escapePrintText(document.getElementById('p-book')?.value || '');
+  const no = _escapePrintText(document.getElementById('p-no')?.value || '');
   const seller = _escapePrintText(document.getElementById('p-seller')?.value || '');
   const customer = _escapePrintText(document.getElementById('p-customer')?.value || '');
   const note = _escapePrintText(document.getElementById('p-note')?.value || '');
@@ -6615,6 +6617,8 @@ function _syncPrintA5Copy() {
         <div class="print-a5-title">${title}</div>
       </div>
       <div class="print-a5-meta">
+        <div class="print-a5-meta-row"><span>เล่มที่</span><div class="print-a5-static-text" style="text-align:right">${book}</div></div>
+        <div class="print-a5-meta-row"><span>เลขที่</span><div class="print-a5-static-text" style="text-align:right">${no}</div></div>
         <div class="print-a5-meta-row"><span>วันที่</span><div class="print-a5-static-text" style="text-align:right">${date}</div></div>
       </div>
     </div>
@@ -6945,12 +6949,12 @@ function printBillA5(id) {
 
   document.getElementById('printTemplateModal')?.classList.add('open');
   sheet.oninput = (e) => {
-    if (e.target.matches('.p-qty,.p-price,#p-discount,#p-title,#p-badge,#p-date,#p-seller,#p-customer,#p-note,#p-receiver,#p-collector,#p-seller-sign')) {
+    if (e.target.matches('.p-qty,.p-price,#p-discount,#p-title,#p-badge,#p-date,#p-book,#p-no,#p-seller,#p-customer,#p-note,#p-receiver,#p-collector,#p-seller-sign')) {
       _recalcPrintA5();
     }
   };
   sheet.onchange = (e) => {
-    if (e.target.matches('#p-copy-mode,#p-copy-watermark,#p-tax-mode,.p-qty,.p-price,#p-discount,#p-title,#p-badge,#p-date,#p-seller,#p-customer,#p-note,#p-receiver,#p-collector,#p-seller-sign')) {
+    if (e.target.matches('#p-copy-mode,#p-copy-watermark,#p-tax-mode,.p-qty,.p-price,#p-discount,#p-title,#p-badge,#p-date,#p-book,#p-no,#p-seller,#p-customer,#p-note,#p-receiver,#p-collector,#p-seller-sign')) {
       _syncPrintA5Copy();
       _syncPrintA5Tax();
     }
