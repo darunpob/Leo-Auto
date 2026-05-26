@@ -4613,7 +4613,7 @@ async function removeExistingImage(partNumber, imageUrl, event) {
   if (!await fancyConfirm(`คุณแน่ใจหรือไม่ว่าต้องการลบรูปภาพนี้?`)) return;
 
   try {
-    const res = await fetch(`${API_URL}/inventory/${partNumber}/image?image_url=${encodeURIComponent(imageUrl)}`, {
+    const res = await fetch(`${API_URL}/inventory/image?part_number=${encodeURIComponent(partNumber)}&image_url=${encodeURIComponent(imageUrl)}`, {
       method: 'DELETE'
     });
     if (!res.ok) {
@@ -4752,8 +4752,7 @@ document.getElementById('manageForm').onsubmit = async (e) => {
     btn.innerHTML = orig;
     return;
   }
-  const encodedPn = encodeURIComponent(pn);
-  const url    = isEdit ? `${API_URL}/inventory/${encodedPn}` : `${API_URL}/inventory`;
+  const url    = `${API_URL}/inventory`;
   const method = isEdit ? 'PUT' : 'POST';
 
   try {
@@ -4817,7 +4816,7 @@ async function deleteProduct(pn) {
   if (!pn) { await fancyAlert('ไม่พบ Part Number', 'error'); return; }
   if (!await fancyConfirm(`ยืนยันลบ Part: ${pn}?`)) return;
   try {
-    const res = await fetch(`${API_URL}/inventory/${encodeURIComponent(pn)}`, { method: 'DELETE' });
+    const res = await fetch(`${API_URL}/inventory?part_number=${encodeURIComponent(pn)}`, { method: 'DELETE' });
     if (res.ok) { 
       // Refresh data without changing page
       await loadProducts();
@@ -5747,7 +5746,7 @@ async function adjustStockForBill(bill) {
       fd.append('location', product['Storage Location'] || '');
 
       // call backend PUT endpoint to persist changes
-      const url = `${API_URL}/inventory/${encodeURIComponent(product['Part Number'])}`;
+      const url = `${API_URL}/inventory`;
       const res = await fetch(url, { method: 'PUT', body: fd });
       if (!res.ok) {
         console.warn('Failed to update stock for', product['Part Number'], await res.text());
@@ -5902,7 +5901,7 @@ async function restockItemsFromBill(bill) {
       fd.append('cost_price', String(product['Cost Price'] || 0));
       fd.append('location', product['Storage Location'] || '');
 
-      const url = `${API_URL}/inventory/${encodeURIComponent(product['Part Number'])}`;
+      const url = `${API_URL}/inventory`;
       const res = await fetch(url, { method: 'PUT', body: fd });
       if (!res.ok) {
         console.warn('Failed to restock for', product['Part Number'], await res.text());

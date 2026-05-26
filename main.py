@@ -216,9 +216,9 @@ async def add_product(
     return {"message": "✅ เพิ่มสินค้าสำเร็จ!"}
 
 # [UPDATE] แก้ไขสินค้าเดิม
-@app.put("/api/inventory/{part_number}")
+@app.put("/api/inventory")
 async def update_product(
-    part_number: str,
+    part_number: str = Form(...),
     part_name: str = Form(...),
     brand: str = Form(...),
     series: str = Form(...),
@@ -296,7 +296,7 @@ async def update_product(
     return {"message": f"✅ อัปเดต {part_number} สำเร็จ!"}
 
 # [DELETE] ลบสินค้า
-@app.delete("/api/inventory/{part_number}")
+@app.delete("/api/inventory")
 async def delete_product(part_number: str):
     part_number = part_number.strip()
     df = get_db()
@@ -323,7 +323,7 @@ async def delete_product(part_number: str):
 
 
 # [DELETE IMAGE] ลบรูปภาพเดียว
-@app.delete("/api/inventory/{part_number}/image")
+@app.delete("/api/inventory/image")
 async def delete_image(part_number: str, image_url: str):
     df = get_db()
     if part_number not in df['Part Number'].values:
