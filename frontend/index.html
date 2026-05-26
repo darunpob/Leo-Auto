@@ -4089,7 +4089,10 @@
   }
 </style>
 <script>
-window.API_BASE_URL = '';
+// ถ้าวาง frontend และ backend ไว้ใน service เดียวกัน จะใช้ origin เดิม
+// ถ้า frontend อยู่คนละที่ ให้กำหนด query param เช่น ?api=https://your-backend.app
+const queryApi = new URLSearchParams(window.location.search).get('api');
+window.API_BASE_URL = queryApi ? queryApi.trim().replace(/\/+$/, '') : window.location.origin;
 window.API_URL = `${window.API_BASE_URL}/api`;
 const API_URL = window.API_URL;
 
