@@ -4325,7 +4325,7 @@ function renderGrid(data) {
           <div style="display:flex;gap:8px;align-items:center;">
             ${costHtml}
             <button onclick="openManageModal(true,this.dataset.pn)" data-pn="${(item['Part Number']||'').trim()}" class="btn-action btn-edit">Edit</button>
-            <button onclick="deleteProduct(this.dataset.pn)" class="btn-action btn-del">Del</button>
+            <button onclick="deleteProduct(this.dataset.pn)" data-pn="${(item['Part Number']||'').trim()}" class="btn-action btn-del">Del</button>
           </div>
         </div>
       </div>`;
