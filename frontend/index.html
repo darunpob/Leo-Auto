@@ -3478,7 +3478,7 @@
       <!-- Price + Stock -->
       <div class="price-stock-row">
         <input type="number" id="m_price" name="price" placeholder="Price (New)" required class="m-input" style="margin-top:0;">
-        <input type="number" id="m_stock" name="stock" placeholder="Stock รวม (LH+RH)" value="0" required class="m-input" style="margin-top:0;opacity:0.7;" readonly title="คำนวณอัตโนมัติจาก LH+RH">
+        <input type="number" id="m_stock" name="stock" placeholder="Stock รวม" value="0" min="0" required class="m-input" style="margin-top:0;" title="พิมพ์ตรงได้เลย หรือคำนวณจาก LH+RH อัตโนมัติ">
       </div>
       <!-- LH / RH stock -->
       <div class="price-stock-row" style="gap:6px;">
@@ -7088,11 +7088,17 @@ document.addEventListener('click', (e) => {
 });
 
 function _syncLRStock() {
-  const lh = Number(document.getElementById('m_stock_lh')?.value || 0);
-  const rh = Number(document.getElementById('m_stock_rh')?.value || 0);
-  const total = lh + rh;
-  const stockEl = document.getElementById('m_stock');
-  if (stockEl) stockEl.value = total;
+  const lhEl = document.getElementById('m_stock_lh');
+  const rhEl = document.getElementById('m_stock_rh');
+  const lh = Number(lhEl?.value || 0);
+  const rh = Number(rhEl?.value || 0);
+  // Only auto-fill total when at least one side has a value entered
+  const lhFilled = lhEl && lhEl.value !== '';
+  const rhFilled = rhEl && rhEl.value !== '';
+  if (lhFilled || rhFilled) {
+    const stockEl = document.getElementById('m_stock');
+    if (stockEl) stockEl.value = lh + rh;
+  }
 }
 window._costValueVisible = false;
 function toggleCostValue() {
