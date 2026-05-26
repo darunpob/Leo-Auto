@@ -3483,11 +3483,9 @@
       <!-- LH / RH stock -->
       <div class="price-stock-row" style="gap:6px;">
         <div style="position:relative;flex:1;">
-          <span style="position:absolute;left:10px;top:-16px;font-size:10px;color:rgba(96,165,250,0.8);font-weight:600;">🔵 Stock L (ซ้าย)</span>
           <input type="number" id="m_stock_lh" placeholder="LH" min="0" class="m-input" style="margin-top:0;" oninput="_syncLRStock()">
         </div>
         <div style="position:relative;flex:1;">
-          <span style="position:absolute;left:10px;top:-16px;font-size:10px;color:rgba(251,146,60,0.8);font-weight:600;">🔴 Stock R (ขวา)</span>
           <input type="number" id="m_stock_rh" placeholder="RH" min="0" class="m-input" style="margin-top:0;" oninput="_syncLRStock()">
         </div>
       </div>
@@ -4210,9 +4208,11 @@ async function loadProducts() {
     return true;
   } catch (e) {
     console.error('Failed to load inventory from API, falling back to embedded data', e);
-    // fallback to embedded sample if fetch fails
-    globalData = EMBEDDED_DATA;
-    window.globalData = globalData;
+    // Only fallback to embedded data on very first load (globalData is still empty)
+    if (!globalData || globalData.length === 0) {
+      globalData = EMBEDDED_DATA;
+      window.globalData = globalData;
+    }
     return false;
   }
 }
@@ -4245,11 +4245,29 @@ async function initInventory() {
 }
 
 /* ──────────────── RENDER ──────────────── */
-function _getSideBadge(pn) {
-  const s = String(pn || '').replace(/[\s\-_]+/g, '').toUpperCase();
-  if (s.endsWith('LH') || s.endsWith('LL')) return '<span class="card-side-badge card-side-L">L</span>';
-  if (s.endsWith('RH') || s.endsWith('RR')) return '<span class="card-side-badge card-side-R">R</span>';
-  if (s.endsWith('LR') || s.endsWith('RL')) return '<span class="card-side-badge card-side-LR">L+R</span>';
+function _getSideBadge(item, allData) {
+  const pn = String((item && item['Part Number']) || item || '').replace(/[\s\-_]+/g, '').toUpperCase();
+  const isL  = pn.endsWith('LH') || pn.endsWith('LL');
+  const isR  = pn.endsWith('RH') || pn.endsWith('RR');
+  const isLR = pn.endsWith('LR') || pn.endsWith('RL');
+  if (!isL && !isR && !isLR) return '';
+  if (isLR) return '<span class="card-side-badge card-side-LR">L+R</span>';
+
+  const base = pn.slice(0, -2);
+  const data = allData || [];
+  const matchPN = (i, s1, s2) => {
+    const s = String(i['Part Number'] || '').replace(/[\s\-_]+/g, '').toUpperCase();
+    return (s.endsWith(s1) || s.endsWith(s2)) && s.slice(0, -2) === base;
+  };
+  const hasL = data.some(i => matchPN(i, 'LH', 'LL'));
+  const hasR = data.some(i => matchPN(i, 'RH', 'RR'));
+  if (hasL && hasR) {
+    const lStock = data.filter(i => matchPN(i, 'LH', 'LL')).reduce((s, i) => s + Number(i.Stock || 0), 0);
+    const rStock = data.filter(i => matchPN(i, 'RH', 'RR')).reduce((s, i) => s + Number(i.Stock || 0), 0);
+    return `<span class="card-side-badge card-side-LR">L ${lStock} · R ${rStock}</span>`;
+  }
+  if (isL) return '<span class="card-side-badge card-side-L">L</span>';
+  if (isR) return '<span class="card-side-badge card-side-R">R</span>';
   return '';
 }
 function renderGrid(data) {
@@ -4302,7 +4320,7 @@ function renderGrid(data) {
           ${firstImage ? `<img src="${firstImage}" loading="lazy" onerror="this.style.display='none'" style="opacity:0;" onload="this.style.opacity='1'">` : ''}
         </div>
         <div class="card-body">
-          <div class="card-brand"><span>${item.Brand} · ${item.Series}</span>${_getSideBadge(item['Part Number'])}</div>
+          <div class="card-brand"><span>${item.Brand} · ${item.Series}</span>${_getSideBadge(item, globalData)}</div>
           <div class="card-name">${item['Part Name']}</div>
           <div class="card-meta">
             <div class="price-stock-container">
@@ -4760,11 +4778,46 @@ document.getElementById('manageForm').onsubmit = async (e) => {
     const res = await fetch(url, { method, body: formData });
     if (res.ok) {
       closeManageModal();
-      // Refresh data without changing page
-      await loadProducts();
+      // Optimistic update: apply form values to globalData immediately so
+      // data is visible even if the background re-fetch fails
+      const pnVal = pn;
+      const formPrice = Number(formData.get('price')) || 0;
+      const formStock = Number(formData.get('stock')) || 0;
+      const formUsedPrice = Number(formData.get('used_price')) || 0;
+      const formUsedStock = Number(formData.get('used_stock')) || 0;
+      const formBrand = formData.get('brand') || '';
+      const formSeries = formData.get('series') || '';
+      const formName = formData.get('part_name') || '';
+      const formCost = Number(formData.get('cost_price')) || 0;
+      const formLoc = formData.get('location') || '';
+      if (isEdit) {
+        const idx = globalData.findIndex(i => i['Part Number'] === pnVal);
+        if (idx !== -1) {
+          globalData[idx] = { ...globalData[idx],
+            'Part Name': formName, 'Brand': formBrand, 'Series': formSeries,
+            'Price': formPrice, 'Stock': formStock,
+            'Used_Price': formUsedPrice, 'Used_Stock': formUsedStock,
+            'Cost Price': formCost, 'Storage Location': formLoc
+          };
+        }
+      } else {
+        globalData.push({
+          'Part Number': pnVal, 'Part Name': formName, 'Brand': formBrand,
+          'Series': formSeries, 'Price': formPrice, 'Stock': formStock,
+          'Used_Price': formUsedPrice, 'Used_Stock': formUsedStock,
+          'Image_URL': '', 'Cost Price': formCost, 'Storage Location': formLoc
+        });
+      }
+      window.globalData = globalData;
       renderGrid(applySort(globalData));
       updateStats(globalData);
       buildFilterChips();
+      // Also refresh from API in background to get accurate image URLs etc.
+      loadProducts().then(() => {
+        renderGrid(applySort(globalData));
+        updateStats(globalData);
+        buildFilterChips();
+      });
       // Don't change page, just refresh data
     } else {
       const err = await res.json();
