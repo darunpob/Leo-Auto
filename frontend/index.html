@@ -5489,9 +5489,9 @@ async function initOrdersPage() {
   if (!document.getElementById('billDate').value) {
     document.getElementById('billDate').value = today;
   }
-  // History defaults to "all dates" so old bills are visible across redeploys/devices.
+  // History defaults to today (Thai timezone) so latest bills show immediately.
   if (!document.getElementById('historyDate').value) {
-    document.getElementById('historyDate').value = '';
+    document.getElementById('historyDate').value = today;
   }
   
   // Don't auto-open modal - let user click edit button
