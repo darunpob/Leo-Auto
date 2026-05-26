@@ -6,6 +6,7 @@ import json
 from fastapi import FastAPI, Form, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from google import genai
 from google.genai import types
 from PIL import Image
@@ -57,6 +58,9 @@ app.mount("/picture", StaticFiles(directory=PICTURE_DIR), name="picture")
 
 @app.get("/")
 async def root():
+    frontend_path = os.path.join(APP_DIR, "frontend", "index.html")
+    if os.path.exists(frontend_path):
+        return FileResponse(frontend_path, media_type="text/html")
     return {"status": "ok", "service": "leo-auto-backend"}
 
 @app.get("/health")
