@@ -3478,15 +3478,15 @@
       <!-- Price + Stock -->
       <div class="price-stock-row">
         <input type="number" id="m_price" name="price" placeholder="Price (New)" required class="m-input" style="margin-top:0;">
-        <input type="number" id="m_stock" name="stock" placeholder="Stock รวม (LH+RH)" required class="m-input" style="margin-top:0;opacity:0.7;" readonly title="คำนวณอัตโนมัติจาก LH+RH">
+        <input type="number" id="m_stock" name="stock" placeholder="Stock รวม (LH+RH)" value="0" required class="m-input" style="margin-top:0;opacity:0.7;" readonly title="คำนวณอัตโนมัติจาก LH+RH">
       </div>
       <!-- LH / RH stock -->
       <div class="price-stock-row" style="gap:6px;">
         <div style="position:relative;flex:1;">
-          <input type="number" id="m_stock_lh" placeholder="LH" min="0" class="m-input" style="margin-top:0;" oninput="_syncLRStock()">
+          <input type="number" id="m_stock_lh" name="stock_lh" placeholder="LH" min="0" class="m-input" style="margin-top:0;" oninput="_syncLRStock()">
         </div>
         <div style="position:relative;flex:1;">
-          <input type="number" id="m_stock_rh" placeholder="RH" min="0" class="m-input" style="margin-top:0;" oninput="_syncLRStock()">
+          <input type="number" id="m_stock_rh" name="stock_rh" placeholder="RH" min="0" class="m-input" style="margin-top:0;" oninput="_syncLRStock()">
         </div>
       </div>
 
@@ -4199,7 +4199,9 @@ async function loadProducts() {
         'Used_Stock': toNum(item.Used_Stock ?? item['Used_Stock'] ?? 0),
         'Image_URL': img,
         'Storage Location': item['Storage Location'] ?? item.Location ?? '',
-        'Cost Price': toNum((item['Cost Price'] ?? item.Cost_Price ?? item.Cost) || 0)
+        'Cost Price': toNum((item['Cost Price'] ?? item.Cost_Price ?? item.Cost) || 0),
+        'Stock_LH': toNum(item.Stock_LH ?? item['Stock_LH'] ?? 0),
+        'Stock_RH': toNum(item.Stock_RH ?? item['Stock_RH'] ?? 0)
       };
     });
 
@@ -4246,29 +4248,9 @@ async function initInventory() {
 
 /* ──────────────── RENDER ──────────────── */
 function _getSideBadge(item, allData) {
-  const pn = String((item && item['Part Number']) || item || '').replace(/[\s\-_]+/g, '').toUpperCase();
-  const isL  = pn.endsWith('LH') || pn.endsWith('LL');
-  const isR  = pn.endsWith('RH') || pn.endsWith('RR');
-  const isLR = pn.endsWith('LR') || pn.endsWith('RL');
-  if (!isL && !isR && !isLR) return '';
-  if (isLR) return '<span class="card-side-badge card-side-LR">L+R</span>';
-
-  const base = pn.slice(0, -2);
-  const data = allData || [];
-  const matchPN = (i, s1, s2) => {
-    const s = String(i['Part Number'] || '').replace(/[\s\-_]+/g, '').toUpperCase();
-    return (s.endsWith(s1) || s.endsWith(s2)) && s.slice(0, -2) === base;
-  };
-  const hasL = data.some(i => matchPN(i, 'LH', 'LL'));
-  const hasR = data.some(i => matchPN(i, 'RH', 'RR'));
-  if (hasL && hasR) {
-    const lStock = data.filter(i => matchPN(i, 'LH', 'LL')).reduce((s, i) => s + Number(i.Stock || 0), 0);
-    const rStock = data.filter(i => matchPN(i, 'RH', 'RR')).reduce((s, i) => s + Number(i.Stock || 0), 0);
-    return `<span class="card-side-badge card-side-LR">L ${lStock} · R ${rStock}</span>`;
-  }
-  if (isL) return '<span class="card-side-badge card-side-L">L</span>';
-  if (isR) return '<span class="card-side-badge card-side-R">R</span>';
-  return '';
+  const lStock = Number((item && item['Stock_LH']) || 0);
+  const rStock = Number((item && item['Stock_RH']) || 0);
+  return `<span class="card-side-badge card-side-LR">L ${lStock} · R ${rStock}</span>`;
 }
 function renderGrid(data) {
   const grid = document.getElementById('productGrid');
@@ -4683,14 +4665,11 @@ function openManageModal(isEdit = false, pn = null) {
       document.getElementById('m_price').value = item['Price'];
       const _editStock = Number(item['Stock'] || 0);
       document.getElementById('m_stock').value = _editStock;
-      // Pre-fill LH/RH based on Part Number suffix
-      const _pnSufx = String(item['Part Number']||'').replace(/[\s\-_]+/g,'').toUpperCase();
+      // Pre-fill LH/RH from saved Stock_LH / Stock_RH values
       const _lhEl = document.getElementById('m_stock_lh');
       const _rhEl = document.getElementById('m_stock_rh');
-      if (_lhEl) _lhEl.value = '';
-      if (_rhEl) _rhEl.value = '';
-      if (_pnSufx.endsWith('LH')||_pnSufx.endsWith('LL')) { if(_lhEl) _lhEl.value = _editStock; }
-      else if (_pnSufx.endsWith('RH')||_pnSufx.endsWith('RR')) { if(_rhEl) _rhEl.value = _editStock; }
+      if (_lhEl) _lhEl.value = Number(item['Stock_LH'] || 0);
+      if (_rhEl) _rhEl.value = Number(item['Stock_RH'] || 0);
       document.getElementById('m_used_price').value = item['Used_Price'] || '';
       document.getElementById('m_used_stock').value = item['Used_Stock'] || '';
       const _cp = item['Cost Price'];
@@ -4790,12 +4769,14 @@ document.getElementById('manageForm').onsubmit = async (e) => {
       const formName = formData.get('part_name') || '';
       const formCost = Number(formData.get('cost_price')) || 0;
       const formLoc = formData.get('location') || '';
+      const formStockLH = Number(formData.get('stock_lh')) || 0;
+      const formStockRH = Number(formData.get('stock_rh')) || 0;
       if (isEdit) {
         const idx = globalData.findIndex(i => i['Part Number'] === pnVal);
         if (idx !== -1) {
           globalData[idx] = { ...globalData[idx],
             'Part Name': formName, 'Brand': formBrand, 'Series': formSeries,
-            'Price': formPrice, 'Stock': formStock,
+            'Price': formPrice, 'Stock': formStock, 'Stock_LH': formStockLH, 'Stock_RH': formStockRH,
             'Used_Price': formUsedPrice, 'Used_Stock': formUsedStock,
             'Cost Price': formCost, 'Storage Location': formLoc
           };
@@ -4805,7 +4786,7 @@ document.getElementById('manageForm').onsubmit = async (e) => {
           'Part Number': pnVal, 'Part Name': formName, 'Brand': formBrand,
           'Series': formSeries, 'Price': formPrice, 'Stock': formStock,
           'Used_Price': formUsedPrice, 'Used_Stock': formUsedStock,
-          'Image_URL': '', 'Cost Price': formCost, 'Storage Location': formLoc
+          'Image_URL': '', 'Cost Price': formCost, 'Storage Location': formLoc, 'Stock_LH': formStockLH, 'Stock_RH': formStockRH
         });
       }
       window.globalData = globalData;
@@ -7120,7 +7101,7 @@ function _syncLRStock() {
   const rh = Number(document.getElementById('m_stock_rh')?.value || 0);
   const total = lh + rh;
   const stockEl = document.getElementById('m_stock');
-  if (stockEl && (lh > 0 || rh > 0)) stockEl.value = total;
+  if (stockEl) stockEl.value = total;
 }
 window._costValueVisible = false;
 function toggleCostValue() {
