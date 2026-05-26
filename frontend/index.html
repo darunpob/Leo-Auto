@@ -4710,10 +4710,7 @@ function closeManageModal() {
   document.getElementById('manageModal').classList.remove('open');
 }
 
-// Click backdrop to close
-document.getElementById('manageModal').addEventListener('click', function(e) {
-  if (e.target === this) closeManageModal();
-});
+// Backdrop click intentionally disabled — close via ESC or X button only
 document.getElementById('reportModal').addEventListener('click', function(e) {
   if (e.target === this) this.classList.remove('open');
 });
@@ -4793,12 +4790,6 @@ document.getElementById('manageForm').onsubmit = async (e) => {
       renderGrid(applySort(globalData));
       updateStats(globalData);
       buildFilterChips();
-      // Also refresh from API in background to get accurate image URLs etc.
-      loadProducts().then(() => {
-        renderGrid(applySort(globalData));
-        updateStats(globalData);
-        buildFilterChips();
-      });
       // Don't change page, just refresh data
     } else {
       const err = await res.json();
