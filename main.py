@@ -125,6 +125,11 @@ def get_db():
     # Ensure cost column exists
     if COST_COLUMN not in df.columns:
         df[COST_COLUMN] = 0
+    # Ensure L/R stock columns exist
+    if "Stock_LH" not in df.columns:
+        df["Stock_LH"] = 0
+    if "Stock_RH" not in df.columns:
+        df["Stock_RH"] = 0
 
     # If Image_URL is empty, try to fill from picture folder
     if "Image_URL" in df.columns:
@@ -166,6 +171,8 @@ async def add_product(
     used_stock: int = Form(0),
     cost_price: float = Form(0),
     location: str = Form(""),
+    stock_lh: int = Form(0),
+    stock_rh: int = Form(0),
     images: list[UploadFile] = File([])
 ):
     df = get_db()
@@ -195,7 +202,9 @@ async def add_product(
         "Used_Stock": used_stock,
         "Image_URL": ",".join(image_urls),
         LOCATION_COLUMN: location,
-        COST_COLUMN: cost_price
+        COST_COLUMN: cost_price,
+        "Stock_LH": stock_lh,
+        "Stock_RH": stock_rh
     }
     df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
     save_db(df)
@@ -214,6 +223,8 @@ async def update_product(
     used_stock: int = Form(0),
     cost_price: float = Form(0),
     location: str = Form(""),
+    stock_lh: int = Form(0),
+    stock_rh: int = Form(0),
     images: list[UploadFile] = File([])
 ):
     df = get_db()
@@ -232,7 +243,9 @@ async def update_product(
     df.at[idx, "Used_Stock"] = used_stock
     df.at[idx, LOCATION_COLUMN] = location
     df.at[idx, COST_COLUMN] = cost_price
-    
+    df.at[idx, "Stock_LH"] = stock_lh
+    df.at[idx, "Stock_RH"] = stock_rh
+
     # จัดการรูปภาพ
     existing_urls = df.at[idx, "Image_URL"]
     if pd.isna(existing_urls) or not existing_urls:
