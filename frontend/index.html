@@ -4324,8 +4324,8 @@ function renderGrid(data) {
           <span>${item['Part Number']}</span>
           <div style="display:flex;gap:8px;align-items:center;">
             ${costHtml}
-            <button onclick="openManageModal(true,'${item['Part Number']}')" class="btn-action btn-edit">Edit</button>
-            <button onclick="deleteProduct('${item['Part Number']}')" class="btn-action btn-del">Del</button>
+            <button onclick="openManageModal(true,this.dataset.pn)" data-pn="${(item['Part Number']||'').trim()}" class="btn-action btn-edit">Edit</button>
+            <button onclick="deleteProduct(this.dataset.pn)" class="btn-action btn-del">Del</button>
           </div>
         </div>
       </div>`;
@@ -4656,9 +4656,10 @@ function openManageModal(isEdit = false, pn = null) {
     document.getElementById('modalTitle').innerText = "📝 แก้ไขสินค้า";
     document.getElementById('editMode').value = "true";
     document.getElementById('m_pn').readOnly = true;
-    const item = globalData.find(i => i['Part Number'] === pn);
+    const item = globalData.find(i => i['Part Number'] === pn) ||
+                  globalData.find(i => i['Part Number'].trim() === pn.trim());
     if (item) {
-      document.getElementById('m_pn').value    = item['Part Number'];
+      document.getElementById('m_pn').value    = (item['Part Number'] || pn).trim();
       document.getElementById('m_name').value  = item['Part Name'];
       document.getElementById('m_brand').value = item['Brand'];
       document.getElementById('m_series').value= item['Series'];
@@ -4745,7 +4746,12 @@ document.getElementById('manageForm').onsubmit = async (e) => {
   if (!formData.get('cost_price') || String(formData.get('cost_price')).trim() === '') {
     formData.set('cost_price', '0');
   }
-  const pn = document.getElementById('m_pn').value;
+  const pn = (document.getElementById('m_pn').value || '').trim();
+  if (!pn) {
+    await fancyAlert('Part Number ว่างเปล่า — ไม่สามารถบันทึกได้', 'error');
+    btn.innerHTML = orig;
+    return;
+  }
   const encodedPn = encodeURIComponent(pn);
   const url    = isEdit ? `${API_URL}/inventory/${encodedPn}` : `${API_URL}/inventory`;
   const method = isEdit ? 'PUT' : 'POST';
@@ -4792,17 +4798,23 @@ document.getElementById('manageForm').onsubmit = async (e) => {
       buildFilterChips();
       // Don't change page, just refresh data
     } else {
-      const err = await res.json();
-      await fancyAlert(err.detail[0]?.msg || err.detail, 'error');
+      let errMsg = `Error ${res.status}`;
+      try {
+        const err = await res.json();
+        errMsg = err.detail[0]?.msg || err.detail || errMsg;
+      } catch {}
+      await fancyAlert(errMsg, 'error');
     }
-  } catch {
-    await fancyAlert('เชื่อมต่อ Backend ล้มเหลว', 'error');
+  } catch (ex) {
+    await fancyAlert('เชื่อมต่อ Backend ล้มเหลว: ' + ex.message, 'error');
   }
   btn.innerHTML = orig;
 };
 
 /* ──────────────── DELETE ──────────────── */
 async function deleteProduct(pn) {
+  pn = (pn || '').trim();
+  if (!pn) { await fancyAlert('ไม่พบ Part Number', 'error'); return; }
   if (!await fancyConfirm(`ยืนยันลบ Part: ${pn}?`)) return;
   try {
     const res = await fetch(`${API_URL}/inventory/${encodeURIComponent(pn)}`, { method: 'DELETE' });
