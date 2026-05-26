@@ -3010,7 +3010,22 @@
     <div><div class="section-title">Parts Catalog</div></div>
     <div style="display:flex;gap:8px;align-items:center">
       <div class="section-count" id="countLabel">0 items</div>
-      <div class="sort-btn">⇅ Sort</div>
+      <div class="sort-drop-wrap">
+        <div class="sort-btn" id="sortDropBtn" onclick="toggleSortDrop(event)">⇅ <span id="sortLabel">ใหม่ล่าสุด</span></div>
+        <div class="sort-drop" id="sortDrop">
+          <div class="sort-opt active" onclick="setSort('newest')">🆕 ใหม่ล่าสุด</div>
+          <div class="sort-opt" onclick="setSort('oldest')">📅 เก่าที่สุด</div>
+          <div class="sort-sep"></div>
+          <div class="sort-opt" onclick="setSort('price_asc')">💲 ราคา: น้อย → มาก</div>
+          <div class="sort-opt" onclick="setSort('price_desc')">💲 ราคา: มาก → น้อย</div>
+          <div class="sort-sep"></div>
+          <div class="sort-opt" onclick="setSort('stock_desc')">📦 Stock: มาก → น้อย</div>
+          <div class="sort-opt" onclick="setSort('stock_asc')">📦 Stock: น้อย → มาก</div>
+          <div class="sort-sep"></div>
+          <div class="sort-opt" onclick="setSort('name_asc')">🔤 ชื่อสินค้า: A → Z</div>
+          <div class="sort-opt" onclick="setSort('pn_asc')">🏷️ Part Number</div>
+        </div>
+      </div>
     </div>
   </div>
   <!-- PRODUCT GRID -->
@@ -3741,14 +3756,16 @@
   }
   .print-a5-sheet {
     width:210mm;
-    min-height:148mm;
+    height:148mm;
+    max-height:148mm;
     margin:0 auto;
     display:flex;
     flex-direction:column;
+    overflow:hidden;
     background:linear-gradient(180deg,#ffffff 0%,#fffdfa 100%);
     color:#1f2937;
     border-radius:16px;
-    padding:6.5mm 7mm;
+    padding:4.5mm 5.5mm;
     font-family:'Sarabun','Prompt','Segoe UI',sans-serif;
     box-shadow:0 22px 60px rgba(15,23,42,0.16);
   }
@@ -3813,42 +3830,42 @@
   .print-a5-sheet div {
     font-family:'Prompt','Sarabun','Segoe UI',sans-serif;
   }
-  .print-a5-header { display:flex; justify-content:space-between; align-items:flex-start; gap:4mm; margin-bottom:3mm; }
+  .print-a5-header { display:flex; justify-content:space-between; align-items:flex-start; gap:3mm; margin-bottom:2mm; }
   .print-a5-brand { max-width:60%; }
   .print-a5-badge { display:inline-flex; align-items:center; gap:8px; padding:5px 10px; border-radius:999px; background:#eef4ff; color:#3159b7; font-size:12px; font-weight:700; letter-spacing:.02em; }
-  .print-a5-title { margin-top:1mm; font-size:20px; font-weight:700; letter-spacing:-0.02em; color:#0f172a; }
+  .print-a5-title { margin-top:0.5mm; font-size:17px; font-weight:700; letter-spacing:-0.02em; color:#0f172a; }
   .print-a5-subtitle { display:none; }
-  .print-a5-meta { flex:0 0 41%; padding:2.5mm 3mm; border:1px solid #dbe4f0; border-radius:12px; background:#f8fbff; }
+  .print-a5-meta { flex:0 0 41%; padding:1.5mm 2.5mm; border:1px solid #dbe4f0; border-radius:10px; background:#f8fbff; }
   .print-a5-meta-row { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:11px; margin-bottom:0; }
   .print-a5-meta-row:last-child { margin-bottom:0; }
   .print-a5-meta-row span { color:#64748b; white-space:nowrap; font-weight:500; }
   .print-a5-meta-row input { width:100%; text-align:right; }
-  .print-a5-party { display:grid; grid-template-columns:1fr 1fr; gap:3mm; margin-bottom:3mm; }
-  .print-a5-field { padding:2.5mm 3mm; border:1px solid #e2e8f0; border-radius:10px; background:#fff; }
+  .print-a5-party { display:grid; grid-template-columns:1fr 1fr; gap:2mm; margin-bottom:2mm; }
+  .print-a5-field { padding:1.5mm 2mm; border:1px solid #e2e8f0; border-radius:8px; background:#fff; }
   .print-a5-field label { display:block; font-size:11px; font-weight:600; color:#64748b; margin-bottom:2px; }
   .print-a5-field input { width:100%; }
   .print-a5-table-wrap { border:1px solid #cbd5e1; border-radius:12px; overflow:hidden; }
-  .print-a5-table { width:100%; border-collapse:collapse; font-size:11px; }
+  .print-a5-table { width:100%; border-collapse:collapse; font-size:10px; }
   .print-a5-table thead th { background:#eaf1ff; color:#334155; font-weight:700; }
-  .print-a5-table th, .print-a5-table td { border-bottom:1px solid #dbe4f0; padding:4px 5px; vertical-align:top; }
+  .print-a5-table th, .print-a5-table td { border-bottom:1px solid #dbe4f0; padding:2.5px 4px; vertical-align:top; }
   .print-a5-table tbody tr:last-child td { border-bottom:none; }
   .print-a5-table .num { text-align:right; }
   .print-a5-table td:first-child, .print-a5-table th:first-child { text-align:center; width:8%; }
-  .print-a5-grow { flex:1 1 auto; min-height:4mm; }
-  .print-a5-lower { display:grid; grid-template-columns:1.2fr 0.8fr; gap:3mm; margin-top:3mm; align-items:start; }
+  .print-a5-grow { flex:1 1 auto; min-height:1mm; }
+  .print-a5-lower { display:grid; grid-template-columns:1.2fr 0.8fr; gap:2mm; margin-top:2mm; align-items:start; }
   .print-a5-summary { display:flex; justify-content:flex-end; }
-  .print-a5-totals { width:100%; padding:2.5mm 3mm; border:1px solid #cbd5e1; border-radius:12px; background:#fcfdff; }
-  .print-a5-total-row { display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:11px; margin-bottom:4px; }
+  .print-a5-totals { width:100%; padding:1.5mm 2.5mm; border:1px solid #cbd5e1; border-radius:10px; background:#fcfdff; }
+  .print-a5-total-row { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:10px; margin-bottom:2px; }
   .print-a5-total-row:last-child { margin-bottom:0; }
-  .print-a5-total-row.grand { margin-top:4px; padding-top:4px; border-top:1px solid #cbd5e1; font-size:13px; font-weight:700; color:#0f172a; }
+  .print-a5-total-row.grand { margin-top:3px; padding-top:3px; border-top:1px solid #cbd5e1; font-size:12px; font-weight:700; color:#0f172a; }
   .print-a5-total-row input { width:76px; text-align:right; }
-  .print-a5-note { padding:2.2mm 2.8mm; border:1px dashed #cbd5e1; border-radius:10px; color:#475569; }
+  .print-a5-note { padding:1.5mm 2mm; border:1px dashed #cbd5e1; border-radius:8px; color:#475569; }
   .print-a5-note label { display:block; font-size:11px; font-weight:600; color:#64748b; margin-bottom:2px; }
   .print-a5-note textarea { width:100%; min-height:5mm; border-bottom:none; font-size:10px; line-height:1.1; }
-  .print-a5-signatures { margin-top:4mm; display:grid; grid-template-columns:1fr 1fr 1fr; gap:4mm; font-size:10px; }
-  .print-a5-signatures label { display:block; margin-bottom:6mm; color:#475569; font-weight:600; }
+  .print-a5-signatures { margin-top:2mm; display:grid; grid-template-columns:1fr 1fr 1fr; gap:3mm; font-size:9px; }
+  .print-a5-signatures label { display:block; margin-bottom:4mm; color:#475569; font-weight:600; }
   .print-a5-signatures input { width:100%; text-align:center; }
-  .print-a5-foot { margin-top:2mm; display:flex; justify-content:space-between; align-items:center; font-size:9px; color:#64748b; }
+  .print-a5-foot { margin-top:1mm; display:flex; justify-content:space-between; align-items:center; font-size:8px; color:#64748b; }
   .print-tax-sheet {
     border:1px solid #c9d4ea;
     background:#fff;
@@ -4050,7 +4067,9 @@
     }
     .print-a5-page {
       width:210mm !important;
-      min-height:148mm !important;
+      height:148mm !important;
+      max-height:148mm !important;
+      overflow:hidden !important;
       margin:0 !important;
       padding:0 !important;
       break-after: page;
@@ -4064,9 +4083,10 @@
     }
     .print-a5-sheet {
       width:210mm !important;
-      min-height:148mm !important;
+      height:148mm !important;
+      max-height:148mm !important;
       margin:0 !important;
-      padding:8mm 9mm !important;
+      padding:5mm 6mm !important;
       border-radius:0 !important;
       box-shadow:none !important;
       background:#fff !important;
@@ -4082,6 +4102,30 @@
     }
     #printA5Sheet input, #printA5Sheet textarea { border-bottom-color:#94a3b8 !important; }
   }
+
+  /* SORT DROPDOWN */
+  .sort-drop-wrap { position:relative; }
+  .sort-drop {
+    position:absolute; top:calc(100% + 6px); right:0;
+    background:rgba(16,16,28,0.98);
+    backdrop-filter:blur(24px) saturate(180%);
+    border:0.5px solid rgba(255,255,255,0.16);
+    border-radius:14px; padding:5px;
+    min-width:196px; z-index:500;
+    display:none;
+    box-shadow:0 20px 48px rgba(0,0,0,0.55), 0 0 0 0.5px rgba(255,255,255,0.07);
+    animation:fadeUp 0.18s ease both;
+  }
+  .sort-drop.open { display:block; }
+  .sort-opt {
+    padding:9px 14px; border-radius:10px; font-size:12px; font-weight:500;
+    color:rgba(255,255,255,0.62); cursor:pointer;
+    transition:all 0.15s; white-space:nowrap;
+    display:flex; align-items:center; gap:8px;
+  }
+  .sort-opt:hover { background:rgba(255,255,255,0.1); color:#fff; }
+  .sort-opt.active { background:rgba(96,165,250,0.18); color:#93c5fd; }
+  .sort-sep { height:0.5px; background:rgba(255,255,255,0.08); margin:4px 8px; }
 </style>
 <script>
 window.API_BASE_URL = 'https://leo-auto-backend-production.up.railway.app';
@@ -4163,7 +4207,7 @@ async function refreshInventoryUI() {
   inventoryLoaded = false;
   const success = await loadProducts();
   inventoryLoaded = true;
-  renderGrid(globalData);
+  renderGrid(applySort(globalData));
   updateStats(globalData);
   buildFilterChips();
   if (document.getElementById('page-analytics')?.style.display !== 'none') {
@@ -4373,7 +4417,7 @@ function clearSearch() {
   if (inp) { inp.value = ''; toggleClearBtn(inp); }
   activeFilters = { brand: 'All', series: 'All' };
   updateActiveChips();
-  renderGrid(globalData);
+  renderGrid(applySort(globalData));
   updateStats(globalData);
 }
 
@@ -4445,7 +4489,7 @@ function filterLocal() {
     const matchSeries = activeFilters.series === 'All' || item['Series'].toUpperCase() === activeFilters.series.toUpperCase();
     return matchText && matchBrand && matchSeries;
   });
-  renderGrid(filtered);
+  renderGrid(applySort(filtered));
 }
 
 /* ──────────────── LIGHTBOX ──────────────── */
@@ -4686,7 +4730,7 @@ document.getElementById('manageForm').onsubmit = async (e) => {
       closeManageModal();
       // Refresh data without changing page
       await loadProducts();
-      renderGrid(globalData);
+      renderGrid(applySort(globalData));
       updateStats(globalData);
       buildFilterChips();
       // Don't change page, just refresh data
@@ -4708,7 +4752,7 @@ async function deleteProduct(pn) {
     if (res.ok) { 
       // Refresh data without changing page
       await loadProducts();
-      renderGrid(globalData);
+      renderGrid(applySort(globalData));
       updateStats(globalData);
       buildFilterChips();
     }
@@ -6688,7 +6732,7 @@ function _syncPrintA5Tax() {
       <div class="print-tax-docname"><input value="${_escapePrintText(printTaxState.docName)}" oninput="updatePrintTaxField('docName', this.value)" style="width:100%;text-align:center;font-weight:800;color:#1e3a8a"></div>
       <div class="print-tax-company"><input value="${_escapePrintText(printTaxState.sellerName)}" oninput="updatePrintTaxField('sellerName', this.value)" style="width:100%;text-align:center;font-size:22px;font-weight:800"></div>
       <div class="print-tax-meta">
-        <textarea oninput="updatePrintTaxField('sellerAddress', this.value)" style="text-align:center">${_escapePrintText(printTaxState.sellerAddress)}</textarea>
+        <input oninput="updatePrintTaxField('sellerAddress', this.value)" value="${_escapePrintText(printTaxState.sellerAddress)}" style="width:100%;text-align:center">
         <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:4px;">
           <span>เลขประจำตัวผู้เสียภาษี</span>
           <input value="${_escapePrintText(printTaxState.sellerTaxId)}" oninput="updatePrintTaxField('sellerTaxId', this.value)" style="width:190px;text-align:center">
@@ -6927,6 +6971,58 @@ function openPrintTemplateA5(id) {
     modal.classList.add('open');
   }
 }
+
+
+/* ────────────────── SORT ────────────────── */
+let currentSortMode = 'newest';
+
+const SORT_LABELS = {
+  newest:     'ใหม่ล่าสุด',
+  oldest:     'เก่าที่สุด',
+  price_asc:  'ราคา ↑',
+  price_desc: 'ราคา ↓',
+  stock_desc: 'Stock ↓',
+  stock_asc:  'Stock ↑',
+  name_asc:   'ชื่อ A→Z',
+  pn_asc:     'Part #',
+};
+
+function applySort(data) {
+  const arr = [...data];
+  switch (currentSortMode) {
+    case 'oldest':     return arr;
+    case 'price_asc':  return arr.sort((a,b) => (a.Price||0) - (b.Price||0));
+    case 'price_desc': return arr.sort((a,b) => (b.Price||0) - (a.Price||0));
+    case 'stock_desc': return arr.sort((a,b) => (b.Stock||0) - (a.Stock||0));
+    case 'stock_asc':  return arr.sort((a,b) => (a.Stock||0) - (b.Stock||0));
+    case 'name_asc':   return arr.sort((a,b) => (a['Part Name']||'').localeCompare(b['Part Name']||''));
+    case 'pn_asc':     return arr.sort((a,b) => (a['Part Number']||'').localeCompare(b['Part Number']||''));
+    case 'newest':
+    default:            return arr.reverse();
+  }
+}
+
+function setSort(mode) {
+  currentSortMode = mode;
+  document.getElementById('sortLabel').textContent = SORT_LABELS[mode] || mode;
+  document.querySelectorAll('.sort-opt').forEach(el => {
+    const oc = el.getAttribute('onclick') || '';
+    el.classList.toggle('active', oc.includes(`'${mode}'`));
+  });
+  document.getElementById('sortDrop').classList.remove('open');
+  filterLocal();
+}
+
+function toggleSortDrop(e) {
+  if (e) e.stopPropagation();
+  document.getElementById('sortDrop').classList.toggle('open');
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.sort-drop-wrap')) {
+    document.getElementById('sortDrop')?.classList.remove('open');
+  }
+});
 
 window.onload = initInventory;
 
