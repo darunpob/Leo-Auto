@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -289,24 +289,9 @@
     display: flex; align-items: center; gap: 6px; padding: 6px 14px;
     background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1);
     border-radius: 10px; font-size: 12px; color: rgba(255,255,255,0.5); cursor: pointer;
-    transition: all 0.2s; position: relative; user-select: none;
+    transition: all 0.2s;
   }
-  .sort-btn:hover, .sort-btn.active { background: rgba(255,255,255,0.1); color: #fff; }
-  .sort-dropdown {
-    display: none; position: absolute; top: calc(100% + 6px); right: 0;
-    background: rgba(18,18,30,0.98); border: 0.5px solid rgba(255,255,255,0.15);
-    border-radius: 12px; padding: 6px; min-width: 180px; z-index: 999;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
-  }
-  .sort-btn.active .sort-dropdown { display: block; }
-  .sort-option {
-    padding: 8px 12px; border-radius: 8px; font-size: 12px;
-    color: rgba(255,255,255,0.7); cursor: pointer; transition: background 0.15s;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .sort-option:hover { background: rgba(255,255,255,0.08); color: #fff; }
-  .sort-option.selected { color: #818cf8; font-weight: 600; }
-  .sort-option.selected::before { content: '✓'; font-size: 11px; }
+  .sort-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
 
   .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
 
@@ -3025,18 +3010,7 @@
     <div><div class="section-title">Parts Catalog</div></div>
     <div style="display:flex;gap:8px;align-items:center">
       <div class="section-count" id="countLabel">0 items</div>
-      <div class="sort-btn" id="sortBtn" onclick="toggleSortMenu(event)">
-        ⇅ <span id="sortLabel">ใหม่ล่าสุด</span>
-        <div class="sort-dropdown" id="sortDropdown">
-          <div class="sort-option selected" data-sort="newest" onclick="setSort('newest',this)">🆕 ใหม่ล่าสุดก่อน</div>
-          <div class="sort-option" data-sort="oldest" onclick="setSort('oldest',this)">🕐 เก่าสุดก่อน</div>
-          <div class="sort-option" data-sort="price_desc" onclick="setSort('price_desc',this)">💰 ราคา สูง→ต่ำ</div>
-          <div class="sort-option" data-sort="price_asc" onclick="setSort('price_asc',this)">💸 ราคา ต่ำ→สูง</div>
-          <div class="sort-option" data-sort="name_asc" onclick="setSort('name_asc',this)">🔤 ชื่อ A→Z</div>
-          <div class="sort-option" data-sort="stock_asc" onclick="setSort('stock_asc',this)">⚠️ สต็อกน้อยก่อน</div>
-          <div class="sort-option" data-sort="stock_desc" onclick="setSort('stock_desc',this)">📦 สต็อกมากก่อน</div>
-        </div>
-      </div>
+      <div class="sort-btn">⇅ Sort</div>
     </div>
   </div>
   <!-- PRODUCT GRID -->
@@ -3897,46 +3871,46 @@
   }
   .print-tax-header {
     text-align:center;
-    padding-bottom:1.5mm;
+    padding-bottom:3mm;
     border-bottom:1px dashed #cbd5e1;
-    margin-bottom:1.5mm;
+    margin-bottom:3mm;
   }
   .print-tax-docname {
-    font-size:14px;
+    font-size:19px;
     font-weight:800;
     color:#1e3a8a;
     letter-spacing:-0.02em;
   }
   .print-tax-company {
-    margin-top:0.5mm;
-    font-size:17px;
+    margin-top:1mm;
+    font-size:22px;
     font-weight:800;
     color:#0f172a;
   }
   .print-tax-meta {
-    margin-top:0.5mm;
-    font-size:9.5px;
-    line-height:1.3;
+    margin-top:1mm;
+    font-size:10.5px;
+    line-height:1.5;
     color:#475569;
   }
   .print-tax-grid {
     display:grid;
     grid-template-columns: 1.1fr 0.9fr;
-    gap:2mm;
-    margin-bottom:2mm;
+    gap:3mm;
+    margin-bottom:3mm;
   }
   .print-tax-box {
     border:1px solid #cbd5e1;
-    border-radius:8px;
-    padding:1.5mm 2.5mm;
+    border-radius:10px;
+    padding:2.5mm 3mm;
     background:#fcfdff;
   }
   .print-tax-box label {
     display:block;
-    font-size:9px;
+    font-size:10px;
     font-weight:700;
     color:#64748b;
-    margin-bottom:0.5mm;
+    margin-bottom:1mm;
   }
   .print-tax-box input,
   .print-tax-box textarea {
@@ -3950,30 +3924,30 @@
     padding:1px 0;
   }
   .print-tax-box textarea {
-    min-height:24px;
+    min-height:32px;
     resize:none;
   }
   .print-tax-table-wrap {
     border:1px solid #94a3b8;
-    border-radius:8px;
+    border-radius:12px;
     overflow:hidden;
     margin-top:1mm;
   }
   .print-tax-table {
     width:100%;
     border-collapse:collapse;
-    font-size:9.5px;
+    font-size:10.5px;
   }
   .print-tax-table th {
     background:#edf2ff;
     color:#334155;
     font-weight:700;
     border-bottom:1px solid #cbd5e1;
-    padding:2px 4px;
+    padding:4px 5px;
   }
   .print-tax-table td {
     border-bottom:1px solid #dbe4f0;
-    padding:2px 4px;
+    padding:4px 5px;
     vertical-align:top;
   }
   .print-tax-table tbody tr:last-child td {
@@ -3988,29 +3962,29 @@
   .print-tax-total {
     display:flex;
     justify-content:flex-end;
-    margin-top:1.5mm;
+    margin-top:3mm;
   }
   .print-tax-total-card {
     width:46%;
     border:1px solid #cbd5e1;
-    border-radius:10px;
+    border-radius:12px;
     background:#fcfdff;
-    padding:1.5mm 2.5mm;
+    padding:2.5mm 3mm;
   }
   .print-tax-signs {
-    margin-top:2mm;
+    margin-top:4mm;
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:5mm;
   }
   .print-tax-sign {
-    font-size:9.5px;
+    font-size:10px;
     color:#475569;
   }
   .print-tax-sign .line {
-    margin-top:5mm;
+    margin-top:7mm;
     border-top:1px dashed #94a3b8;
-    padding-top:1.5mm;
+    padding-top:2mm;
     text-align:center;
   }
   @media (max-width: 900px) {
@@ -4098,11 +4072,6 @@
       background:#fff !important;
       overflow:hidden !important;
     }
-    .print-tax-sheet {
-      max-height:148mm !important;
-      padding:5mm 6mm !important;
-      overflow:hidden !important;
-    }
     .print-a5-sheet-copy {
       page-break-before: always;
       break-before: page;
@@ -4115,20 +4084,8 @@
   }
 </style>
 <script>
-// กำหนด API URL แบบไดนามิก
-// ถ้าอยู่บน Localhost ให้ใช้ 'http://localhost:8000'
-// ถ้าอยู่บน Production (Vercel) ให้ใช้ URL ของ Railway
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-if (isLocal) {
-  // For local development, assume backend is at localhost:8000
-  window.API_BASE_URL = 'http://localhost:8000';
-  window.API_URL = 'http://localhost:8000'; // Local often serves API at root
-} else {
-  // For production, use the Railway URL
-  window.API_BASE_URL = 'https://leotest-production.up.railway.app';
-  window.API_URL = `${window.API_BASE_URL}/api`; // Production usually has /api prefix
-}
+window.API_BASE_URL = 'https://leo-auto-backend-production.up.railway.app';
+window.API_URL = `${window.API_BASE_URL}/api`;
 const API_URL = window.API_URL;
 
 function toAbsoluteAssetUrl(url) {
@@ -4140,41 +4097,8 @@ function toAbsoluteAssetUrl(url) {
 
 let globalData = [];
 let inventoryLoaded = false;
-let dpMode = 'brand';
-let currentSort = 'newest';
+let dpMode = 'brand'; // ใช้ใน dark prompt
 window.globalData = globalData;
-
-function sortData(data) {
-  const d = [...data];
-  switch (currentSort) {
-    case 'newest':    return d.reverse();
-    case 'oldest':    return d;
-    case 'price_desc': return d.sort((a,b) => Number(b.Price) - Number(a.Price));
-    case 'price_asc':  return d.sort((a,b) => Number(a.Price) - Number(b.Price));
-    case 'name_asc':   return d.sort((a,b) => (a['Part Name']||'').localeCompare(b['Part Name']||''));
-    case 'stock_asc':  return d.sort((a,b) => Number(a.Stock) - Number(b.Stock));
-    case 'stock_desc': return d.sort((a,b) => Number(b.Stock) - Number(a.Stock));
-    default: return d.reverse();
-  }
-}
-
-function toggleSortMenu(e) {
-  e.stopPropagation();
-  document.getElementById('sortBtn').classList.toggle('active');
-}
-
-function setSort(mode, el) {
-  currentSort = mode;
-  document.querySelectorAll('.sort-option').forEach(o => o.classList.remove('selected'));
-  el.classList.add('selected');
-  document.getElementById('sortLabel').textContent = el.textContent.replace(/^..\s/,'').split('→')[0].trim();
-  document.getElementById('sortBtn').classList.remove('active');
-  filterLocal();
-}
-
-document.addEventListener('click', () => {
-  document.getElementById('sortBtn')?.classList.remove('active');
-});
 
 /* ──────────────── LOAD ──────────────── */
 function setNav(el) {
@@ -4239,7 +4163,7 @@ async function refreshInventoryUI() {
   inventoryLoaded = false;
   const success = await loadProducts();
   inventoryLoaded = true;
-  renderGrid(sortData(globalData));
+  renderGrid(globalData);
   updateStats(globalData);
   buildFilterChips();
   if (document.getElementById('page-analytics')?.style.display !== 'none') {
@@ -4449,7 +4373,7 @@ function clearSearch() {
   if (inp) { inp.value = ''; toggleClearBtn(inp); }
   activeFilters = { brand: 'All', series: 'All' };
   updateActiveChips();
-  renderGrid(sortData(globalData));
+  renderGrid(globalData);
   updateStats(globalData);
 }
 
@@ -4521,7 +4445,7 @@ function filterLocal() {
     const matchSeries = activeFilters.series === 'All' || item['Series'].toUpperCase() === activeFilters.series.toUpperCase();
     return matchText && matchBrand && matchSeries;
   });
-  renderGrid(sortData(filtered));
+  renderGrid(filtered);
 }
 
 /* ──────────────── LIGHTBOX ──────────────── */
@@ -4762,7 +4686,7 @@ document.getElementById('manageForm').onsubmit = async (e) => {
       closeManageModal();
       // Refresh data without changing page
       await loadProducts();
-      renderGrid(sortData(globalData));
+      renderGrid(globalData);
       updateStats(globalData);
       buildFilterChips();
       // Don't change page, just refresh data
@@ -4784,7 +4708,7 @@ async function deleteProduct(pn) {
     if (res.ok) { 
       // Refresh data without changing page
       await loadProducts();
-      renderGrid(sortData(globalData));
+      renderGrid(globalData);
       updateStats(globalData);
       buildFilterChips();
     }
@@ -6577,11 +6501,11 @@ function _ensurePrintTaxState() {
     printTaxState = {
       bookNo: '011',
       receiptNo: '0535',
-      docName: 'บิลเงินสด / ใบกำกับภาษี',
+      docName: 'บิลเงินสด / ใบกำกับภาษีอย่างย่อ',
       sellerName: 'ร้านลีโอ ออโต้',
       sellerAddress: 'เลขที่ 32/249-250 หมู่ 6 ถนนพหลโยธิน ต.คลองหนึ่ง อ.คลองหลวง จ.ปทุมธานี 12120',
       sellerTaxId: '3450100241329',
-      sellerPhone: '02-9018295',
+      sellerPhone: '02-901829',
       customerName: '',
       customerAddress: '',
       customerTaxId: '',
@@ -6747,7 +6671,7 @@ function _syncPrintA5Tax() {
     `;
   }).join('');
 
-  const fillerRows = Math.max(0, 5 - items.length);
+  const fillerRows = Math.max(0, 8 - items.length);
   const emptyRows = Array.from({ length: fillerRows }).map(() => `
     <tr>
       <td>&nbsp;</td><td></td><td></td><td></td><td></td>
@@ -6756,12 +6680,15 @@ function _syncPrintA5Tax() {
 
   taxSheet.innerHTML = `
     <div class="print-tax-topline">
+      <div>เล่มที่ <input value="${_escapePrintText(printTaxState.bookNo)}" oninput="updatePrintTaxField('bookNo', this.value)"></div>
+      <div class="center">บิลเงินสด</div>
+      <div class="right">เลขที่ <input value="${_escapePrintText(printTaxState.receiptNo)}" oninput="updatePrintTaxField('receiptNo', this.value)" style="width:86px;text-align:right"></div>
     </div>
     <div class="print-tax-header">
       <div class="print-tax-docname"><input value="${_escapePrintText(printTaxState.docName)}" oninput="updatePrintTaxField('docName', this.value)" style="width:100%;text-align:center;font-weight:800;color:#1e3a8a"></div>
       <div class="print-tax-company"><input value="${_escapePrintText(printTaxState.sellerName)}" oninput="updatePrintTaxField('sellerName', this.value)" style="width:100%;text-align:center;font-size:22px;font-weight:800"></div>
       <div class="print-tax-meta">
-        <input value="${_escapePrintText(printTaxState.sellerAddress)}" oninput="updatePrintTaxField('sellerAddress', this.value)" style="width:100%;text-align:center">
+        <textarea oninput="updatePrintTaxField('sellerAddress', this.value)" style="text-align:center">${_escapePrintText(printTaxState.sellerAddress)}</textarea>
         <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:4px;">
           <span>เลขประจำตัวผู้เสียภาษี</span>
           <input value="${_escapePrintText(printTaxState.sellerTaxId)}" oninput="updatePrintTaxField('sellerTaxId', this.value)" style="width:190px;text-align:center">
@@ -7337,3 +7264,10 @@ function siRender() {
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
