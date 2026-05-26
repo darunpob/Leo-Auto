@@ -3871,46 +3871,46 @@
   }
   .print-tax-header {
     text-align:center;
-    padding-bottom:1.5mm;
+    padding-bottom:3mm;
     border-bottom:1px dashed #cbd5e1;
-    margin-bottom:1.5mm;
+    margin-bottom:3mm;
   }
   .print-tax-docname {
-    font-size:14px;
+    font-size:19px;
     font-weight:800;
     color:#1e3a8a;
     letter-spacing:-0.02em;
   }
   .print-tax-company {
-    margin-top:0.5mm;
-    font-size:17px;
+    margin-top:1mm;
+    font-size:22px;
     font-weight:800;
     color:#0f172a;
   }
   .print-tax-meta {
-    margin-top:0.5mm;
-    font-size:9.5px;
-    line-height:1.3;
+    margin-top:1mm;
+    font-size:10.5px;
+    line-height:1.5;
     color:#475569;
   }
   .print-tax-grid {
     display:grid;
     grid-template-columns: 1.1fr 0.9fr;
-    gap:2mm;
-    margin-bottom:2mm;
+    gap:3mm;
+    margin-bottom:3mm;
   }
   .print-tax-box {
     border:1px solid #cbd5e1;
-    border-radius:8px;
-    padding:1.5mm 2.5mm;
+    border-radius:10px;
+    padding:2.5mm 3mm;
     background:#fcfdff;
   }
   .print-tax-box label {
     display:block;
-    font-size:9px;
+    font-size:10px;
     font-weight:700;
     color:#64748b;
-    margin-bottom:0.5mm;
+    margin-bottom:1mm;
   }
   .print-tax-box input,
   .print-tax-box textarea {
@@ -3924,30 +3924,30 @@
     padding:1px 0;
   }
   .print-tax-box textarea {
-    min-height:24px;
+    min-height:32px;
     resize:none;
   }
   .print-tax-table-wrap {
     border:1px solid #94a3b8;
-    border-radius:8px;
+    border-radius:12px;
     overflow:hidden;
     margin-top:1mm;
   }
   .print-tax-table {
     width:100%;
     border-collapse:collapse;
-    font-size:9.5px;
+    font-size:10.5px;
   }
   .print-tax-table th {
     background:#edf2ff;
     color:#334155;
     font-weight:700;
     border-bottom:1px solid #cbd5e1;
-    padding:2px 4px;
+    padding:4px 5px;
   }
   .print-tax-table td {
     border-bottom:1px solid #dbe4f0;
-    padding:2px 4px;
+    padding:4px 5px;
     vertical-align:top;
   }
   .print-tax-table tbody tr:last-child td {
@@ -3962,29 +3962,29 @@
   .print-tax-total {
     display:flex;
     justify-content:flex-end;
-    margin-top:1.5mm;
+    margin-top:3mm;
   }
   .print-tax-total-card {
     width:46%;
     border:1px solid #cbd5e1;
-    border-radius:10px;
+    border-radius:12px;
     background:#fcfdff;
-    padding:1.5mm 2.5mm;
+    padding:2.5mm 3mm;
   }
   .print-tax-signs {
-    margin-top:2mm;
+    margin-top:4mm;
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:5mm;
   }
   .print-tax-sign {
-    font-size:9.5px;
+    font-size:10px;
     color:#475569;
   }
   .print-tax-sign .line {
-    margin-top:5mm;
+    margin-top:7mm;
     border-top:1px dashed #94a3b8;
-    padding-top:1.5mm;
+    padding-top:2mm;
     text-align:center;
   }
   @media (max-width: 900px) {
@@ -4072,11 +4072,6 @@
       background:#fff !important;
       overflow:hidden !important;
     }
-    .print-tax-sheet {
-      max-height:148mm !important;
-      padding:5mm 6mm !important;
-      overflow:hidden !important;
-    }
     .print-a5-sheet-copy {
       page-break-before: always;
       break-before: page;
@@ -4089,7 +4084,7 @@
   }
 </style>
 <script>
-window.API_BASE_URL = '';
+window.API_BASE_URL = 'https://leo-auto-backend-production.up.railway.app';
 window.API_URL = `${window.API_BASE_URL}/api`;
 const API_URL = window.API_URL;
 
@@ -6676,7 +6671,7 @@ function _syncPrintA5Tax() {
     `;
   }).join('');
 
-  const fillerRows = Math.max(0, 5 - items.length);
+  const fillerRows = Math.max(0, 8 - items.length);
   const emptyRows = Array.from({ length: fillerRows }).map(() => `
     <tr>
       <td>&nbsp;</td><td></td><td></td><td></td><td></td>
@@ -6690,7 +6685,7 @@ function _syncPrintA5Tax() {
       <div class="print-tax-docname"><input value="${_escapePrintText(printTaxState.docName)}" oninput="updatePrintTaxField('docName', this.value)" style="width:100%;text-align:center;font-weight:800;color:#1e3a8a"></div>
       <div class="print-tax-company"><input value="${_escapePrintText(printTaxState.sellerName)}" oninput="updatePrintTaxField('sellerName', this.value)" style="width:100%;text-align:center;font-size:22px;font-weight:800"></div>
       <div class="print-tax-meta">
-        <input value="${_escapePrintText(printTaxState.sellerAddress)}" oninput="updatePrintTaxField('sellerAddress', this.value)" style="width:100%;text-align:center">
+        <textarea oninput="updatePrintTaxField('sellerAddress', this.value)" style="text-align:center">${_escapePrintText(printTaxState.sellerAddress)}</textarea>
         <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:4px;">
           <span>เลขประจำตัวผู้เสียภาษี</span>
           <input value="${_escapePrintText(printTaxState.sellerTaxId)}" oninput="updatePrintTaxField('sellerTaxId', this.value)" style="width:190px;text-align:center">
