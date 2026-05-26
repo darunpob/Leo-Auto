@@ -289,9 +289,24 @@
     display: flex; align-items: center; gap: 6px; padding: 6px 14px;
     background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1);
     border-radius: 10px; font-size: 12px; color: rgba(255,255,255,0.5); cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s; position: relative; user-select: none;
   }
-  .sort-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .sort-btn:hover, .sort-btn.active { background: rgba(255,255,255,0.1); color: #fff; }
+  .sort-dropdown {
+    display: none; position: absolute; top: calc(100% + 6px); right: 0;
+    background: rgba(18,18,30,0.98); border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 12px; padding: 6px; min-width: 180px; z-index: 999;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  }
+  .sort-btn.active .sort-dropdown { display: block; }
+  .sort-option {
+    padding: 8px 12px; border-radius: 8px; font-size: 12px;
+    color: rgba(255,255,255,0.7); cursor: pointer; transition: background 0.15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sort-option:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .sort-option.selected { color: #818cf8; font-weight: 600; }
+  .sort-option.selected::before { content: '✓'; font-size: 11px; }
 
   .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
 
@@ -3010,7 +3025,18 @@
     <div><div class="section-title">Parts Catalog</div></div>
     <div style="display:flex;gap:8px;align-items:center">
       <div class="section-count" id="countLabel">0 items</div>
-      <div class="sort-btn">⇅ Sort</div>
+      <div class="sort-btn" id="sortBtn" onclick="toggleSortMenu(event)">
+        ⇅ <span id="sortLabel">ใหม่ล่าสุด</span>
+        <div class="sort-dropdown" id="sortDropdown">
+          <div class="sort-option selected" data-sort="newest" onclick="setSort('newest',this)">🆕 ใหม่ล่าสุดก่อน</div>
+          <div class="sort-option" data-sort="oldest" onclick="setSort('oldest',this)">🕐 เก่าสุดก่อน</div>
+          <div class="sort-option" data-sort="price_desc" onclick="setSort('price_desc',this)">💰 ราคา สูง→ต่ำ</div>
+          <div class="sort-option" data-sort="price_asc" onclick="setSort('price_asc',this)">💸 ราคา ต่ำ→สูง</div>
+          <div class="sort-option" data-sort="name_asc" onclick="setSort('name_asc',this)">🔤 ชื่อ A→Z</div>
+          <div class="sort-option" data-sort="stock_asc" onclick="setSort('stock_asc',this)">⚠️ สต็อกน้อยก่อน</div>
+          <div class="sort-option" data-sort="stock_desc" onclick="setSort('stock_desc',this)">📦 สต็อกมากก่อน</div>
+        </div>
+      </div>
     </div>
   </div>
   <!-- PRODUCT GRID -->
@@ -4102,8 +4128,41 @@ function toAbsoluteAssetUrl(url) {
 
 let globalData = [];
 let inventoryLoaded = false;
-let dpMode = 'brand'; // ใช้ใน dark prompt
+let dpMode = 'brand';
+let currentSort = 'newest';
 window.globalData = globalData;
+
+function sortData(data) {
+  const d = [...data];
+  switch (currentSort) {
+    case 'newest':    return d.reverse();
+    case 'oldest':    return d;
+    case 'price_desc': return d.sort((a,b) => Number(b.Price) - Number(a.Price));
+    case 'price_asc':  return d.sort((a,b) => Number(a.Price) - Number(b.Price));
+    case 'name_asc':   return d.sort((a,b) => (a['Part Name']||'').localeCompare(b['Part Name']||''));
+    case 'stock_asc':  return d.sort((a,b) => Number(a.Stock) - Number(b.Stock));
+    case 'stock_desc': return d.sort((a,b) => Number(b.Stock) - Number(a.Stock));
+    default: return d.reverse();
+  }
+}
+
+function toggleSortMenu(e) {
+  e.stopPropagation();
+  document.getElementById('sortBtn').classList.toggle('active');
+}
+
+function setSort(mode, el) {
+  currentSort = mode;
+  document.querySelectorAll('.sort-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('sortLabel').textContent = el.textContent.replace(/^..\s/,'').split('→')[0].trim();
+  document.getElementById('sortBtn').classList.remove('active');
+  filterLocal();
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('sortBtn')?.classList.remove('active');
+});
 
 /* ──────────────── LOAD ──────────────── */
 function setNav(el) {
@@ -4168,7 +4227,7 @@ async function refreshInventoryUI() {
   inventoryLoaded = false;
   const success = await loadProducts();
   inventoryLoaded = true;
-  renderGrid(globalData);
+  renderGrid(sortData(globalData));
   updateStats(globalData);
   buildFilterChips();
   if (document.getElementById('page-analytics')?.style.display !== 'none') {
@@ -4378,7 +4437,7 @@ function clearSearch() {
   if (inp) { inp.value = ''; toggleClearBtn(inp); }
   activeFilters = { brand: 'All', series: 'All' };
   updateActiveChips();
-  renderGrid(globalData);
+  renderGrid(sortData(globalData));
   updateStats(globalData);
 }
 
@@ -4450,7 +4509,7 @@ function filterLocal() {
     const matchSeries = activeFilters.series === 'All' || item['Series'].toUpperCase() === activeFilters.series.toUpperCase();
     return matchText && matchBrand && matchSeries;
   });
-  renderGrid(filtered);
+  renderGrid(sortData(filtered));
 }
 
 /* ──────────────── LIGHTBOX ──────────────── */
@@ -4691,7 +4750,7 @@ document.getElementById('manageForm').onsubmit = async (e) => {
       closeManageModal();
       // Refresh data without changing page
       await loadProducts();
-      renderGrid(globalData);
+      renderGrid(sortData(globalData));
       updateStats(globalData);
       buildFilterChips();
       // Don't change page, just refresh data
@@ -4713,7 +4772,7 @@ async function deleteProduct(pn) {
     if (res.ok) { 
       // Refresh data without changing page
       await loadProducts();
-      renderGrid(globalData);
+      renderGrid(sortData(globalData));
       updateStats(globalData);
       buildFilterChips();
     }
