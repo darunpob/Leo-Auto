@@ -3871,46 +3871,46 @@
   }
   .print-tax-header {
     text-align:center;
-    padding-bottom:3mm;
+    padding-bottom:1.5mm;
     border-bottom:1px dashed #cbd5e1;
-    margin-bottom:3mm;
+    margin-bottom:1.5mm;
   }
   .print-tax-docname {
-    font-size:19px;
+    font-size:14px;
     font-weight:800;
     color:#1e3a8a;
     letter-spacing:-0.02em;
   }
   .print-tax-company {
-    margin-top:1mm;
-    font-size:22px;
+    margin-top:0.5mm;
+    font-size:17px;
     font-weight:800;
     color:#0f172a;
   }
   .print-tax-meta {
-    margin-top:1mm;
-    font-size:10.5px;
-    line-height:1.5;
+    margin-top:0.5mm;
+    font-size:9.5px;
+    line-height:1.3;
     color:#475569;
   }
   .print-tax-grid {
     display:grid;
     grid-template-columns: 1.1fr 0.9fr;
-    gap:3mm;
-    margin-bottom:3mm;
+    gap:2mm;
+    margin-bottom:2mm;
   }
   .print-tax-box {
     border:1px solid #cbd5e1;
-    border-radius:10px;
-    padding:2.5mm 3mm;
+    border-radius:8px;
+    padding:1.5mm 2.5mm;
     background:#fcfdff;
   }
   .print-tax-box label {
     display:block;
-    font-size:10px;
+    font-size:9px;
     font-weight:700;
     color:#64748b;
-    margin-bottom:1mm;
+    margin-bottom:0.5mm;
   }
   .print-tax-box input,
   .print-tax-box textarea {
@@ -3924,30 +3924,30 @@
     padding:1px 0;
   }
   .print-tax-box textarea {
-    min-height:32px;
+    min-height:24px;
     resize:none;
   }
   .print-tax-table-wrap {
     border:1px solid #94a3b8;
-    border-radius:12px;
+    border-radius:8px;
     overflow:hidden;
     margin-top:1mm;
   }
   .print-tax-table {
     width:100%;
     border-collapse:collapse;
-    font-size:10.5px;
+    font-size:9.5px;
   }
   .print-tax-table th {
     background:#edf2ff;
     color:#334155;
     font-weight:700;
     border-bottom:1px solid #cbd5e1;
-    padding:4px 5px;
+    padding:2px 4px;
   }
   .print-tax-table td {
     border-bottom:1px solid #dbe4f0;
-    padding:4px 5px;
+    padding:2px 4px;
     vertical-align:top;
   }
   .print-tax-table tbody tr:last-child td {
@@ -3962,29 +3962,29 @@
   .print-tax-total {
     display:flex;
     justify-content:flex-end;
-    margin-top:3mm;
+    margin-top:1.5mm;
   }
   .print-tax-total-card {
     width:46%;
     border:1px solid #cbd5e1;
-    border-radius:12px;
+    border-radius:10px;
     background:#fcfdff;
-    padding:2.5mm 3mm;
+    padding:1.5mm 2.5mm;
   }
   .print-tax-signs {
-    margin-top:4mm;
+    margin-top:2mm;
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:5mm;
   }
   .print-tax-sign {
-    font-size:10px;
+    font-size:9.5px;
     color:#475569;
   }
   .print-tax-sign .line {
-    margin-top:7mm;
+    margin-top:5mm;
     border-top:1px dashed #94a3b8;
-    padding-top:2mm;
+    padding-top:1.5mm;
     text-align:center;
   }
   @media (max-width: 900px) {
@@ -4070,6 +4070,11 @@
       border-radius:0 !important;
       box-shadow:none !important;
       background:#fff !important;
+      overflow:hidden !important;
+    }
+    .print-tax-sheet {
+      max-height:148mm !important;
+      padding:5mm 6mm !important;
       overflow:hidden !important;
     }
     .print-a5-sheet-copy {
@@ -6671,7 +6676,7 @@ function _syncPrintA5Tax() {
     `;
   }).join('');
 
-  const fillerRows = Math.max(0, 8 - items.length);
+  const fillerRows = Math.max(0, 5 - items.length);
   const emptyRows = Array.from({ length: fillerRows }).map(() => `
     <tr>
       <td>&nbsp;</td><td></td><td></td><td></td><td></td>
