@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -4115,11 +4115,20 @@
   }
 </style>
 <script>
-// ถ้าวาง frontend และ backend ไว้ใน service เดียวกัน จะใช้ origin เดิม
-// ถ้า frontend อยู่คนละที่ ให้กำหนด query param เช่น ?api=https://your-backend.app
-const queryApi = new URLSearchParams(window.location.search).get('api');
-window.API_BASE_URL = queryApi ? queryApi.trim().replace(/\/+$/, '') : window.location.origin;
-window.API_URL = `${window.API_BASE_URL}/api`;
+// กำหนด API URL แบบไดนามิก
+// ถ้าอยู่บน Localhost ให้ใช้ 'http://localhost:8000'
+// ถ้าอยู่บน Production (Vercel) ให้ใช้ URL ของ Railway
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+if (isLocal) {
+  // For local development, assume backend is at localhost:8000
+  window.API_BASE_URL = 'http://localhost:8000';
+  window.API_URL = 'http://localhost:8000'; // Local often serves API at root
+} else {
+  // For production, use the Railway URL
+  window.API_BASE_URL = 'https://leotest-production.up.railway.app';
+  window.API_URL = `${window.API_BASE_URL}/api`; // Production usually has /api prefix
+}
 const API_URL = window.API_URL;
 
 function toAbsoluteAssetUrl(url) {
@@ -7328,10 +7337,3 @@ function siRender() {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
