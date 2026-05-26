@@ -313,10 +313,14 @@
 
   .card-body { padding: 16px; }
   .card-brand {
-    display: inline-flex; align-items: center; gap: 4px;
+    display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 4px;
     font-size: 10px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase;
     color: #60a5fa; margin-bottom: 6px;
   }
+  .card-side-badge { font-size:9px; font-weight:700; letter-spacing:0.5px; padding:1px 5px; border-radius:4px; text-transform:uppercase; flex-shrink:0; }
+  .card-side-L { background:rgba(96,165,250,0.18); color:#93c5fd; }
+  .card-side-R { background:rgba(251,146,60,0.18); color:#fdba74; }
+  .card-side-LR { background:rgba(167,139,250,0.18); color:#c4b5fd; }
   .card-name { font-size: 14px; font-weight: 500; letter-spacing: -0.2px; line-height: 1.35; margin-bottom: 10px; }
   .card-meta { display: flex; align-items: center; justify-content: space-between; }
   .card-price { font-size: 18px; font-weight: 600; letter-spacing: -0.5px; color: #f5f5f7; }
@@ -2999,11 +3003,10 @@
     <div class="stat-card"><div class="stat-dot dot-blue"></div><div class="stat-val" id="s-total">0</div><div class="stat-lbl">Total Parts</div></div>
     <div class="stat-card"><div class="stat-dot dot-green"></div><div class="stat-val" id="s-stock">0</div><div class="stat-lbl">Units in Stock</div></div>
     <div class="stat-card"><div class="stat-dot dot-amber"></div><div class="stat-val" id="s-low">0</div><div class="stat-lbl">Low Stock Alerts</div></div>
-          <div class="stat-card">
+          <div class="stat-card" onclick="toggleCostValue()" title="คลิกเพื่อดู/ซ่อน" style="cursor:pointer;">
         <div class="stat-dot dot-purple"></div>
-        <div id="s-value" class="stat-val">฿0</div>
-        <div id="s-value-breakdown" class="stat-lbl-breakdown"></div>
-        <div class="stat-lbl" style="margin-top: 2px;">Est. Inventory Value</div>
+        <div id="s-value" class="stat-val">ซ่อน</div>
+        <div class="stat-lbl" style="margin-top: 2px;">ราคาทุนรวม</div>
       </div>
   </div>
   <!-- GRID HEADER -->
@@ -3475,7 +3478,18 @@
       <!-- Price + Stock -->
       <div class="price-stock-row">
         <input type="number" id="m_price" name="price" placeholder="Price (New)" required class="m-input" style="margin-top:0;">
-        <input type="number" id="m_stock" name="stock" placeholder="Stock (New)"  required class="m-input" style="margin-top:0;">
+        <input type="number" id="m_stock" name="stock" placeholder="Stock รวม (LH+RH)" required class="m-input" style="margin-top:0;opacity:0.7;" readonly title="คำนวณอัตโนมัติจาก LH+RH">
+      </div>
+      <!-- LH / RH stock -->
+      <div class="price-stock-row" style="gap:6px;">
+        <div style="position:relative;flex:1;">
+          <span style="position:absolute;left:10px;top:-16px;font-size:10px;color:rgba(96,165,250,0.8);font-weight:600;">🔵 Stock L (ซ้าย)</span>
+          <input type="number" id="m_stock_lh" placeholder="LH" min="0" class="m-input" style="margin-top:0;" oninput="_syncLRStock()">
+        </div>
+        <div style="position:relative;flex:1;">
+          <span style="position:absolute;left:10px;top:-16px;font-size:10px;color:rgba(251,146,60,0.8);font-weight:600;">🔴 Stock R (ขวา)</span>
+          <input type="number" id="m_stock_rh" placeholder="RH" min="0" class="m-input" style="margin-top:0;" oninput="_syncLRStock()">
+        </div>
       </div>
 
       <div class="price-stock-row">
@@ -4231,6 +4245,13 @@ async function initInventory() {
 }
 
 /* ──────────────── RENDER ──────────────── */
+function _getSideBadge(pn) {
+  const s = String(pn || '').replace(/[\s\-_]+/g, '').toUpperCase();
+  if (s.endsWith('LH') || s.endsWith('LL')) return '<span class="card-side-badge card-side-L">L</span>';
+  if (s.endsWith('RH') || s.endsWith('RR')) return '<span class="card-side-badge card-side-R">R</span>';
+  if (s.endsWith('LR') || s.endsWith('RL')) return '<span class="card-side-badge card-side-LR">L+R</span>';
+  return '';
+}
 function renderGrid(data) {
   const grid = document.getElementById('productGrid');
   grid.innerHTML = '';
@@ -4281,7 +4302,7 @@ function renderGrid(data) {
           ${firstImage ? `<img src="${firstImage}" loading="lazy" onerror="this.style.display='none'" style="opacity:0;" onload="this.style.opacity='1'">` : ''}
         </div>
         <div class="card-body">
-          <div class="card-brand">${item.Brand} · ${item.Series}</div>
+          <div class="card-brand"><span>${item.Brand} · ${item.Series}</span>${_getSideBadge(item['Part Number'])}</div>
           <div class="card-name">${item['Part Name']}</div>
           <div class="card-meta">
             <div class="price-stock-container">
@@ -4337,19 +4358,20 @@ function updateStats(data) {
     return s + currentLow;
   }, 0);
 
-  const newInventoryValue = data.reduce((s, i) => s + (toNum(i.Price) * toNum(i.Stock)), 0);
-  const usedInventoryValue = data.reduce((s, i) => s + (toNum(i.Used_Price) * toNum(i.Used_Stock)), 0);
-  const totalInventoryValue = newInventoryValue + usedInventoryValue;
+  const totalCostValue = data.reduce((s, i) => {
+    const cost = toNum(i['Cost Price'] ?? i.Cost_Price ?? i.Cost ?? 0);
+    const qty = toNum(i.Stock) + toNum(i.Used_Stock);
+    return s + cost * qty;
+  }, 0);
+  window._costValueAmount = totalCostValue;
 
   document.getElementById('s-stock').innerText = totalStock.toLocaleString();
   document.getElementById('s-low').innerText = lowCount;
-  document.getElementById('s-value').innerText = `฿${totalInventoryValue.toLocaleString()}`;
-  const breakdownEl = document.getElementById('s-value-breakdown');
-  if (breakdownEl) {
-    breakdownEl.innerHTML = `
-      <span style="color:#6ee7b7;">ใหม่: ฿${newInventoryValue.toLocaleString()}</span> + 
-      <span style="color:#fcd34d;">เก่า: ฿${usedInventoryValue.toLocaleString()}</span>
-    `;
+  const valEl = document.getElementById('s-value');
+  if (valEl) {
+    valEl.dataset.amount = totalCostValue;
+    if (!window._costValueVisible) valEl.innerText = 'ซ่อน';
+    else valEl.innerText = `฿${totalCostValue.toLocaleString()}`;
   }
 }
 
@@ -4641,7 +4663,16 @@ function openManageModal(isEdit = false, pn = null) {
       document.getElementById('m_brand').value = item['Brand'];
       document.getElementById('m_series').value= item['Series'];
       document.getElementById('m_price').value = item['Price'];
-      document.getElementById('m_stock').value = item['Stock'];
+      const _editStock = Number(item['Stock'] || 0);
+      document.getElementById('m_stock').value = _editStock;
+      // Pre-fill LH/RH based on Part Number suffix
+      const _pnSufx = String(item['Part Number']||'').replace(/[\s\-_]+/g,'').toUpperCase();
+      const _lhEl = document.getElementById('m_stock_lh');
+      const _rhEl = document.getElementById('m_stock_rh');
+      if (_lhEl) _lhEl.value = '';
+      if (_rhEl) _rhEl.value = '';
+      if (_pnSufx.endsWith('LH')||_pnSufx.endsWith('LL')) { if(_lhEl) _lhEl.value = _editStock; }
+      else if (_pnSufx.endsWith('RH')||_pnSufx.endsWith('RR')) { if(_rhEl) _rhEl.value = _editStock; }
       document.getElementById('m_used_price').value = item['Used_Price'] || '';
       document.getElementById('m_used_stock').value = item['Used_Stock'] || '';
       const _cp = item['Cost Price'];
@@ -7031,6 +7062,21 @@ document.addEventListener('click', (e) => {
   }
 });
 
+function _syncLRStock() {
+  const lh = Number(document.getElementById('m_stock_lh')?.value || 0);
+  const rh = Number(document.getElementById('m_stock_rh')?.value || 0);
+  const total = lh + rh;
+  const stockEl = document.getElementById('m_stock');
+  if (stockEl && (lh > 0 || rh > 0)) stockEl.value = total;
+}
+window._costValueVisible = false;
+function toggleCostValue() {
+  window._costValueVisible = !window._costValueVisible;
+  const el = document.getElementById('s-value');
+  if (!el) return;
+  const amount = Number(el.dataset.amount || window._costValueAmount || 0);
+  el.innerText = window._costValueVisible ? `฿${amount.toLocaleString()}` : 'ซ่อน';
+}
 window.onload = initInventory;
 
 /* ══════════════════════════════════════
