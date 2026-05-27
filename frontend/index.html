@@ -4795,7 +4795,12 @@ document.getElementById('manageForm').onsubmit = async (e) => {
       renderGrid(applySort(globalData));
       updateStats(globalData);
       buildFilterChips();
-      // Don't change page, just refresh data
+      // Background re-fetch to pick up actual image URL from server (no page reload needed)
+      loadProducts().then(() => {
+        renderGrid(applySort(globalData));
+        updateStats(globalData);
+        buildFilterChips();
+      });
     } else {
       let errMsg = `Error ${res.status}`;
       try {
