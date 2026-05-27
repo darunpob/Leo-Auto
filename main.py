@@ -213,7 +213,7 @@ async def add_product(
     }
     df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
     save_db(df)
-    return {"message": "✅ เพิ่มสินค้าสำเร็จ!"}
+    return {"message": "✅ เพิ่มสินค้าสำเร็จ!", "image_url": ",".join(image_urls)}
 
 # [UPDATE] แก้ไขสินค้าเดิม
 @app.put("/api/inventory")
@@ -293,7 +293,7 @@ async def update_product(
     df.at[idx, "Image_URL"] = ",".join(image_urls)
         
     save_db(df)
-    return {"message": f"✅ อัปเดต {part_number} สำเร็จ!"}
+    return {"message": f"✅ อัปเดต {part_number} สำเร็จ!", "image_url": ",".join(image_urls)}
 
 # [DELETE] ลบสินค้า
 @app.delete("/api/inventory")
