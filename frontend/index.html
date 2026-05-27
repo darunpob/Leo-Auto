@@ -4188,8 +4188,8 @@ async function loadProducts() {
       return {
         'Part Number': item['Part Number'] ?? item.PartNumber ?? '',
         'Part Name': item['Part Name'] ?? item['Part_Name'] ?? item.PartName ?? item['Part Name'],
-        'Brand': item.Brand ?? item['Brand'] ?? '',
-        'Series': item.Series ?? item['Series'] ?? '',
+        'Brand': (item.Brand ?? item['Brand'] ?? '').toString().trim().toUpperCase(),
+        'Series': (item.Series ?? item['Series'] ?? '').toString().trim().toUpperCase(),
         'Price': toNum(item.Price ?? item.Price_New ?? item['Price']),
         'Stock': toNum(item.Stock ?? item.Stock_New ?? item['Stock']),
         'Used_Price': toNum(item.Used_Price ?? item['Used_Price'] ?? 0),
@@ -4762,8 +4762,8 @@ document.getElementById('manageForm').onsubmit = async (e) => {
       const formStock = Number(formData.get('stock')) || 0;
       const formUsedPrice = Number(formData.get('used_price')) || 0;
       const formUsedStock = Number(formData.get('used_stock')) || 0;
-      const formBrand = formData.get('brand') || '';
-      const formSeries = formData.get('series') || '';
+      const formBrand = (formData.get('brand') || '').trim().toUpperCase();
+      const formSeries = (formData.get('series') || '').trim().toUpperCase();
       const formName = formData.get('part_name') || '';
       const formCost = Number(formData.get('cost_price')) || 0;
       const formLoc = formData.get('location') || '';

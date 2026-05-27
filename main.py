@@ -202,8 +202,8 @@ async def add_product(
     new_data = {
         "Part Number": part_number,
         "Part Name": part_name,
-        "Brand": brand,
-        "Series": series,
+        "Brand": brand.strip().upper(),
+        "Series": series.strip().upper(),
         "Price": price,
         "Stock": stock,
         "Used_Price": used_price,
@@ -250,8 +250,8 @@ async def update_product(
     
     # อัปเดตข้อมูลทั่วไป
     df.at[idx, "Part Name"] = part_name
-    df.at[idx, "Brand"] = brand
-    df.at[idx, "Series"] = series
+    df.at[idx, "Brand"] = brand.strip().upper()
+    df.at[idx, "Series"] = series.strip().upper()
     df.at[idx, "Price"] = price
     df.at[idx, "Stock"] = stock
     df.at[idx, "Used_Price"] = used_price
