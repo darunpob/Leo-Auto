@@ -1,5 +1,6 @@
 import os
 import io
+import re
 import shutil
 import pandas as pd
 import json
@@ -185,12 +186,14 @@ async def add_product(
         raise HTTPException(status_code=400, detail="Part Number นี้มีอยู่แล้วในระบบ!")
     
     image_urls = []
+    # Sanitize part_number for use in filenames (replace / and other unsafe chars)
+    safe_pn = re.sub(r'[/\\:*?"<>|]', '_', part_number).strip()
     if images:
         for i, image in enumerate(images):
             if image.filename:
-                ext = image.filename.split(".")[-1]
+                ext = image.filename.split(".")[-1].lower()
                 # สร้างชื่อไฟล์ที่ไม่ซ้ำกัน
-                safe_filename = f"{part_number}_{i+1}.{ext}"
+                safe_filename = f"{safe_pn}_{i+1}.{ext}"
                 file_path = os.path.join(PICTURE_DIR, safe_filename)
                 with open(file_path, "wb") as buffer:
                     shutil.copyfileobj(image.file, buffer)
@@ -265,6 +268,8 @@ async def update_product(
         
     image_urls = existing_urls.split(',') if existing_urls else []
 
+    # Sanitize part_number for use in filenames (replace / and other unsafe chars)
+    safe_pn = re.sub(r'[/\\:*?"<>|]', '_', part_number).strip()
     if images:
         # หาเลข index สูงสุดของรูปที่มีอยู่เพื่อตั้งชื่อไฟล์ใหม่
         max_index = 0
@@ -280,9 +285,9 @@ async def update_product(
 
         for i, image in enumerate(images):
             if image.filename:
-                ext = image.filename.split(".")[-1]
+                ext = image.filename.split(".")[-1].lower()
                 # สร้างชื่อไฟล์ใหม่ต่อจาก index เดิม
-                safe_filename = f"{part_number}_{max_index + i + 1}.{ext}"
+                safe_filename = f"{safe_pn}_{max_index + i + 1}.{ext}"
                 file_path = os.path.join(PICTURE_DIR, safe_filename)
                 with open(file_path, "wb") as buffer:
                     shutil.copyfileobj(image.file, buffer)
