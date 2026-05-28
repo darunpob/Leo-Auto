@@ -138,7 +138,10 @@ def get_db():
 
     # If Image_URL is empty, try to fill from picture folder
     if "Image_URL" in df.columns:
-        mask_missing = (df["Image_URL"].astype(str).str.strip() == "") | (df["Image_URL"].astype(str).str.lower() == "nan")
+        mask_missing = (
+            (df["Image_URL"].astype(str).str.strip() == "") |
+            (df["Image_URL"].astype(str).str.lower() == "nan")
+        ) & (df["Image_URL"].astype(str).str.lower() != "none")
         if mask_missing.any():
             for idx in df.index[mask_missing]:
                 pn = str(df.at[idx, "Part Number"])
@@ -373,7 +376,8 @@ async def delete_image(part_number: str, image_url: str):
     
     # ลบ URL ออกจากรายการและอัปเดต DataFrame
     image_urls.remove(image_url)
-    df.at[idx, "Image_URL"] = ",".join(image_urls)
+    # ถ้าลบหมดแล้ว ให้ตั้งเป็น "none" เพื่อป้องกัน auto-fill รูปผิดจาก _find_best_image
+    df.at[idx, "Image_URL"] = ",".join(image_urls) if image_urls else "none"
     
     save_db(df)
     return {"message": f"🗑️ ลบรูปภาพ {image_url} สำเร็จ!"}

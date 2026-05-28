@@ -4159,7 +4159,7 @@ const API_URL = window.API_URL;
 
 function toAbsoluteAssetUrl(url) {
   const u = String(url || '').trim();
-  if (!u) return '';
+  if (!u || u.toLowerCase() === 'none') return '';
   if (/^https?:\/\//i.test(u)) return u;
   return `${window.API_BASE_URL}/${u}`.replace(/([^:]\/)\//g, '$1');
 }
@@ -4291,7 +4291,7 @@ function renderGrid(data) {
   }
 
   data.forEach(item => {
-    const imageUrls = (item.Image_URL && item.Image_URL !== 'nan' ? item.Image_URL : "")
+    const imageUrls = (item.Image_URL && item.Image_URL !== 'nan' && item.Image_URL !== 'none' ? item.Image_URL : "")
       .split(',')
       .map(url => url.trim())
       .filter(Boolean)
@@ -4704,7 +4704,7 @@ function openManageModal(isEdit = false, pn = null) {
       document.getElementById('m_loc').value   = item['Storage Location'];
 
       // Display existing images with remove buttons
-      const imageUrls = (item.Image_URL || "").split(',').filter(Boolean);
+      const imageUrls = (item.Image_URL && item.Image_URL !== 'none' ? item.Image_URL : "").split(',').filter(url => url.trim() && url.trim().toLowerCase() !== 'none');
       if (imageUrls.length > 0) {
         imgHint.innerText = `รูปปัจจุบัน: ${imageUrls.length} รูป (คลิก ✕ เพื่อลบ)`;
         imgHint.style.display = 'block';
