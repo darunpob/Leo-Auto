@@ -282,7 +282,6 @@
   .section-header {
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 16px; animation: fadeUp 0.7s 0.35s ease both;
-    position: relative; z-index: 60;
   }
   .section-title { font-size: 18px; font-weight: 600; letter-spacing: -0.4px; }
   .section-count { font-size: 12px; color: rgba(255,255,255,0.35); }
@@ -290,9 +289,24 @@
     display: flex; align-items: center; gap: 6px; padding: 6px 14px;
     background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.1);
     border-radius: 10px; font-size: 12px; color: rgba(255,255,255,0.5); cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s; position: relative; user-select: none;
   }
-  .sort-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .sort-btn:hover, .sort-btn.active { background: rgba(255,255,255,0.1); color: #fff; }
+  .sort-dropdown {
+    display: none; position: absolute; top: calc(100% + 6px); right: 0;
+    background: rgba(18,18,30,0.98); border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 12px; padding: 6px; min-width: 180px; z-index: 999;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  }
+  .sort-btn.active .sort-dropdown { display: block; }
+  .sort-option {
+    padding: 8px 12px; border-radius: 8px; font-size: 12px;
+    color: rgba(255,255,255,0.7); cursor: pointer; transition: background 0.15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sort-option:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .sort-option.selected { color: #818cf8; font-weight: 600; }
+  .sort-option.selected::before { content: '✓'; font-size: 11px; }
 
   .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
 
@@ -313,17 +327,10 @@
 
   .card-body { padding: 16px; }
   .card-brand {
-    display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 4px;
+    display: inline-flex; align-items: center; gap: 4px;
     font-size: 10px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase;
     color: #60a5fa; margin-bottom: 6px;
   }
-  .card-side-badge { font-size:9px; font-weight:700; letter-spacing:0.5px; padding:1px 5px; border-radius:4px; text-transform:uppercase; flex-shrink:0; }
-  .card-side-L { background:rgba(96,165,250,0.18); color:#93c5fd; }
-  .card-side-R { background:rgba(251,146,60,0.18); color:#fdba74; }
-  .card-side-LR { background:rgba(167,139,250,0.18); color:#c4b5fd; }
-  .card-side-new { background:rgba(52,211,153,0.15); color:#6ee7b7; }
-  .card-side-used { background:rgba(251,146,60,0.15); color:#fdba74; }
-  .card-side-badges { display:flex; gap:3px; flex-wrap:nowrap; flex-shrink:0; }
   .card-name { font-size: 14px; font-weight: 500; letter-spacing: -0.2px; line-height: 1.35; margin-bottom: 10px; }
   .card-meta { display: flex; align-items: center; justify-content: space-between; }
   .card-price { font-size: 18px; font-weight: 600; letter-spacing: -0.5px; color: #f5f5f7; }
@@ -1853,7 +1860,7 @@
     border: 0.5px solid rgba(255,255,255,0.14);
     border-radius: 24px;
     width: 100%;
-    max-width: 480px;
+    max-width: 680px;
     padding: 28px;
     box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 0 0.5px rgba(255,255,255,0.07);
     animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
@@ -2462,44 +2469,6 @@
   .an-method-dot.green { background: #34d399; }
   .an-method-item strong { color: rgba(255,255,255,0.75); }
 
-  /* ── Receive Stock Modal ── */
-  #receiveModal .modal-box { max-width: 480px; }
-  .recv-search-wrap { position: relative; margin-bottom: 10px; }
-  .recv-search { width:100%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
-    border-radius:10px; color:#f5f5f7; font-size:14px; padding:10px 14px; box-sizing:border-box; outline:none; }
-  .recv-search:focus { border-color:rgba(96,165,250,0.5); }
-  .recv-dropdown { position:absolute; top:calc(100% + 4px); left:0; right:0; max-height:200px; overflow-y:auto;
-    background:rgba(20,20,36,0.98); border:1px solid rgba(255,255,255,0.14); border-radius:10px;
-    z-index:999; display:none; }
-  .recv-dropdown.open { display:block; }
-  .recv-option { padding:9px 14px; font-size:13px; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.05); }
-  .recv-option:hover { background:rgba(96,165,250,0.12); }
-  .recv-option strong { color:#93c5fd; }
-  .recv-selected-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
-    border-radius:12px; padding:12px 14px; margin-bottom:14px; display:none; }
-  .recv-selected-card.show { display:block; }
-  .recv-card-name { font-size:14px; font-weight:600; color:#f5f5f7; margin-bottom:4px; }
-  .recv-card-meta { font-size:11px; color:rgba(255,255,255,0.45); margin-bottom:8px; }
-  .recv-stock-row { display:flex; gap:8px; flex-wrap:wrap; }
-  .recv-stock-chip { font-size:11px; padding:3px 8px; border-radius:6px;
-    background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.6); }
-  .recv-section-label { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase;
-    color:rgba(255,255,255,0.4); margin:14px 0 6px; }
-  .recv-section-label.new { color:#6ee7b7; }
-  .recv-section-label.used { color:#fdba74; }
-  .recv-row { display:flex; gap:8px; margin-bottom:8px; }
-  .recv-input { flex:1; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
-    border-radius:8px; color:#f5f5f7; font-size:13px; padding:8px 10px; outline:none; text-align:center; }
-  .recv-input:focus { border-color:rgba(96,165,250,0.5); }
-  .recv-input::placeholder { color:rgba(255,255,255,0.25); font-size:11px; }
-  .recv-note { width:100%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
-    border-radius:8px; color:#f5f5f7; font-size:13px; padding:9px 12px; box-sizing:border-box;
-    outline:none; resize:none; margin-top:4px; }
-  .recv-submit { width:100%; padding:13px; background:linear-gradient(135deg,#34d399,#059669);
-    border:none; border-radius:12px; color:#fff; font-size:15px; font-weight:700;
-    cursor:pointer; margin-top:12px; letter-spacing:0.3px; }
-  .recv-submit:disabled { opacity:0.5; cursor:not-allowed; }
-
   /* Report modal */
   .report-modal-box {
     background: rgba(14,14,24,0.97);
@@ -3044,10 +3013,11 @@
     <div class="stat-card"><div class="stat-dot dot-blue"></div><div class="stat-val" id="s-total">0</div><div class="stat-lbl">Total Parts</div></div>
     <div class="stat-card"><div class="stat-dot dot-green"></div><div class="stat-val" id="s-stock">0</div><div class="stat-lbl">Units in Stock</div></div>
     <div class="stat-card"><div class="stat-dot dot-amber"></div><div class="stat-val" id="s-low">0</div><div class="stat-lbl">Low Stock Alerts</div></div>
-          <div class="stat-card" onclick="toggleCostValue()" title="คลิกเพื่อดู/ซ่อน" style="cursor:pointer;">
+          <div class="stat-card">
         <div class="stat-dot dot-purple"></div>
-        <div id="s-value" class="stat-val">ซ่อน</div>
-        <div class="stat-lbl" style="margin-top: 2px;">ราคาทุนรวม</div>
+        <div id="s-value" class="stat-val">฿0</div>
+        <div id="s-value-breakdown" class="stat-lbl-breakdown"></div>
+        <div class="stat-lbl" style="margin-top: 2px;">Est. Inventory Value</div>
       </div>
   </div>
   <!-- GRID HEADER -->
@@ -3055,20 +3025,16 @@
     <div><div class="section-title">Parts Catalog</div></div>
     <div style="display:flex;gap:8px;align-items:center">
       <div class="section-count" id="countLabel">0 items</div>
-      <div class="sort-drop-wrap">
-        <div class="sort-btn" id="sortDropBtn" onclick="toggleSortDrop(event)">⇅ <span id="sortLabel">ใหม่ล่าสุด</span></div>
-        <div class="sort-drop" id="sortDrop">
-          <div class="sort-opt active" onclick="setSort('newest')">🆕 ใหม่ล่าสุด</div>
-          <div class="sort-opt" onclick="setSort('oldest')">📅 เก่าที่สุด</div>
-          <div class="sort-sep"></div>
-          <div class="sort-opt" onclick="setSort('price_asc')">💲 ราคา: น้อย → มาก</div>
-          <div class="sort-opt" onclick="setSort('price_desc')">💲 ราคา: มาก → น้อย</div>
-          <div class="sort-sep"></div>
-          <div class="sort-opt" onclick="setSort('stock_desc')">📦 Stock: มาก → น้อย</div>
-          <div class="sort-opt" onclick="setSort('stock_asc')">📦 Stock: น้อย → มาก</div>
-          <div class="sort-sep"></div>
-          <div class="sort-opt" onclick="setSort('name_asc')">🔤 ชื่อสินค้า: A → Z</div>
-          <div class="sort-opt" onclick="setSort('pn_asc')">🏷️ Part Number</div>
+      <div class="sort-btn" id="sortBtn" onclick="toggleSortMenu(event)">
+        ⇅ <span id="sortLabel">ใหม่ล่าสุด</span>
+        <div class="sort-dropdown" id="sortDropdown">
+          <div class="sort-option selected" data-sort="newest" onclick="setSort('newest',this)">🆕 ใหม่ล่าสุดก่อน</div>
+          <div class="sort-option" data-sort="oldest" onclick="setSort('oldest',this)">🕐 เก่าสุดก่อน</div>
+          <div class="sort-option" data-sort="price_desc" onclick="setSort('price_desc',this)">💰 ราคา สูง→ต่ำ</div>
+          <div class="sort-option" data-sort="price_asc" onclick="setSort('price_asc',this)">💸 ราคา ต่ำ→สูง</div>
+          <div class="sort-option" data-sort="name_asc" onclick="setSort('name_asc',this)">🔤 ชื่อ A→Z</div>
+          <div class="sort-option" data-sort="stock_asc" onclick="setSort('stock_asc',this)">⚠️ สต็อกน้อยก่อน</div>
+          <div class="sort-option" data-sort="stock_desc" onclick="setSort('stock_desc',this)">📦 สต็อกมากก่อน</div>
         </div>
       </div>
     </div>
@@ -3476,7 +3442,7 @@
     <button class="dock-btn active" onclick="loadProducts()"><span class="icon">📦</span>Parts</button>
     <button class="dock-btn" id="scanDockBtn" onclick="document.getElementById('scanInput').click()"><span class="icon">📷</span>Scan</button>
     <button class="dock-btn" onclick="openManageModal()"><span class="icon">🛠</span>Manage</button>
-    <button class="dock-btn" onclick="openReceiveModal()"><span class="icon">📥</span>รับของ</button>
+    <button class="dock-btn" onclick="generateReport()"><span class="icon">📊</span>Report</button>
   </div>
 </div>
 
@@ -3519,30 +3485,12 @@
       <!-- Price + Stock -->
       <div class="price-stock-row">
         <input type="number" id="m_price" name="price" placeholder="Price (New)" required class="m-input" style="margin-top:0;">
-        <input type="number" id="m_stock" name="stock" placeholder="Stock รวม" value="0" min="0" required class="m-input" style="margin-top:0;" title="พิมพ์ตรงได้เลย หรือคำนวณจาก LH+RH อัตโนมัติ">
-      </div>
-      <!-- LH / RH stock -->
-      <div class="price-stock-row" style="gap:6px;">
-        <div style="position:relative;flex:1;">
-          <input type="number" id="m_stock_lh" name="stock_lh" placeholder="LH" min="0" class="m-input" style="margin-top:0;" oninput="_syncLRStock()">
-        </div>
-        <div style="position:relative;flex:1;">
-          <input type="number" id="m_stock_rh" name="stock_rh" placeholder="RH" min="0" class="m-input" style="margin-top:0;" oninput="_syncLRStock()">
-        </div>
+        <input type="number" id="m_stock" name="stock" placeholder="Stock (New)"  required class="m-input" style="margin-top:0;">
       </div>
 
       <div class="price-stock-row">
         <input type="number" id="m_used_price" name="used_price" placeholder="Price (Used)" class="m-input" style="margin-top:0;">
-        <input type="number" id="m_used_stock" name="used_stock" placeholder="Stock รวม (เก่า)" class="m-input" style="margin-top:0;" title="พิมพ์ตรงได้เลย หรือคำนวณจาก เก่า LH+RH อัตโนมัติ">
-      </div>
-      <!-- Used LH / RH stock -->
-      <div class="price-stock-row" style="gap:6px;">
-        <div style="position:relative;flex:1;">
-          <input type="number" id="m_used_stock_lh" name="used_stock_lh" placeholder="เก่า LH" min="0" class="m-input" style="margin-top:0;" oninput="_syncUsedLRStock()">
-        </div>
-        <div style="position:relative;flex:1;">
-          <input type="number" id="m_used_stock_rh" name="used_stock_rh" placeholder="เก่า RH" min="0" class="m-input" style="margin-top:0;" oninput="_syncUsedLRStock()">
-        </div>
+        <input type="number" id="m_used_stock" name="used_stock" placeholder="Stock (Used)" class="m-input" style="margin-top:0;">
       </div>
 
       <!-- Image upload -->
@@ -3589,53 +3537,6 @@
 </div>
 
 <!-- REPORT MODAL -->
-<!-- ══════════════════════════════════════
-     RECEIVE STOCK MODAL
-══════════════════════════════════════ -->
-<div id="receiveModal" class="modal-overlay">
-  <div class="modal-box" style="max-width:480px;">
-    <div class="modal-header">
-      <div class="modal-title">📥 รับสินค้าเข้า</div>
-      <button class="modal-close" onclick="closeReceiveModal()">✕</button>
-    </div>
-
-    <!-- Search -->
-    <div class="recv-search-wrap">
-      <input id="recvSearch" class="recv-search" type="text" placeholder="🔍 พิมพ์ Part Number หรือชื่อสินค้า..." autocomplete="off"
-        oninput="recvFilter(this.value)" onfocus="recvFilter(this.value)">
-      <div id="recvDropdown" class="recv-dropdown"></div>
-    </div>
-
-    <!-- Selected part card -->
-    <div id="recvSelectedCard" class="recv-selected-card">
-      <div class="recv-card-name" id="recvCardName">—</div>
-      <div class="recv-card-meta" id="recvCardMeta">—</div>
-      <div class="recv-stock-row" id="recvStockChips"></div>
-    </div>
-
-    <!-- New stock section -->
-    <div class="recv-section-label new">🟢 ใหม่ — จำนวนที่รับเข้า</div>
-    <div class="recv-row">
-      <input class="recv-input" id="recvQty"   type="number" min="0" placeholder="รวม" oninput="recvSyncNew()">
-      <input class="recv-input" id="recvQtyLH" type="number" min="0" placeholder="LH"  oninput="recvSyncNewSides()">
-      <input class="recv-input" id="recvQtyRH" type="number" min="0" placeholder="RH"  oninput="recvSyncNewSides()">
-    </div>
-
-    <!-- Used stock section -->
-    <div class="recv-section-label used">🟠 เก่า — จำนวนที่รับเข้า</div>
-    <div class="recv-row">
-      <input class="recv-input" id="recvUsedQty"   type="number" min="0" placeholder="รวม" oninput="recvSyncUsed()">
-      <input class="recv-input" id="recvUsedQtyLH" type="number" min="0" placeholder="LH"  oninput="recvSyncUsedSides()">
-      <input class="recv-input" id="recvUsedQtyRH" type="number" min="0" placeholder="RH"  oninput="recvSyncUsedSides()">
-    </div>
-
-    <!-- Note -->
-    <textarea class="recv-note" id="recvNote" rows="2" placeholder="หมายเหตุ (ไม่บังคับ)"></textarea>
-
-    <button class="recv-submit" id="recvSubmitBtn" onclick="submitReceive()" disabled>บันทึกรับสินค้า</button>
-  </div>
-</div>
-
 <div id="reportModal" class="modal-overlay">
   <div class="report-modal-box">
     <div class="modal-header">
@@ -3866,16 +3767,14 @@
   }
   .print-a5-sheet {
     width:210mm;
-    height:148mm;
-    max-height:148mm;
+    min-height:148mm;
     margin:0 auto;
     display:flex;
     flex-direction:column;
-    overflow:hidden;
     background:linear-gradient(180deg,#ffffff 0%,#fffdfa 100%);
     color:#1f2937;
     border-radius:16px;
-    padding:4.5mm 5.5mm;
+    padding:6.5mm 7mm;
     font-family:'Sarabun','Prompt','Segoe UI',sans-serif;
     box-shadow:0 22px 60px rgba(15,23,42,0.16);
   }
@@ -3940,42 +3839,42 @@
   .print-a5-sheet div {
     font-family:'Prompt','Sarabun','Segoe UI',sans-serif;
   }
-  .print-a5-header { display:flex; justify-content:space-between; align-items:flex-start; gap:3mm; margin-bottom:2mm; }
+  .print-a5-header { display:flex; justify-content:space-between; align-items:flex-start; gap:4mm; margin-bottom:3mm; }
   .print-a5-brand { max-width:60%; }
   .print-a5-badge { display:inline-flex; align-items:center; gap:8px; padding:5px 10px; border-radius:999px; background:#eef4ff; color:#3159b7; font-size:12px; font-weight:700; letter-spacing:.02em; }
-  .print-a5-title { margin-top:0.5mm; font-size:17px; font-weight:700; letter-spacing:-0.02em; color:#0f172a; }
+  .print-a5-title { margin-top:1mm; font-size:20px; font-weight:700; letter-spacing:-0.02em; color:#0f172a; }
   .print-a5-subtitle { display:none; }
-  .print-a5-meta { flex:0 0 41%; padding:1.5mm 2.5mm; border:1px solid #dbe4f0; border-radius:10px; background:#f8fbff; }
+  .print-a5-meta { flex:0 0 41%; padding:2.5mm 3mm; border:1px solid #dbe4f0; border-radius:12px; background:#f8fbff; }
   .print-a5-meta-row { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:11px; margin-bottom:0; }
   .print-a5-meta-row:last-child { margin-bottom:0; }
-  .print-a5-meta-row span { color:#64748b; white-space:nowrap; font-weight:500; text-align:right; }
+  .print-a5-meta-row span { color:#64748b; white-space:nowrap; font-weight:500; }
   .print-a5-meta-row input { width:100%; text-align:right; }
-  .print-a5-party { display:grid; grid-template-columns:1fr 1fr; gap:2mm; margin-bottom:2mm; }
-  .print-a5-field { padding:1.5mm 2mm; border:1px solid #e2e8f0; border-radius:8px; background:#fff; }
+  .print-a5-party { display:grid; grid-template-columns:1fr 1fr; gap:3mm; margin-bottom:3mm; }
+  .print-a5-field { padding:2.5mm 3mm; border:1px solid #e2e8f0; border-radius:10px; background:#fff; }
   .print-a5-field label { display:block; font-size:11px; font-weight:600; color:#64748b; margin-bottom:2px; }
   .print-a5-field input { width:100%; }
   .print-a5-table-wrap { border:1px solid #cbd5e1; border-radius:12px; overflow:hidden; }
-  .print-a5-table { width:100%; border-collapse:collapse; font-size:10px; }
+  .print-a5-table { width:100%; border-collapse:collapse; font-size:11px; }
   .print-a5-table thead th { background:#eaf1ff; color:#334155; font-weight:700; }
-  .print-a5-table th, .print-a5-table td { border-bottom:1px solid #dbe4f0; padding:2.5px 4px; vertical-align:top; }
+  .print-a5-table th, .print-a5-table td { border-bottom:1px solid #dbe4f0; padding:4px 5px; vertical-align:top; }
   .print-a5-table tbody tr:last-child td { border-bottom:none; }
   .print-a5-table .num { text-align:right; }
   .print-a5-table td:first-child, .print-a5-table th:first-child { text-align:center; width:8%; }
-  .print-a5-grow { flex:1 1 auto; min-height:1mm; }
-  .print-a5-lower { display:grid; grid-template-columns:1.2fr 0.8fr; gap:2mm; margin-top:2mm; align-items:start; }
+  .print-a5-grow { flex:1 1 auto; min-height:4mm; }
+  .print-a5-lower { display:grid; grid-template-columns:1.2fr 0.8fr; gap:3mm; margin-top:3mm; align-items:start; }
   .print-a5-summary { display:flex; justify-content:flex-end; }
-  .print-a5-totals { width:100%; padding:1.5mm 2.5mm; border:1px solid #cbd5e1; border-radius:10px; background:#fcfdff; }
-  .print-a5-total-row { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:10px; margin-bottom:2px; }
+  .print-a5-totals { width:100%; padding:2.5mm 3mm; border:1px solid #cbd5e1; border-radius:12px; background:#fcfdff; }
+  .print-a5-total-row { display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:11px; margin-bottom:4px; }
   .print-a5-total-row:last-child { margin-bottom:0; }
-  .print-a5-total-row.grand { margin-top:3px; padding-top:3px; border-top:1px solid #cbd5e1; font-size:12px; font-weight:700; color:#0f172a; }
+  .print-a5-total-row.grand { margin-top:4px; padding-top:4px; border-top:1px solid #cbd5e1; font-size:13px; font-weight:700; color:#0f172a; }
   .print-a5-total-row input { width:76px; text-align:right; }
-  .print-a5-note { padding:1.5mm 2mm; border:1px dashed #cbd5e1; border-radius:8px; color:#475569; }
+  .print-a5-note { padding:2.2mm 2.8mm; border:1px dashed #cbd5e1; border-radius:10px; color:#475569; }
   .print-a5-note label { display:block; font-size:11px; font-weight:600; color:#64748b; margin-bottom:2px; }
   .print-a5-note textarea { width:100%; min-height:5mm; border-bottom:none; font-size:10px; line-height:1.1; }
-  .print-a5-signatures { margin-top:2mm; display:grid; grid-template-columns:1fr 1fr 1fr; gap:3mm; font-size:9px; }
-  .print-a5-signatures label { display:block; margin-bottom:4mm; color:#475569; font-weight:600; }
+  .print-a5-signatures { margin-top:4mm; display:grid; grid-template-columns:1fr 1fr 1fr; gap:4mm; font-size:10px; }
+  .print-a5-signatures label { display:block; margin-bottom:6mm; color:#475569; font-weight:600; }
   .print-a5-signatures input { width:100%; text-align:center; }
-  .print-a5-foot { margin-top:1mm; display:flex; justify-content:space-between; align-items:center; font-size:8px; color:#64748b; }
+  .print-a5-foot { margin-top:2mm; display:flex; justify-content:space-between; align-items:center; font-size:9px; color:#64748b; }
   .print-tax-sheet {
     border:1px solid #c9d4ea;
     background:#fff;
@@ -3998,46 +3897,46 @@
   }
   .print-tax-header {
     text-align:center;
-    padding-bottom:3mm;
+    padding-bottom:1.5mm;
     border-bottom:1px dashed #cbd5e1;
-    margin-bottom:3mm;
+    margin-bottom:1.5mm;
   }
   .print-tax-docname {
-    font-size:19px;
+    font-size:14px;
     font-weight:800;
     color:#1e3a8a;
     letter-spacing:-0.02em;
   }
   .print-tax-company {
-    margin-top:1mm;
-    font-size:22px;
+    margin-top:0.5mm;
+    font-size:17px;
     font-weight:800;
     color:#0f172a;
   }
   .print-tax-meta {
-    margin-top:1mm;
-    font-size:10.5px;
-    line-height:1.5;
+    margin-top:0.5mm;
+    font-size:9.5px;
+    line-height:1.3;
     color:#475569;
   }
   .print-tax-grid {
     display:grid;
     grid-template-columns: 1.1fr 0.9fr;
-    gap:3mm;
-    margin-bottom:3mm;
+    gap:2mm;
+    margin-bottom:2mm;
   }
   .print-tax-box {
     border:1px solid #cbd5e1;
-    border-radius:10px;
-    padding:2.5mm 3mm;
+    border-radius:8px;
+    padding:1.5mm 2.5mm;
     background:#fcfdff;
   }
   .print-tax-box label {
     display:block;
-    font-size:10px;
+    font-size:9px;
     font-weight:700;
     color:#64748b;
-    margin-bottom:1mm;
+    margin-bottom:0.5mm;
   }
   .print-tax-box input,
   .print-tax-box textarea {
@@ -4051,30 +3950,30 @@
     padding:1px 0;
   }
   .print-tax-box textarea {
-    min-height:32px;
+    min-height:24px;
     resize:none;
   }
   .print-tax-table-wrap {
     border:1px solid #94a3b8;
-    border-radius:12px;
+    border-radius:8px;
     overflow:hidden;
     margin-top:1mm;
   }
   .print-tax-table {
     width:100%;
     border-collapse:collapse;
-    font-size:10.5px;
+    font-size:9.5px;
   }
   .print-tax-table th {
     background:#edf2ff;
     color:#334155;
     font-weight:700;
     border-bottom:1px solid #cbd5e1;
-    padding:4px 5px;
+    padding:2px 4px;
   }
   .print-tax-table td {
     border-bottom:1px solid #dbe4f0;
-    padding:4px 5px;
+    padding:2px 4px;
     vertical-align:top;
   }
   .print-tax-table tbody tr:last-child td {
@@ -4089,29 +3988,29 @@
   .print-tax-total {
     display:flex;
     justify-content:flex-end;
-    margin-top:3mm;
+    margin-top:1.5mm;
   }
   .print-tax-total-card {
     width:46%;
     border:1px solid #cbd5e1;
-    border-radius:12px;
+    border-radius:10px;
     background:#fcfdff;
-    padding:2.5mm 3mm;
+    padding:1.5mm 2.5mm;
   }
   .print-tax-signs {
-    margin-top:4mm;
+    margin-top:2mm;
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:5mm;
   }
   .print-tax-sign {
-    font-size:10px;
+    font-size:9.5px;
     color:#475569;
   }
   .print-tax-sign .line {
-    margin-top:7mm;
+    margin-top:5mm;
     border-top:1px dashed #94a3b8;
-    padding-top:2mm;
+    padding-top:1.5mm;
     text-align:center;
   }
   @media (max-width: 900px) {
@@ -4177,9 +4076,7 @@
     }
     .print-a5-page {
       width:210mm !important;
-      height:148mm !important;
-      max-height:148mm !important;
-      overflow:hidden !important;
+      min-height:148mm !important;
       margin:0 !important;
       padding:0 !important;
       break-after: page;
@@ -4193,13 +4090,17 @@
     }
     .print-a5-sheet {
       width:210mm !important;
-      height:148mm !important;
-      max-height:148mm !important;
+      min-height:148mm !important;
       margin:0 !important;
-      padding:5mm 6mm !important;
+      padding:8mm 9mm !important;
       border-radius:0 !important;
       box-shadow:none !important;
       background:#fff !important;
+      overflow:hidden !important;
+    }
+    .print-tax-sheet {
+      max-height:148mm !important;
+      padding:5mm 6mm !important;
       overflow:hidden !important;
     }
     .print-a5-sheet-copy {
@@ -4212,47 +4113,56 @@
     }
     #printA5Sheet input, #printA5Sheet textarea { border-bottom-color:#94a3b8 !important; }
   }
-
-  /* SORT DROPDOWN */
-  .sort-drop-wrap { position:relative; }
-  .sort-drop {
-    position:absolute; top:calc(100% + 6px); right:0;
-    background:rgba(16,16,28,0.98);
-    backdrop-filter:blur(24px) saturate(180%);
-    border:0.5px solid rgba(255,255,255,0.16);
-    border-radius:14px; padding:5px;
-    min-width:196px; z-index:500;
-    display:none;
-    box-shadow:0 20px 48px rgba(0,0,0,0.55), 0 0 0 0.5px rgba(255,255,255,0.07);
-    animation:fadeUp 0.18s ease both;
-  }
-  .sort-drop.open { display:block; }
-  .sort-opt {
-    padding:9px 14px; border-radius:10px; font-size:12px; font-weight:500;
-    color:rgba(255,255,255,0.62); cursor:pointer;
-    transition:all 0.15s; white-space:nowrap;
-    display:flex; align-items:center; gap:8px;
-  }
-  .sort-opt:hover { background:rgba(255,255,255,0.1); color:#fff; }
-  .sort-opt.active { background:rgba(96,165,250,0.18); color:#93c5fd; }
-  .sort-sep { height:0.5px; background:rgba(255,255,255,0.08); margin:4px 8px; }
 </style>
 <script>
-window.API_BASE_URL = 'https://leo-auto-backend-production.up.railway.app';
+window.API_BASE_URL = '';
 window.API_URL = `${window.API_BASE_URL}/api`;
 const API_URL = window.API_URL;
 
 function toAbsoluteAssetUrl(url) {
   const u = String(url || '').trim();
-  if (!u || u.toLowerCase() === 'none') return '';
+  if (!u) return '';
   if (/^https?:\/\//i.test(u)) return u;
   return `${window.API_BASE_URL}/${u}`.replace(/([^:]\/)\//g, '$1');
 }
 
 let globalData = [];
 let inventoryLoaded = false;
-let dpMode = 'brand'; // ใช้ใน dark prompt
+let dpMode = 'brand';
+let currentSort = 'newest';
 window.globalData = globalData;
+
+function sortData(data) {
+  const d = [...data];
+  switch (currentSort) {
+    case 'newest':    return d.reverse();
+    case 'oldest':    return d;
+    case 'price_desc': return d.sort((a,b) => Number(b.Price) - Number(a.Price));
+    case 'price_asc':  return d.sort((a,b) => Number(a.Price) - Number(b.Price));
+    case 'name_asc':   return d.sort((a,b) => (a['Part Name']||'').localeCompare(b['Part Name']||''));
+    case 'stock_asc':  return d.sort((a,b) => Number(a.Stock) - Number(b.Stock));
+    case 'stock_desc': return d.sort((a,b) => Number(b.Stock) - Number(a.Stock));
+    default: return d.reverse();
+  }
+}
+
+function toggleSortMenu(e) {
+  e.stopPropagation();
+  document.getElementById('sortBtn').classList.toggle('active');
+}
+
+function setSort(mode, el) {
+  currentSort = mode;
+  document.querySelectorAll('.sort-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('sortLabel').textContent = el.textContent.replace(/^..\s/,'').split('→')[0].trim();
+  document.getElementById('sortBtn').classList.remove('active');
+  filterLocal();
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('sortBtn')?.classList.remove('active');
+});
 
 /* ──────────────── LOAD ──────────────── */
 function setNav(el) {
@@ -4277,27 +4187,26 @@ async function loadProducts() {
         return Number.isFinite(n) ? n : 0;
       };
 
-      // keep Image_URL as relative comma-separated paths in globalData.
-      // Display helpers (toAbsoluteAssetUrl) convert each URL individually at render time.
-      // Keeping relative here ensures removeExistingImage sends the exact path the backend stored.
-      const img = String(item.Image_URL || item['Image_URL'] || item.ImageUrl || '').trim();
+      // ensure keys exist and normalize image urls
+      let img = item.Image_URL || item['Image_URL'] || item.ImageUrl || '';
+      img = String(img || '').trim();
+      if (img && !img.startsWith('http')) {
+        // server serves picture/ via static mount
+        img = `${window.API_URL.replace(/\/api$/, '')}/${img}`.replace(/([^:]\/)\//g, '$1');
+      }
 
       return {
         'Part Number': item['Part Number'] ?? item.PartNumber ?? '',
         'Part Name': item['Part Name'] ?? item['Part_Name'] ?? item.PartName ?? item['Part Name'],
-        'Brand': (item.Brand ?? item['Brand'] ?? '').toString().trim().toUpperCase(),
-        'Series': (item.Series ?? item['Series'] ?? '').toString().trim().toUpperCase(),
+        'Brand': item.Brand ?? item['Brand'] ?? '',
+        'Series': item.Series ?? item['Series'] ?? '',
         'Price': toNum(item.Price ?? item.Price_New ?? item['Price']),
         'Stock': toNum(item.Stock ?? item.Stock_New ?? item['Stock']),
         'Used_Price': toNum(item.Used_Price ?? item['Used_Price'] ?? 0),
         'Used_Stock': toNum(item.Used_Stock ?? item['Used_Stock'] ?? 0),
         'Image_URL': img,
         'Storage Location': item['Storage Location'] ?? item.Location ?? '',
-        'Cost Price': toNum((item['Cost Price'] ?? item.Cost_Price ?? item.Cost) || 0),
-        'Stock_LH':      toNum(item.Stock_LH      ?? item['Stock_LH']      ?? 0),
-        'Stock_RH':      toNum(item.Stock_RH      ?? item['Stock_RH']      ?? 0),
-        'Used_Stock_LH': toNum(item.Used_Stock_LH ?? item['Used_Stock_LH'] ?? 0),
-        'Used_Stock_RH': toNum(item.Used_Stock_RH ?? item['Used_Stock_RH'] ?? 0)
+        'Cost Price': toNum((item['Cost Price'] ?? item.Cost_Price ?? item.Cost) || 0)
       };
     });
 
@@ -4306,11 +4215,9 @@ async function loadProducts() {
     return true;
   } catch (e) {
     console.error('Failed to load inventory from API, falling back to embedded data', e);
-    // Only fallback to embedded data on very first load (globalData is still empty)
-    if (!globalData || globalData.length === 0) {
-      globalData = EMBEDDED_DATA;
-      window.globalData = globalData;
-    }
+    // fallback to embedded sample if fetch fails
+    globalData = EMBEDDED_DATA;
+    window.globalData = globalData;
     return false;
   }
 }
@@ -4320,7 +4227,7 @@ async function refreshInventoryUI() {
   inventoryLoaded = false;
   const success = await loadProducts();
   inventoryLoaded = true;
-  renderGrid(applySort(globalData));
+  renderGrid(sortData(globalData));
   updateStats(globalData);
   buildFilterChips();
   if (document.getElementById('page-analytics')?.style.display !== 'none') {
@@ -4343,22 +4250,6 @@ async function initInventory() {
 }
 
 /* ──────────────── RENDER ──────────────── */
-function _getSideBadge(item, allData) {
-  const lNew      = Number((item && item['Stock_LH'])      || 0);
-  const rNew      = Number((item && item['Stock_RH'])      || 0);
-  const lUsed     = Number((item && item['Used_Stock_LH']) || 0);
-  const rUsed     = Number((item && item['Used_Stock_RH']) || 0);
-  const usedPrice = Number((item && item['Used_Price'])    || 0);
-  const hasNew  = lNew  > 0 || rNew  > 0;
-  // แสดง badge เก่า ถ้ามีราคาเก่า (แม้ stock = 0) หรือมี stock เก่า
-  const hasUsed = usedPrice > 0 || lUsed > 0 || rUsed > 0;
-  if (!hasNew && !hasUsed) return '';
-  let html = '<div class="card-side-badges">';
-  if (hasNew)  html += `<span class="card-side-badge card-side-new">ใหม่ L${lNew}·R${rNew}</span>`;
-  if (hasUsed) html += `<span class="card-side-badge card-side-used">เก่า L${lUsed}·R${rUsed}</span>`;
-  html += '</div>';
-  return html;
-}
 function renderGrid(data) {
   const grid = document.getElementById('productGrid');
   grid.innerHTML = '';
@@ -4376,7 +4267,7 @@ function renderGrid(data) {
   }
 
   data.forEach(item => {
-    const imageUrls = (item.Image_URL && item.Image_URL !== 'nan' && item.Image_URL !== 'none' ? item.Image_URL : "")
+    const imageUrls = (item.Image_URL && item.Image_URL !== 'nan' ? item.Image_URL : "")
       .split(',')
       .map(url => url.trim())
       .filter(Boolean)
@@ -4409,7 +4300,7 @@ function renderGrid(data) {
           ${firstImage ? `<img src="${firstImage}" loading="lazy" onerror="this.style.display='none'" style="opacity:0;" onload="this.style.opacity='1'">` : ''}
         </div>
         <div class="card-body">
-          <div class="card-brand"><span>${item.Brand} · ${item.Series}</span>${_getSideBadge(item, globalData)}</div>
+          <div class="card-brand">${item.Brand} · ${item.Series}</div>
           <div class="card-name">${item['Part Name']}</div>
           <div class="card-meta">
             <div class="price-stock-container">
@@ -4431,8 +4322,8 @@ function renderGrid(data) {
           <span>${item['Part Number']}</span>
           <div style="display:flex;gap:8px;align-items:center;">
             ${costHtml}
-            <button onclick="openManageModal(true,this.dataset.pn)" data-pn="${(item['Part Number']||'').trim()}" class="btn-action btn-edit">Edit</button>
-            <button onclick="deleteProduct(this.dataset.pn)" data-pn="${(item['Part Number']||'').trim()}" class="btn-action btn-del">Del</button>
+            <button onclick="openManageModal(true,'${item['Part Number']}')" class="btn-action btn-edit">Edit</button>
+            <button onclick="deleteProduct('${item['Part Number']}')" class="btn-action btn-del">Del</button>
           </div>
         </div>
       </div>`;
@@ -4465,20 +4356,19 @@ function updateStats(data) {
     return s + currentLow;
   }, 0);
 
-  const totalCostValue = data.reduce((s, i) => {
-    const cost = toNum(i['Cost Price'] ?? i.Cost_Price ?? i.Cost ?? 0);
-    const qty = toNum(i.Stock) + toNum(i.Used_Stock);
-    return s + cost * qty;
-  }, 0);
-  window._costValueAmount = totalCostValue;
+  const newInventoryValue = data.reduce((s, i) => s + (toNum(i.Price) * toNum(i.Stock)), 0);
+  const usedInventoryValue = data.reduce((s, i) => s + (toNum(i.Used_Price) * toNum(i.Used_Stock)), 0);
+  const totalInventoryValue = newInventoryValue + usedInventoryValue;
 
   document.getElementById('s-stock').innerText = totalStock.toLocaleString();
   document.getElementById('s-low').innerText = lowCount;
-  const valEl = document.getElementById('s-value');
-  if (valEl) {
-    valEl.dataset.amount = totalCostValue;
-    if (!window._costValueVisible) valEl.innerText = 'ซ่อน';
-    else valEl.innerText = `฿${totalCostValue.toLocaleString()}`;
+  document.getElementById('s-value').innerText = `฿${totalInventoryValue.toLocaleString()}`;
+  const breakdownEl = document.getElementById('s-value-breakdown');
+  if (breakdownEl) {
+    breakdownEl.innerHTML = `
+      <span style="color:#6ee7b7;">ใหม่: ฿${newInventoryValue.toLocaleString()}</span> + 
+      <span style="color:#fcd34d;">เก่า: ฿${usedInventoryValue.toLocaleString()}</span>
+    `;
   }
 }
 
@@ -4547,7 +4437,7 @@ function clearSearch() {
   if (inp) { inp.value = ''; toggleClearBtn(inp); }
   activeFilters = { brand: 'All', series: 'All' };
   updateActiveChips();
-  renderGrid(applySort(globalData));
+  renderGrid(sortData(globalData));
   updateStats(globalData);
 }
 
@@ -4619,7 +4509,7 @@ function filterLocal() {
     const matchSeries = activeFilters.series === 'All' || item['Series'].toUpperCase() === activeFilters.series.toUpperCase();
     return matchText && matchBrand && matchSeries;
   });
-  renderGrid(applySort(filtered));
+  renderGrid(sortData(filtered));
 }
 
 /* ──────────────── LIGHTBOX ──────────────── */
@@ -4720,7 +4610,7 @@ async function removeExistingImage(partNumber, imageUrl, event) {
   if (!await fancyConfirm(`คุณแน่ใจหรือไม่ว่าต้องการลบรูปภาพนี้?`)) return;
 
   try {
-    const res = await fetch(`${API_URL}/inventory/image?part_number=${encodeURIComponent(partNumber)}&image_url=${encodeURIComponent(imageUrl)}`, {
+    const res = await fetch(`${API_URL}/inventory/${partNumber}/image?image_url=${encodeURIComponent(imageUrl)}`, {
       method: 'DELETE'
     });
     if (!res.ok) {
@@ -4763,33 +4653,22 @@ function openManageModal(isEdit = false, pn = null) {
     document.getElementById('modalTitle').innerText = "📝 แก้ไขสินค้า";
     document.getElementById('editMode').value = "true";
     document.getElementById('m_pn').readOnly = true;
-    const item = globalData.find(i => i['Part Number'] === pn) ||
-                  globalData.find(i => i['Part Number'].trim() === pn.trim());
+    const item = globalData.find(i => i['Part Number'] === pn);
     if (item) {
-      document.getElementById('m_pn').value    = (item['Part Number'] || pn).trim();
+      document.getElementById('m_pn').value    = item['Part Number'];
       document.getElementById('m_name').value  = item['Part Name'];
       document.getElementById('m_brand').value = item['Brand'];
       document.getElementById('m_series').value= item['Series'];
       document.getElementById('m_price').value = item['Price'];
-      const _editStock = Number(item['Stock'] || 0);
-      document.getElementById('m_stock').value = _editStock;
-      // Pre-fill LH/RH from saved Stock_LH / Stock_RH values
-      const _lhEl = document.getElementById('m_stock_lh');
-      const _rhEl = document.getElementById('m_stock_rh');
-      if (_lhEl) _lhEl.value = Number(item['Stock_LH'] || 0);
-      if (_rhEl) _rhEl.value = Number(item['Stock_RH'] || 0);
+      document.getElementById('m_stock').value = item['Stock'];
       document.getElementById('m_used_price').value = item['Used_Price'] || '';
       document.getElementById('m_used_stock').value = item['Used_Stock'] || '';
-      const _ulhEl = document.getElementById('m_used_stock_lh');
-      const _urhEl = document.getElementById('m_used_stock_rh');
-      if (_ulhEl) _ulhEl.value = Number(item['Used_Stock_LH'] || 0) || '';
-      if (_urhEl) _urhEl.value = Number(item['Used_Stock_RH'] || 0) || '';
       const _cp = item['Cost Price'];
       document.getElementById('m_cost').value = (_cp !== '' && _cp !== 'nan' && _cp != null && Number(_cp) > 0) ? Number(_cp) : '';
       document.getElementById('m_loc').value   = item['Storage Location'];
 
       // Display existing images with remove buttons
-      const imageUrls = (item.Image_URL && item.Image_URL !== 'none' ? item.Image_URL : "").split(',').filter(url => url.trim() && url.trim().toLowerCase() !== 'none');
+      const imageUrls = (item.Image_URL || "").split(',').filter(Boolean);
       if (imageUrls.length > 0) {
         imgHint.innerText = `รูปปัจจุบัน: ${imageUrls.length} รูป (คลิก ✕ เพื่อลบ)`;
         imgHint.style.display = 'block';
@@ -4822,7 +4701,7 @@ function closeManageModal() {
   document.getElementById('manageModal').classList.remove('open');
 }
 
-// Backdrop click intentionally disabled — close via ESC or X button only
+// manageModal: ล็อคไว้ ไม่ให้ click backdrop ปิด — ต้องกด ✕ หรือ ESC เท่านั้น
 document.getElementById('reportModal').addEventListener('click', function(e) {
   if (e.target === this) this.classList.remove('open');
 });
@@ -4857,88 +4736,40 @@ document.getElementById('manageForm').onsubmit = async (e) => {
   if (!formData.get('cost_price') || String(formData.get('cost_price')).trim() === '') {
     formData.set('cost_price', '0');
   }
-  const pn = (document.getElementById('m_pn').value || '').trim();
-  if (!pn) {
-    await fancyAlert('Part Number ว่างเปล่า — ไม่สามารถบันทึกได้', 'error');
-    btn.innerHTML = orig;
-    return;
-  }
-  const url    = `${API_URL}/inventory`;
+  const pn = document.getElementById('m_pn').value;
+  const encodedPn = encodeURIComponent(pn);
+  const url    = isEdit ? `${API_URL}/inventory/${encodedPn}` : `${API_URL}/inventory`;
   const method = isEdit ? 'PUT' : 'POST';
 
   try {
     const res = await fetch(url, { method, body: formData });
     if (res.ok) {
-      const resData = await res.json().catch(() => ({}));
       closeManageModal();
-      const pnVal = pn;
-      const formPrice = Number(formData.get('price')) || 0;
-      const formStock = Number(formData.get('stock')) || 0;
-      const formUsedPrice = Number(formData.get('used_price')) || 0;
-      const formUsedStock = Number(formData.get('used_stock')) || 0;
-      const formBrand = (formData.get('brand') || '').trim().toUpperCase();
-      const formSeries = (formData.get('series') || '').trim().toUpperCase();
-      const formName = formData.get('part_name') || '';
-      const formCost = Number(formData.get('cost_price')) || 0;
-      const formLoc = formData.get('location') || '';
-      const formStockLH    = Number(formData.get('stock_lh'))      || 0;
-      const formStockRH    = Number(formData.get('stock_rh'))      || 0;
-      const formUsedStockLH = Number(formData.get('used_stock_lh')) || 0;
-      const formUsedStockRH = Number(formData.get('used_stock_rh')) || 0;
-      // Use image_url returned by server (relative paths, comma-separated)
-      const serverImageUrl = resData.image_url !== undefined ? resData.image_url : null;
-      if (isEdit) {
-        const idx = globalData.findIndex(i => i['Part Number'] === pnVal);
-        if (idx !== -1) {
-          globalData[idx] = { ...globalData[idx],
-            'Part Name': formName, 'Brand': formBrand, 'Series': formSeries,
-            'Price': formPrice, 'Stock': formStock, 'Stock_LH': formStockLH, 'Stock_RH': formStockRH,
-            'Used_Price': formUsedPrice, 'Used_Stock': formUsedStock, 'Used_Stock_LH': formUsedStockLH, 'Used_Stock_RH': formUsedStockRH,
-            'Cost Price': formCost, 'Storage Location': formLoc,
-            // Update Image_URL immediately from server response so card shows new image right away
-            ...(serverImageUrl !== null ? { 'Image_URL': serverImageUrl } : {})
-          };
-        }
-      } else {
-        globalData.push({
-          'Part Number': pnVal, 'Part Name': formName, 'Brand': formBrand,
-          'Series': formSeries, 'Price': formPrice, 'Stock': formStock,
-          'Used_Price': formUsedPrice, 'Used_Stock': formUsedStock,
-          'Image_URL': serverImageUrl !== null ? serverImageUrl : '',
-          'Cost Price': formCost, 'Storage Location': formLoc,
-          'Stock_LH': formStockLH, 'Stock_RH': formStockRH,
-          'Used_Stock_LH': formUsedStockLH, 'Used_Stock_RH': formUsedStockRH
-        });
-      }
-      window.globalData = globalData;
-      renderGrid(applySort(globalData));
+      // Refresh data without changing page
+      await loadProducts();
+      renderGrid(sortData(globalData));
       updateStats(globalData);
       buildFilterChips();
+      // Don't change page, just refresh data
     } else {
-      let errMsg = `Error ${res.status}`;
-      try {
-        const err = await res.json();
-        errMsg = err.detail[0]?.msg || err.detail || errMsg;
-      } catch {}
-      await fancyAlert(errMsg, 'error');
+      const err = await res.json();
+      await fancyAlert(err.detail[0]?.msg || err.detail, 'error');
     }
-  } catch (ex) {
-    await fancyAlert('เชื่อมต่อ Backend ล้มเหลว: ' + ex.message, 'error');
+  } catch {
+    await fancyAlert('เชื่อมต่อ Backend ล้มเหลว', 'error');
   }
   btn.innerHTML = orig;
 };
 
 /* ──────────────── DELETE ──────────────── */
 async function deleteProduct(pn) {
-  pn = (pn || '').trim();
-  if (!pn) { await fancyAlert('ไม่พบ Part Number', 'error'); return; }
   if (!await fancyConfirm(`ยืนยันลบ Part: ${pn}?`)) return;
   try {
-    const res = await fetch(`${API_URL}/inventory?part_number=${encodeURIComponent(pn)}`, { method: 'DELETE' });
+    const res = await fetch(`${API_URL}/inventory/${encodeURIComponent(pn)}`, { method: 'DELETE' });
     if (res.ok) { 
       // Refresh data without changing page
       await loadProducts();
-      renderGrid(applySort(globalData));
+      renderGrid(sortData(globalData));
       updateStats(globalData);
       buildFilterChips();
     }
@@ -5225,143 +5056,6 @@ function renderReport(text) {
 
   return html || `<div style="white-space:pre-wrap;color:rgba(255,255,255,0.8);font-size:13px;">${text}</div>`;
 }
-
-/* ══════════════════════════════════════
-   RECEIVE STOCK MODAL
-══════════════════════════════════════ */
-let recvSelectedPN = null;
-
-function openReceiveModal() {
-  recvSelectedPN = null;
-  document.getElementById('recvSearch').value = '';
-  document.getElementById('recvDropdown').classList.remove('open');
-  document.getElementById('recvSelectedCard').classList.remove('show');
-  document.getElementById('recvQty').value = '';
-  document.getElementById('recvQtyLH').value = '';
-  document.getElementById('recvQtyRH').value = '';
-  document.getElementById('recvUsedQty').value = '';
-  document.getElementById('recvUsedQtyLH').value = '';
-  document.getElementById('recvUsedQtyRH').value = '';
-  document.getElementById('recvNote').value = '';
-  document.getElementById('recvSubmitBtn').disabled = true;
-  document.getElementById('receiveModal').classList.add('open');
-}
-
-function closeReceiveModal() {
-  document.getElementById('receiveModal').classList.remove('open');
-}
-
-function recvFilter(q) {
-  const dd = document.getElementById('recvDropdown');
-  const term = (q || '').trim().toLowerCase();
-  const results = globalData.filter(i =>
-    (i['Part Number'] || '').toLowerCase().includes(term) ||
-    (i['Part Name']   || '').toLowerCase().includes(term)
-  ).slice(0, 30);
-
-  if (!term && !results.length) { dd.classList.remove('open'); return; }
-  dd.innerHTML = results.map(i => `
-    <div class="recv-option" onclick="recvSelectItem('${(i['Part Number']||'').replace(/'/g,"\\'")}')">
-      <strong>${i['Part Number']}</strong> — ${i['Part Name']}
-    </div>`).join('') || '<div class="recv-option" style="color:rgba(255,255,255,0.3)">ไม่พบสินค้า</div>';
-  dd.classList.add('open');
-}
-
-function recvSelectItem(pn) {
-  const item = globalData.find(i => i['Part Number'] === pn);
-  if (!item) return;
-  recvSelectedPN = pn;
-  document.getElementById('recvSearch').value = `${pn} — ${item['Part Name']}`;
-  document.getElementById('recvDropdown').classList.remove('open');
-
-  document.getElementById('recvCardName').textContent = item['Part Name'];
-  document.getElementById('recvCardMeta').textContent = `${item['Brand']} · ${item['Series']} · ${pn}`;
-  const chips = [
-    `ใหม่: ${item['Stock']||0}`,
-    `LH: ${item['Stock_LH']||0}`, `RH: ${item['Stock_RH']||0}`,
-    `เก่า: ${item['Used_Stock']||0}`,
-    `เก่า LH: ${item['Used_Stock_LH']||0}`, `เก่า RH: ${item['Used_Stock_RH']||0}`,
-  ];
-  document.getElementById('recvStockChips').innerHTML = chips.map(c => `<span class="recv-stock-chip">${c}</span>`).join('');
-  document.getElementById('recvSelectedCard').classList.add('show');
-  document.getElementById('recvSubmitBtn').disabled = false;
-}
-
-function recvSyncNewSides() {
-  const lh = Number(document.getElementById('recvQtyLH').value||0);
-  const rh = Number(document.getElementById('recvQtyRH').value||0);
-  if (lh || rh) document.getElementById('recvQty').value = lh + rh;
-}
-function recvSyncNew() {
-  // total typed manually — don't override sides
-}
-function recvSyncUsedSides() {
-  const lh = Number(document.getElementById('recvUsedQtyLH').value||0);
-  const rh = Number(document.getElementById('recvUsedQtyRH').value||0);
-  if (lh || rh) document.getElementById('recvUsedQty').value = lh + rh;
-}
-function recvSyncUsed() {}
-
-async function submitReceive() {
-  if (!recvSelectedPN) return;
-  const qty       = Number(document.getElementById('recvQty').value||0);
-  const qtyLH     = Number(document.getElementById('recvQtyLH').value||0);
-  const qtyRH     = Number(document.getElementById('recvQtyRH').value||0);
-  const usedQty   = Number(document.getElementById('recvUsedQty').value||0);
-  const usedQtyLH = Number(document.getElementById('recvUsedQtyLH').value||0);
-  const usedQtyRH = Number(document.getElementById('recvUsedQtyRH').value||0);
-  const note      = document.getElementById('recvNote').value.trim();
-
-  if (!qty && !qtyLH && !qtyRH && !usedQty && !usedQtyLH && !usedQtyRH) {
-    await fancyAlert('กรุณาใส่จำนวนที่รับเข้าอย่างน้อย 1 ช่อง', 'error'); return;
-  }
-
-  const btn = document.getElementById('recvSubmitBtn');
-  btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
-
-  try {
-    const fd = new FormData();
-    fd.append('part_number', recvSelectedPN);
-    fd.append('qty',          qty);
-    fd.append('qty_lh',       qtyLH);
-    fd.append('qty_rh',       qtyRH);
-    fd.append('used_qty',     usedQty);
-    fd.append('used_qty_lh',  usedQtyLH);
-    fd.append('used_qty_rh',  usedQtyRH);
-    fd.append('note',         note);
-
-    const res = await fetch(`${API_URL}/inventory/receive`, { method: 'POST', body: fd });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || 'เกิดข้อผิดพลาด');
-
-    // อัปเดต globalData ทันที
-    const idx = globalData.findIndex(i => i['Part Number'] === recvSelectedPN);
-    if (idx !== -1) {
-      globalData[idx]['Stock']         = data.stock;
-      globalData[idx]['Stock_LH']      = data.stock_lh;
-      globalData[idx]['Stock_RH']      = data.stock_rh;
-      globalData[idx]['Used_Stock']    = data.used_stock;
-      globalData[idx]['Used_Stock_LH'] = data.used_stock_lh;
-      globalData[idx]['Used_Stock_RH'] = data.used_stock_rh;
-    }
-    renderGrid(applySort(globalData));
-    closeReceiveModal();
-    await fancyAlert(`✅ รับสินค้าเข้าสำเร็จ!\nStock ใหม่ (รวม): ${data.stock}`, 'success');
-  } catch (ex) {
-    await fancyAlert('เกิดข้อผิดพลาด: ' + ex.message, 'error');
-    btn.disabled = false; btn.textContent = 'บันทึกรับสินค้า';
-  }
-}
-
-document.getElementById('receiveModal').addEventListener('click', function(e) {
-  if (e.target === this) closeReceiveModal();
-});
-document.addEventListener('click', function(e) {
-  const dd = document.getElementById('recvDropdown');
-  if (dd && !dd.contains(e.target) && e.target.id !== 'recvSearch') {
-    dd.classList.remove('open');
-  }
-});
 
 async function generateReport() {
   const modal = document.getElementById('reportModal');
@@ -5744,9 +5438,9 @@ async function initOrdersPage() {
   if (!document.getElementById('billDate').value) {
     document.getElementById('billDate').value = today;
   }
-  // History defaults to today (Thai timezone) so latest bills show immediately.
+  // History defaults to "all dates" so old bills are visible across redeploys/devices.
   if (!document.getElementById('historyDate').value) {
-    document.getElementById('historyDate').value = today;
+    document.getElementById('historyDate').value = '';
   }
   
   // Don't auto-open modal - let user click edit button
@@ -5793,7 +5487,7 @@ function billSearch() {
     <div class="bill-drop-item" onclick="addToBill('${escQ(item['Part Number'])}')">
       <div style="flex:1;min-width:0;">
         <div class="bill-drop-name">${item['Part Name']}</div>
-        <div class="bill-drop-pn">${item['Part Number']} · ${item['Brand']} ${item['Series']} ${stockDisplay}</div>
+        <div class="bill-drop-pn">${item['Brand']} · ${item['Series']} ${stockDisplay}</div>
       </div>
       <div class="bill-drop-price">฿${Number(item.Price).toLocaleString()}</div>
       <div class="bill-drop-add">+</div>
@@ -6001,7 +5695,7 @@ async function adjustStockForBill(bill) {
       fd.append('location', product['Storage Location'] || '');
 
       // call backend PUT endpoint to persist changes
-      const url = `${API_URL}/inventory`;
+      const url = `${API_URL}/inventory/${encodeURIComponent(product['Part Number'])}`;
       const res = await fetch(url, { method: 'PUT', body: fd });
       if (!res.ok) {
         console.warn('Failed to update stock for', product['Part Number'], await res.text());
@@ -6156,7 +5850,7 @@ async function restockItemsFromBill(bill) {
       fd.append('cost_price', String(product['Cost Price'] || 0));
       fd.append('location', product['Storage Location'] || '');
 
-      const url = `${API_URL}/inventory`;
+      const url = `${API_URL}/inventory/${encodeURIComponent(product['Part Number'])}`;
       const res = await fetch(url, { method: 'PUT', body: fd });
       if (!res.ok) {
         console.warn('Failed to restock for', product['Part Number'], await res.text());
@@ -6868,11 +6562,11 @@ function _ensurePrintTaxState() {
     printTaxState = {
       bookNo: '011',
       receiptNo: '0535',
-      docName: 'บิลเงินสด / ใบกำกับภาษีอย่างย่อ',
+      docName: 'บิลเงินสด / ใบกำกับภาษี',
       sellerName: 'ร้านลีโอ ออโต้',
       sellerAddress: 'เลขที่ 32/249-250 หมู่ 6 ถนนพหลโยธิน ต.คลองหนึ่ง อ.คลองหลวง จ.ปทุมธานี 12120',
       sellerTaxId: '3450100241329',
-      sellerPhone: '02-901829',
+      sellerPhone: '02-9018295',
       customerName: '',
       customerAddress: '',
       customerTaxId: '',
@@ -6903,8 +6597,6 @@ function _syncPrintA5Copy() {
   const title = _escapePrintText(document.getElementById('p-title')?.value || 'ใบเสร็จรับเงิน / Cash Sale');
   const badge = _escapePrintText(document.getElementById('p-badge')?.value || 'บิลเงินสด');
   const date = _escapePrintText(document.getElementById('p-date')?.value || '');
-  const book = _escapePrintText(document.getElementById('p-book')?.value || '');
-  const no = _escapePrintText(document.getElementById('p-no')?.value || '');
   const seller = _escapePrintText(document.getElementById('p-seller')?.value || '');
   const customer = _escapePrintText(document.getElementById('p-customer')?.value || '');
   const note = _escapePrintText(document.getElementById('p-note')?.value || '');
@@ -6939,8 +6631,6 @@ function _syncPrintA5Copy() {
         <div class="print-a5-title">${title}</div>
       </div>
       <div class="print-a5-meta">
-        <div class="print-a5-meta-row"><span>เล่มที่</span><div class="print-a5-static-text" style="text-align:right">${book}</div></div>
-        <div class="print-a5-meta-row"><span>เลขที่</span><div class="print-a5-static-text" style="text-align:right">${no}</div></div>
         <div class="print-a5-meta-row"><span>วันที่</span><div class="print-a5-static-text" style="text-align:right">${date}</div></div>
       </div>
     </div>
@@ -7042,7 +6732,7 @@ function _syncPrintA5Tax() {
     `;
   }).join('');
 
-  const fillerRows = Math.max(0, 8 - items.length);
+  const fillerRows = Math.max(0, 5 - items.length);
   const emptyRows = Array.from({ length: fillerRows }).map(() => `
     <tr>
       <td>&nbsp;</td><td></td><td></td><td></td><td></td>
@@ -7051,15 +6741,12 @@ function _syncPrintA5Tax() {
 
   taxSheet.innerHTML = `
     <div class="print-tax-topline">
-      <div>เล่มที่ <input value="${_escapePrintText(printTaxState.bookNo)}" oninput="updatePrintTaxField('bookNo', this.value)"></div>
-      <div class="center">บิลเงินสด</div>
-      <div class="right">เลขที่ <input value="${_escapePrintText(printTaxState.receiptNo)}" oninput="updatePrintTaxField('receiptNo', this.value)" style="width:86px;text-align:right"></div>
     </div>
     <div class="print-tax-header">
       <div class="print-tax-docname"><input value="${_escapePrintText(printTaxState.docName)}" oninput="updatePrintTaxField('docName', this.value)" style="width:100%;text-align:center;font-weight:800;color:#1e3a8a"></div>
       <div class="print-tax-company"><input value="${_escapePrintText(printTaxState.sellerName)}" oninput="updatePrintTaxField('sellerName', this.value)" style="width:100%;text-align:center;font-size:22px;font-weight:800"></div>
       <div class="print-tax-meta">
-        <input oninput="updatePrintTaxField('sellerAddress', this.value)" value="${_escapePrintText(printTaxState.sellerAddress)}" style="width:100%;text-align:center">
+        <input value="${_escapePrintText(printTaxState.sellerAddress)}" oninput="updatePrintTaxField('sellerAddress', this.value)" style="width:100%;text-align:center">
         <div style="display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:4px;">
           <span>เลขประจำตัวผู้เสียภาษี</span>
           <input value="${_escapePrintText(printTaxState.sellerTaxId)}" oninput="updatePrintTaxField('sellerTaxId', this.value)" style="width:190px;text-align:center">
@@ -7195,8 +6882,6 @@ function printBillA5(id) {
               <div class="print-a5-title"><input id="p-title" value="ใบเสร็จรับเงิน / Cash Sale" style="width:100%"></div>
             </div>
             <div class="print-a5-meta">
-              <div class="print-a5-meta-row"><span>เล่มที่</span><input id="p-book" value="" style="width:60px"></div>
-              <div class="print-a5-meta-row"><span>เลขที่</span><input id="p-no" value="" style="width:60px"></div>
               <div class="print-a5-meta-row"><span>วันที่</span><input id="p-date" value="${escapeAttr(today)}"></div>
             </div>
           </div>
@@ -7271,12 +6956,12 @@ function printBillA5(id) {
 
   document.getElementById('printTemplateModal')?.classList.add('open');
   sheet.oninput = (e) => {
-    if (e.target.matches('.p-qty,.p-price,#p-discount,#p-title,#p-badge,#p-date,#p-book,#p-no,#p-seller,#p-customer,#p-note,#p-receiver,#p-collector,#p-seller-sign')) {
+    if (e.target.matches('.p-qty,.p-price,#p-discount,#p-title,#p-badge,#p-date,#p-seller,#p-customer,#p-note,#p-receiver,#p-collector,#p-seller-sign')) {
       _recalcPrintA5();
     }
   };
   sheet.onchange = (e) => {
-    if (e.target.matches('#p-copy-mode,#p-copy-watermark,#p-tax-mode,.p-qty,.p-price,#p-discount,#p-title,#p-badge,#p-date,#p-book,#p-no,#p-seller,#p-customer,#p-note,#p-receiver,#p-collector,#p-seller-sign')) {
+    if (e.target.matches('#p-copy-mode,#p-copy-watermark,#p-tax-mode,.p-qty,.p-price,#p-discount,#p-title,#p-badge,#p-date,#p-seller,#p-customer,#p-note,#p-receiver,#p-collector,#p-seller-sign')) {
       _syncPrintA5Copy();
       _syncPrintA5Tax();
     }
@@ -7301,90 +6986,6 @@ function openPrintTemplateA5(id) {
   }
 }
 
-
-/* ────────────────── SORT ────────────────── */
-let currentSortMode = 'newest';
-
-const SORT_LABELS = {
-  newest:     'ใหม่ล่าสุด',
-  oldest:     'เก่าที่สุด',
-  price_asc:  'ราคา ↑',
-  price_desc: 'ราคา ↓',
-  stock_desc: 'Stock ↓',
-  stock_asc:  'Stock ↑',
-  name_asc:   'ชื่อ A→Z',
-  pn_asc:     'Part #',
-};
-
-function applySort(data) {
-  const arr = [...data];
-  switch (currentSortMode) {
-    case 'oldest':     return arr;
-    case 'price_asc':  return arr.sort((a,b) => (a.Price||0) - (b.Price||0));
-    case 'price_desc': return arr.sort((a,b) => (b.Price||0) - (a.Price||0));
-    case 'stock_desc': return arr.sort((a,b) => (b.Stock||0) - (a.Stock||0));
-    case 'stock_asc':  return arr.sort((a,b) => (a.Stock||0) - (b.Stock||0));
-    case 'name_asc':   return arr.sort((a,b) => (a['Part Name']||'').localeCompare(b['Part Name']||''));
-    case 'pn_asc':     return arr.sort((a,b) => (a['Part Number']||'').localeCompare(b['Part Number']||''));
-    case 'newest':
-    default:            return arr.reverse();
-  }
-}
-
-function setSort(mode) {
-  currentSortMode = mode;
-  document.getElementById('sortLabel').textContent = SORT_LABELS[mode] || mode;
-  document.querySelectorAll('.sort-opt').forEach(el => {
-    const oc = el.getAttribute('onclick') || '';
-    el.classList.toggle('active', oc.includes(`'${mode}'`));
-  });
-  document.getElementById('sortDrop').classList.remove('open');
-  filterLocal();
-}
-
-function toggleSortDrop(e) {
-  if (e) e.stopPropagation();
-  document.getElementById('sortDrop').classList.toggle('open');
-}
-
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.sort-drop-wrap')) {
-    document.getElementById('sortDrop')?.classList.remove('open');
-  }
-});
-
-function _syncLRStock() {
-  const lhEl = document.getElementById('m_stock_lh');
-  const rhEl = document.getElementById('m_stock_rh');
-  const lh = Number(lhEl?.value || 0);
-  const rh = Number(rhEl?.value || 0);
-  const lhFilled = lhEl && lhEl.value !== '';
-  const rhFilled = rhEl && rhEl.value !== '';
-  if (lhFilled || rhFilled) {
-    const stockEl = document.getElementById('m_stock');
-    if (stockEl) stockEl.value = lh + rh;
-  }
-}
-function _syncUsedLRStock() {
-  const lhEl = document.getElementById('m_used_stock_lh');
-  const rhEl = document.getElementById('m_used_stock_rh');
-  const lh = Number(lhEl?.value || 0);
-  const rh = Number(rhEl?.value || 0);
-  const lhFilled = lhEl && lhEl.value !== '';
-  const rhFilled = rhEl && rhEl.value !== '';
-  if (lhFilled || rhFilled) {
-    const stockEl = document.getElementById('m_used_stock');
-    if (stockEl) stockEl.value = lh + rh;
-  }
-}
-window._costValueVisible = false;
-function toggleCostValue() {
-  window._costValueVisible = !window._costValueVisible;
-  const el = document.getElementById('s-value');
-  if (!el) return;
-  const amount = Number(el.dataset.amount || window._costValueAmount || 0);
-  el.innerText = window._costValueVisible ? `฿${amount.toLocaleString()}` : 'ซ่อน';
-}
 window.onload = initInventory;
 
 /* ══════════════════════════════════════
