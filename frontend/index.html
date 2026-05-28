@@ -321,6 +321,9 @@
   .card-side-L { background:rgba(96,165,250,0.18); color:#93c5fd; }
   .card-side-R { background:rgba(251,146,60,0.18); color:#fdba74; }
   .card-side-LR { background:rgba(167,139,250,0.18); color:#c4b5fd; }
+  .card-side-new { background:rgba(52,211,153,0.15); color:#6ee7b7; }
+  .card-side-used { background:rgba(251,146,60,0.15); color:#fdba74; }
+  .card-side-badges { display:flex; gap:3px; flex-wrap:nowrap; flex-shrink:0; }
   .card-name { font-size: 14px; font-weight: 500; letter-spacing: -0.2px; line-height: 1.35; margin-bottom: 10px; }
   .card-meta { display: flex; align-items: center; justify-content: space-between; }
   .card-price { font-size: 18px; font-weight: 600; letter-spacing: -0.5px; color: #f5f5f7; }
@@ -3492,7 +3495,16 @@
 
       <div class="price-stock-row">
         <input type="number" id="m_used_price" name="used_price" placeholder="Price (Used)" class="m-input" style="margin-top:0;">
-        <input type="number" id="m_used_stock" name="used_stock" placeholder="Stock (Used)" class="m-input" style="margin-top:0;">
+        <input type="number" id="m_used_stock" name="used_stock" placeholder="Stock รวม (เก่า)" class="m-input" style="margin-top:0;" title="พิมพ์ตรงได้เลย หรือคำนวณจาก เก่า LH+RH อัตโนมัติ">
+      </div>
+      <!-- Used LH / RH stock -->
+      <div class="price-stock-row" style="gap:6px;">
+        <div style="position:relative;flex:1;">
+          <input type="number" id="m_used_stock_lh" name="used_stock_lh" placeholder="เก่า LH" min="0" class="m-input" style="margin-top:0;" oninput="_syncUsedLRStock()">
+        </div>
+        <div style="position:relative;flex:1;">
+          <input type="number" id="m_used_stock_rh" name="used_stock_rh" placeholder="เก่า RH" min="0" class="m-input" style="margin-top:0;" oninput="_syncUsedLRStock()">
+        </div>
       </div>
 
       <!-- Image upload -->
@@ -4197,8 +4209,10 @@ async function loadProducts() {
         'Image_URL': img,
         'Storage Location': item['Storage Location'] ?? item.Location ?? '',
         'Cost Price': toNum((item['Cost Price'] ?? item.Cost_Price ?? item.Cost) || 0),
-        'Stock_LH': toNum(item.Stock_LH ?? item['Stock_LH'] ?? 0),
-        'Stock_RH': toNum(item.Stock_RH ?? item['Stock_RH'] ?? 0)
+        'Stock_LH':      toNum(item.Stock_LH      ?? item['Stock_LH']      ?? 0),
+        'Stock_RH':      toNum(item.Stock_RH      ?? item['Stock_RH']      ?? 0),
+        'Used_Stock_LH': toNum(item.Used_Stock_LH ?? item['Used_Stock_LH'] ?? 0),
+        'Used_Stock_RH': toNum(item.Used_Stock_RH ?? item['Used_Stock_RH'] ?? 0)
       };
     });
 
@@ -4245,9 +4259,18 @@ async function initInventory() {
 
 /* ──────────────── RENDER ──────────────── */
 function _getSideBadge(item, allData) {
-  const lStock = Number((item && item['Stock_LH']) || 0);
-  const rStock = Number((item && item['Stock_RH']) || 0);
-  return `<span class="card-side-badge card-side-LR">L ${lStock} · R ${rStock}</span>`;
+  const lNew  = Number((item && item['Stock_LH'])      || 0);
+  const rNew  = Number((item && item['Stock_RH'])      || 0);
+  const lUsed = Number((item && item['Used_Stock_LH']) || 0);
+  const rUsed = Number((item && item['Used_Stock_RH']) || 0);
+  const hasNew  = lNew  > 0 || rNew  > 0;
+  const hasUsed = lUsed > 0 || rUsed > 0;
+  if (!hasNew && !hasUsed) return '';
+  let html = '<div class="card-side-badges">';
+  if (hasNew)  html += `<span class="card-side-badge card-side-new">ใหม่ L${lNew}·R${rNew}</span>`;
+  if (hasUsed) html += `<span class="card-side-badge card-side-used">เก่า L${lUsed}·R${rUsed}</span>`;
+  html += '</div>';
+  return html;
 }
 function renderGrid(data) {
   const grid = document.getElementById('productGrid');
@@ -4670,6 +4693,10 @@ function openManageModal(isEdit = false, pn = null) {
       if (_rhEl) _rhEl.value = Number(item['Stock_RH'] || 0);
       document.getElementById('m_used_price').value = item['Used_Price'] || '';
       document.getElementById('m_used_stock').value = item['Used_Stock'] || '';
+      const _ulhEl = document.getElementById('m_used_stock_lh');
+      const _urhEl = document.getElementById('m_used_stock_rh');
+      if (_ulhEl) _ulhEl.value = Number(item['Used_Stock_LH'] || 0) || '';
+      if (_urhEl) _urhEl.value = Number(item['Used_Stock_RH'] || 0) || '';
       const _cp = item['Cost Price'];
       document.getElementById('m_cost').value = (_cp !== '' && _cp !== 'nan' && _cp != null && Number(_cp) > 0) ? Number(_cp) : '';
       document.getElementById('m_loc').value   = item['Storage Location'];
@@ -4767,8 +4794,10 @@ document.getElementById('manageForm').onsubmit = async (e) => {
       const formName = formData.get('part_name') || '';
       const formCost = Number(formData.get('cost_price')) || 0;
       const formLoc = formData.get('location') || '';
-      const formStockLH = Number(formData.get('stock_lh')) || 0;
-      const formStockRH = Number(formData.get('stock_rh')) || 0;
+      const formStockLH    = Number(formData.get('stock_lh'))      || 0;
+      const formStockRH    = Number(formData.get('stock_rh'))      || 0;
+      const formUsedStockLH = Number(formData.get('used_stock_lh')) || 0;
+      const formUsedStockRH = Number(formData.get('used_stock_rh')) || 0;
       // Use image_url returned by server (relative paths, comma-separated)
       const serverImageUrl = resData.image_url !== undefined ? resData.image_url : null;
       if (isEdit) {
@@ -4777,7 +4806,7 @@ document.getElementById('manageForm').onsubmit = async (e) => {
           globalData[idx] = { ...globalData[idx],
             'Part Name': formName, 'Brand': formBrand, 'Series': formSeries,
             'Price': formPrice, 'Stock': formStock, 'Stock_LH': formStockLH, 'Stock_RH': formStockRH,
-            'Used_Price': formUsedPrice, 'Used_Stock': formUsedStock,
+            'Used_Price': formUsedPrice, 'Used_Stock': formUsedStock, 'Used_Stock_LH': formUsedStockLH, 'Used_Stock_RH': formUsedStockRH,
             'Cost Price': formCost, 'Storage Location': formLoc,
             // Update Image_URL immediately from server response so card shows new image right away
             ...(serverImageUrl !== null ? { 'Image_URL': serverImageUrl } : {})
@@ -4789,7 +4818,9 @@ document.getElementById('manageForm').onsubmit = async (e) => {
           'Series': formSeries, 'Price': formPrice, 'Stock': formStock,
           'Used_Price': formUsedPrice, 'Used_Stock': formUsedStock,
           'Image_URL': serverImageUrl !== null ? serverImageUrl : '',
-          'Cost Price': formCost, 'Storage Location': formLoc, 'Stock_LH': formStockLH, 'Stock_RH': formStockRH
+          'Cost Price': formCost, 'Storage Location': formLoc,
+          'Stock_LH': formStockLH, 'Stock_RH': formStockRH,
+          'Used_Stock_LH': formUsedStockLH, 'Used_Stock_RH': formUsedStockRH
         });
       }
       window.globalData = globalData;
@@ -7103,11 +7134,22 @@ function _syncLRStock() {
   const rhEl = document.getElementById('m_stock_rh');
   const lh = Number(lhEl?.value || 0);
   const rh = Number(rhEl?.value || 0);
-  // Only auto-fill total when at least one side has a value entered
   const lhFilled = lhEl && lhEl.value !== '';
   const rhFilled = rhEl && rhEl.value !== '';
   if (lhFilled || rhFilled) {
     const stockEl = document.getElementById('m_stock');
+    if (stockEl) stockEl.value = lh + rh;
+  }
+}
+function _syncUsedLRStock() {
+  const lhEl = document.getElementById('m_used_stock_lh');
+  const rhEl = document.getElementById('m_used_stock_rh');
+  const lh = Number(lhEl?.value || 0);
+  const rh = Number(rhEl?.value || 0);
+  const lhFilled = lhEl && lhEl.value !== '';
+  const rhFilled = rhEl && rhEl.value !== '';
+  if (lhFilled || rhFilled) {
+    const stockEl = document.getElementById('m_used_stock');
     if (stockEl) stockEl.value = lh + rh;
   }
 }

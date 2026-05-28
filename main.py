@@ -126,11 +126,15 @@ def get_db():
     # Ensure cost column exists
     if COST_COLUMN not in df.columns:
         df[COST_COLUMN] = 0
-    # Ensure L/R stock columns exist
+    # Ensure L/R stock columns exist (new and used)
     if "Stock_LH" not in df.columns:
         df["Stock_LH"] = 0
     if "Stock_RH" not in df.columns:
         df["Stock_RH"] = 0
+    if "Used_Stock_LH" not in df.columns:
+        df["Used_Stock_LH"] = 0
+    if "Used_Stock_RH" not in df.columns:
+        df["Used_Stock_RH"] = 0
 
     # If Image_URL is empty, try to fill from picture folder
     if "Image_URL" in df.columns:
@@ -174,6 +178,8 @@ async def add_product(
     location: str = Form(""),
     stock_lh: str = Form("0"),
     stock_rh: str = Form("0"),
+    used_stock_lh: str = Form("0"),
+    used_stock_rh: str = Form("0"),
     images: list[UploadFile] = File([])
 ):
     def _to_int(v, default=0):
@@ -181,6 +187,8 @@ async def add_product(
         except: return default
     stock_lh_val = _to_int(stock_lh)
     stock_rh_val = _to_int(stock_rh)
+    used_stock_lh_val = _to_int(used_stock_lh)
+    used_stock_rh_val = _to_int(used_stock_rh)
     df = get_db()
     if part_number in df['Part Number'].values:
         raise HTTPException(status_code=400, detail="Part Number นี้มีอยู่แล้วในระบบ!")
@@ -212,7 +220,9 @@ async def add_product(
         LOCATION_COLUMN: location,
         COST_COLUMN: cost_price,
         "Stock_LH": stock_lh_val,
-        "Stock_RH": stock_rh_val
+        "Stock_RH": stock_rh_val,
+        "Used_Stock_LH": used_stock_lh_val,
+        "Used_Stock_RH": used_stock_rh_val
     }
     df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
     save_db(df)
@@ -233,6 +243,8 @@ async def update_product(
     location: str = Form(""),
     stock_lh: str = Form("0"),
     stock_rh: str = Form("0"),
+    used_stock_lh: str = Form("0"),
+    used_stock_rh: str = Form("0"),
     images: list[UploadFile] = File([])
 ):
     def _to_int(v, default=0):
@@ -240,6 +252,8 @@ async def update_product(
         except: return default
     stock_lh_val = _to_int(stock_lh)
     stock_rh_val = _to_int(stock_rh)
+    used_stock_lh_val = _to_int(used_stock_lh)
+    used_stock_rh_val = _to_int(used_stock_rh)
     part_number = part_number.strip()
     df = get_db()
     df['Part Number'] = df['Part Number'].astype(str).str.strip()
@@ -260,6 +274,8 @@ async def update_product(
     df.at[idx, COST_COLUMN] = cost_price
     df.at[idx, "Stock_LH"] = stock_lh_val
     df.at[idx, "Stock_RH"] = stock_rh_val
+    df.at[idx, "Used_Stock_LH"] = used_stock_lh_val
+    df.at[idx, "Used_Stock_RH"] = used_stock_rh_val
 
     # จัดการรูปภาพ
     existing_urls = df.at[idx, "Image_URL"]
