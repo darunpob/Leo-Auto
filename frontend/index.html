@@ -4259,12 +4259,14 @@ async function initInventory() {
 
 /* ──────────────── RENDER ──────────────── */
 function _getSideBadge(item, allData) {
-  const lNew  = Number((item && item['Stock_LH'])      || 0);
-  const rNew  = Number((item && item['Stock_RH'])      || 0);
-  const lUsed = Number((item && item['Used_Stock_LH']) || 0);
-  const rUsed = Number((item && item['Used_Stock_RH']) || 0);
+  const lNew      = Number((item && item['Stock_LH'])      || 0);
+  const rNew      = Number((item && item['Stock_RH'])      || 0);
+  const lUsed     = Number((item && item['Used_Stock_LH']) || 0);
+  const rUsed     = Number((item && item['Used_Stock_RH']) || 0);
+  const usedPrice = Number((item && item['Used_Price'])    || 0);
   const hasNew  = lNew  > 0 || rNew  > 0;
-  const hasUsed = lUsed > 0 || rUsed > 0;
+  // แสดง badge เก่า ถ้ามีราคาเก่า (แม้ stock = 0) หรือมี stock เก่า
+  const hasUsed = usedPrice > 0 || lUsed > 0 || rUsed > 0;
   if (!hasNew && !hasUsed) return '';
   let html = '<div class="card-side-badges">';
   if (hasNew)  html += `<span class="card-side-badge card-side-new">ใหม่ L${lNew}·R${rNew}</span>`;
