@@ -3592,8 +3592,8 @@
 <!-- ══════════════════════════════════════
      RECEIVE STOCK MODAL
 ══════════════════════════════════════ -->
-<div id="receiveModal" class="modal-overlay">
-  <div class="modal-box" style="max-width:480px;">
+<div id="receiveModal" class="modal-overlay" onclick="return false">
+  <div class="modal-box" onclick="event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-title">📥 รับสินค้าเข้า</div>
       <button class="modal-close" onclick="closeReceiveModal()">✕</button>
@@ -5262,7 +5262,7 @@ function recvFilter(q) {
   if (!term && !results.length) { dd.classList.remove('open'); return; }
   dd.innerHTML = results.map(i => `
     <div class="recv-option" onclick="recvSelectItem('${(i['Part Number']||'').replace(/'/g,"\\'")}')">
-      <strong>${i['Part Number']}</strong> — ${i['Part Name']}
+      <strong>${i.Brand} · ${i.Series}</strong> — ${i['Part Name']}
     </div>`).join('') || '<div class="recv-option" style="color:rgba(255,255,255,0.3)">ไม่พบสินค้า</div>';
   dd.classList.add('open');
 }
@@ -5353,9 +5353,7 @@ async function submitReceive() {
   }
 }
 
-document.getElementById('receiveModal').addEventListener('click', function(e) {
-  if (e.target === this) closeReceiveModal();
-});
+/* receiveModal backdrop click disabled — close via ✕ or ESC only */
 document.addEventListener('click', function(e) {
   const dd = document.getElementById('recvDropdown');
   if (dd && !dd.contains(e.target) && e.target.id !== 'recvSearch') {
