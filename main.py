@@ -346,6 +346,49 @@ async def delete_product(part_number: str):
     return {"message": f"🗑️ ลบ {part_number} สำเร็จ!"}
 
 
+# [RECEIVE] รับสินค้าเข้า — เพิ่ม stock ให้สินค้าที่มีอยู่แล้ว
+@app.post("/api/inventory/receive")
+async def receive_stock(
+    part_number: str = Form(...),
+    qty:          int = Form(0),
+    qty_lh:       int = Form(0),
+    qty_rh:       int = Form(0),
+    used_qty:     int = Form(0),
+    used_qty_lh:  int = Form(0),
+    used_qty_rh:  int = Form(0),
+    note:         str = Form(""),
+):
+    df = get_db()
+    df['Part Number'] = df['Part Number'].astype(str).str.strip()
+    part_number = part_number.strip()
+    if part_number not in df['Part Number'].values:
+        raise HTTPException(status_code=404, detail="ไม่พบสินค้าในระบบ")
+    idx = df[df['Part Number'] == part_number].index[0]
+
+    def _safe_int(col, default=0):
+        try: return int(df.at[idx, col])
+        except: return default
+
+    df.at[idx, "Stock"]        = _safe_int("Stock")        + qty
+    df.at[idx, "Stock_LH"]     = _safe_int("Stock_LH")     + qty_lh
+    df.at[idx, "Stock_RH"]     = _safe_int("Stock_RH")     + qty_rh
+    df.at[idx, "Used_Stock"]   = _safe_int("Used_Stock")   + used_qty
+    df.at[idx, "Used_Stock_LH"]= _safe_int("Used_Stock_LH")+ used_qty_lh
+    df.at[idx, "Used_Stock_RH"]= _safe_int("Used_Stock_RH")+ used_qty_rh
+
+    save_db(df)
+    new_stock = int(df.at[idx, "Stock"])
+    return {
+        "message": f"✅ รับสินค้า {part_number} เข้าสำเร็จ! Stock ใหม่: {new_stock}",
+        "stock":        new_stock,
+        "stock_lh":     int(df.at[idx, "Stock_LH"]),
+        "stock_rh":     int(df.at[idx, "Stock_RH"]),
+        "used_stock":   int(df.at[idx, "Used_Stock"]),
+        "used_stock_lh":int(df.at[idx, "Used_Stock_LH"]),
+        "used_stock_rh":int(df.at[idx, "Used_Stock_RH"]),
+    }
+
+
 # [DELETE IMAGE] ลบรูปภาพเดียว
 @app.delete("/api/inventory/image")
 async def delete_image(part_number: str, image_url: str):

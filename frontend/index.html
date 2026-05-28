@@ -2462,6 +2462,44 @@
   .an-method-dot.green { background: #34d399; }
   .an-method-item strong { color: rgba(255,255,255,0.75); }
 
+  /* ── Receive Stock Modal ── */
+  #receiveModal .modal-box { max-width: 480px; }
+  .recv-search-wrap { position: relative; margin-bottom: 10px; }
+  .recv-search { width:100%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
+    border-radius:10px; color:#f5f5f7; font-size:14px; padding:10px 14px; box-sizing:border-box; outline:none; }
+  .recv-search:focus { border-color:rgba(96,165,250,0.5); }
+  .recv-dropdown { position:absolute; top:calc(100% + 4px); left:0; right:0; max-height:200px; overflow-y:auto;
+    background:rgba(20,20,36,0.98); border:1px solid rgba(255,255,255,0.14); border-radius:10px;
+    z-index:999; display:none; }
+  .recv-dropdown.open { display:block; }
+  .recv-option { padding:9px 14px; font-size:13px; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.05); }
+  .recv-option:hover { background:rgba(96,165,250,0.12); }
+  .recv-option strong { color:#93c5fd; }
+  .recv-selected-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+    border-radius:12px; padding:12px 14px; margin-bottom:14px; display:none; }
+  .recv-selected-card.show { display:block; }
+  .recv-card-name { font-size:14px; font-weight:600; color:#f5f5f7; margin-bottom:4px; }
+  .recv-card-meta { font-size:11px; color:rgba(255,255,255,0.45); margin-bottom:8px; }
+  .recv-stock-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .recv-stock-chip { font-size:11px; padding:3px 8px; border-radius:6px;
+    background:rgba(255,255,255,0.07); color:rgba(255,255,255,0.6); }
+  .recv-section-label { font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+    color:rgba(255,255,255,0.4); margin:14px 0 6px; }
+  .recv-section-label.new { color:#6ee7b7; }
+  .recv-section-label.used { color:#fdba74; }
+  .recv-row { display:flex; gap:8px; margin-bottom:8px; }
+  .recv-input { flex:1; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
+    border-radius:8px; color:#f5f5f7; font-size:13px; padding:8px 10px; outline:none; text-align:center; }
+  .recv-input:focus { border-color:rgba(96,165,250,0.5); }
+  .recv-input::placeholder { color:rgba(255,255,255,0.25); font-size:11px; }
+  .recv-note { width:100%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
+    border-radius:8px; color:#f5f5f7; font-size:13px; padding:9px 12px; box-sizing:border-box;
+    outline:none; resize:none; margin-top:4px; }
+  .recv-submit { width:100%; padding:13px; background:linear-gradient(135deg,#34d399,#059669);
+    border:none; border-radius:12px; color:#fff; font-size:15px; font-weight:700;
+    cursor:pointer; margin-top:12px; letter-spacing:0.3px; }
+  .recv-submit:disabled { opacity:0.5; cursor:not-allowed; }
+
   /* Report modal */
   .report-modal-box {
     background: rgba(14,14,24,0.97);
@@ -3438,7 +3476,7 @@
     <button class="dock-btn active" onclick="loadProducts()"><span class="icon">📦</span>Parts</button>
     <button class="dock-btn" id="scanDockBtn" onclick="document.getElementById('scanInput').click()"><span class="icon">📷</span>Scan</button>
     <button class="dock-btn" onclick="openManageModal()"><span class="icon">🛠</span>Manage</button>
-    <button class="dock-btn" onclick="generateReport()"><span class="icon">📊</span>Report</button>
+    <button class="dock-btn" onclick="openReceiveModal()"><span class="icon">📥</span>รับของ</button>
   </div>
 </div>
 
@@ -3551,6 +3589,53 @@
 </div>
 
 <!-- REPORT MODAL -->
+<!-- ══════════════════════════════════════
+     RECEIVE STOCK MODAL
+══════════════════════════════════════ -->
+<div id="receiveModal" class="modal-overlay">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header">
+      <div class="modal-title">📥 รับสินค้าเข้า</div>
+      <button class="modal-close" onclick="closeReceiveModal()">✕</button>
+    </div>
+
+    <!-- Search -->
+    <div class="recv-search-wrap">
+      <input id="recvSearch" class="recv-search" type="text" placeholder="🔍 พิมพ์ Part Number หรือชื่อสินค้า..." autocomplete="off"
+        oninput="recvFilter(this.value)" onfocus="recvFilter(this.value)">
+      <div id="recvDropdown" class="recv-dropdown"></div>
+    </div>
+
+    <!-- Selected part card -->
+    <div id="recvSelectedCard" class="recv-selected-card">
+      <div class="recv-card-name" id="recvCardName">—</div>
+      <div class="recv-card-meta" id="recvCardMeta">—</div>
+      <div class="recv-stock-row" id="recvStockChips"></div>
+    </div>
+
+    <!-- New stock section -->
+    <div class="recv-section-label new">🟢 ใหม่ — จำนวนที่รับเข้า</div>
+    <div class="recv-row">
+      <input class="recv-input" id="recvQty"   type="number" min="0" placeholder="รวม" oninput="recvSyncNew()">
+      <input class="recv-input" id="recvQtyLH" type="number" min="0" placeholder="LH"  oninput="recvSyncNewSides()">
+      <input class="recv-input" id="recvQtyRH" type="number" min="0" placeholder="RH"  oninput="recvSyncNewSides()">
+    </div>
+
+    <!-- Used stock section -->
+    <div class="recv-section-label used">🟠 เก่า — จำนวนที่รับเข้า</div>
+    <div class="recv-row">
+      <input class="recv-input" id="recvUsedQty"   type="number" min="0" placeholder="รวม" oninput="recvSyncUsed()">
+      <input class="recv-input" id="recvUsedQtyLH" type="number" min="0" placeholder="LH"  oninput="recvSyncUsedSides()">
+      <input class="recv-input" id="recvUsedQtyRH" type="number" min="0" placeholder="RH"  oninput="recvSyncUsedSides()">
+    </div>
+
+    <!-- Note -->
+    <textarea class="recv-note" id="recvNote" rows="2" placeholder="หมายเหตุ (ไม่บังคับ)"></textarea>
+
+    <button class="recv-submit" id="recvSubmitBtn" onclick="submitReceive()" disabled>บันทึกรับสินค้า</button>
+  </div>
+</div>
+
 <div id="reportModal" class="modal-overlay">
   <div class="report-modal-box">
     <div class="modal-header">
@@ -5140,6 +5225,143 @@ function renderReport(text) {
 
   return html || `<div style="white-space:pre-wrap;color:rgba(255,255,255,0.8);font-size:13px;">${text}</div>`;
 }
+
+/* ══════════════════════════════════════
+   RECEIVE STOCK MODAL
+══════════════════════════════════════ */
+let recvSelectedPN = null;
+
+function openReceiveModal() {
+  recvSelectedPN = null;
+  document.getElementById('recvSearch').value = '';
+  document.getElementById('recvDropdown').classList.remove('open');
+  document.getElementById('recvSelectedCard').classList.remove('show');
+  document.getElementById('recvQty').value = '';
+  document.getElementById('recvQtyLH').value = '';
+  document.getElementById('recvQtyRH').value = '';
+  document.getElementById('recvUsedQty').value = '';
+  document.getElementById('recvUsedQtyLH').value = '';
+  document.getElementById('recvUsedQtyRH').value = '';
+  document.getElementById('recvNote').value = '';
+  document.getElementById('recvSubmitBtn').disabled = true;
+  document.getElementById('receiveModal').classList.add('open');
+}
+
+function closeReceiveModal() {
+  document.getElementById('receiveModal').classList.remove('open');
+}
+
+function recvFilter(q) {
+  const dd = document.getElementById('recvDropdown');
+  const term = (q || '').trim().toLowerCase();
+  const results = globalData.filter(i =>
+    (i['Part Number'] || '').toLowerCase().includes(term) ||
+    (i['Part Name']   || '').toLowerCase().includes(term)
+  ).slice(0, 30);
+
+  if (!term && !results.length) { dd.classList.remove('open'); return; }
+  dd.innerHTML = results.map(i => `
+    <div class="recv-option" onclick="recvSelectItem('${(i['Part Number']||'').replace(/'/g,"\\'")}')">
+      <strong>${i['Part Number']}</strong> — ${i['Part Name']}
+    </div>`).join('') || '<div class="recv-option" style="color:rgba(255,255,255,0.3)">ไม่พบสินค้า</div>';
+  dd.classList.add('open');
+}
+
+function recvSelectItem(pn) {
+  const item = globalData.find(i => i['Part Number'] === pn);
+  if (!item) return;
+  recvSelectedPN = pn;
+  document.getElementById('recvSearch').value = `${pn} — ${item['Part Name']}`;
+  document.getElementById('recvDropdown').classList.remove('open');
+
+  document.getElementById('recvCardName').textContent = item['Part Name'];
+  document.getElementById('recvCardMeta').textContent = `${item['Brand']} · ${item['Series']} · ${pn}`;
+  const chips = [
+    `ใหม่: ${item['Stock']||0}`,
+    `LH: ${item['Stock_LH']||0}`, `RH: ${item['Stock_RH']||0}`,
+    `เก่า: ${item['Used_Stock']||0}`,
+    `เก่า LH: ${item['Used_Stock_LH']||0}`, `เก่า RH: ${item['Used_Stock_RH']||0}`,
+  ];
+  document.getElementById('recvStockChips').innerHTML = chips.map(c => `<span class="recv-stock-chip">${c}</span>`).join('');
+  document.getElementById('recvSelectedCard').classList.add('show');
+  document.getElementById('recvSubmitBtn').disabled = false;
+}
+
+function recvSyncNewSides() {
+  const lh = Number(document.getElementById('recvQtyLH').value||0);
+  const rh = Number(document.getElementById('recvQtyRH').value||0);
+  if (lh || rh) document.getElementById('recvQty').value = lh + rh;
+}
+function recvSyncNew() {
+  // total typed manually — don't override sides
+}
+function recvSyncUsedSides() {
+  const lh = Number(document.getElementById('recvUsedQtyLH').value||0);
+  const rh = Number(document.getElementById('recvUsedQtyRH').value||0);
+  if (lh || rh) document.getElementById('recvUsedQty').value = lh + rh;
+}
+function recvSyncUsed() {}
+
+async function submitReceive() {
+  if (!recvSelectedPN) return;
+  const qty       = Number(document.getElementById('recvQty').value||0);
+  const qtyLH     = Number(document.getElementById('recvQtyLH').value||0);
+  const qtyRH     = Number(document.getElementById('recvQtyRH').value||0);
+  const usedQty   = Number(document.getElementById('recvUsedQty').value||0);
+  const usedQtyLH = Number(document.getElementById('recvUsedQtyLH').value||0);
+  const usedQtyRH = Number(document.getElementById('recvUsedQtyRH').value||0);
+  const note      = document.getElementById('recvNote').value.trim();
+
+  if (!qty && !qtyLH && !qtyRH && !usedQty && !usedQtyLH && !usedQtyRH) {
+    await fancyAlert('กรุณาใส่จำนวนที่รับเข้าอย่างน้อย 1 ช่อง', 'error'); return;
+  }
+
+  const btn = document.getElementById('recvSubmitBtn');
+  btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
+
+  try {
+    const fd = new FormData();
+    fd.append('part_number', recvSelectedPN);
+    fd.append('qty',          qty);
+    fd.append('qty_lh',       qtyLH);
+    fd.append('qty_rh',       qtyRH);
+    fd.append('used_qty',     usedQty);
+    fd.append('used_qty_lh',  usedQtyLH);
+    fd.append('used_qty_rh',  usedQtyRH);
+    fd.append('note',         note);
+
+    const res = await fetch(`${API_URL}/inventory/receive`, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'เกิดข้อผิดพลาด');
+
+    // อัปเดต globalData ทันที
+    const idx = globalData.findIndex(i => i['Part Number'] === recvSelectedPN);
+    if (idx !== -1) {
+      globalData[idx]['Stock']         = data.stock;
+      globalData[idx]['Stock_LH']      = data.stock_lh;
+      globalData[idx]['Stock_RH']      = data.stock_rh;
+      globalData[idx]['Used_Stock']    = data.used_stock;
+      globalData[idx]['Used_Stock_LH'] = data.used_stock_lh;
+      globalData[idx]['Used_Stock_RH'] = data.used_stock_rh;
+    }
+    renderGrid(applySort(globalData));
+    closeReceiveModal();
+    await fancyAlert(`✅ รับสินค้าเข้าสำเร็จ!\nStock ใหม่ (รวม): ${data.stock}`, 'success');
+  } catch (ex) {
+    await fancyAlert('เกิดข้อผิดพลาด: ' + ex.message, 'error');
+    btn.disabled = false; btn.textContent = 'บันทึกรับสินค้า';
+  }
+}
+
+document.getElementById('receiveModal').addEventListener('click', function(e) {
+  if (e.target === this) closeReceiveModal();
+});
+document.addEventListener('click', function(e) {
+  const dd = document.getElementById('recvDropdown');
+  if (dd && !dd.contains(e.target) && e.target.id !== 'recvSearch') {
+    dd.classList.remove('open');
+  }
+});
 
 async function generateReport() {
   const modal = document.getElementById('reportModal');
