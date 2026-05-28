@@ -1853,7 +1853,7 @@
     border: 0.5px solid rgba(255,255,255,0.14);
     border-radius: 24px;
     width: 100%;
-    max-width: 480px;
+    max-width: 680px;
     padding: 28px;
     box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 0 0.5px rgba(255,255,255,0.07);
     animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
@@ -3485,8 +3485,8 @@
 <!-- ══════════════════════════════════════
      MANAGE MODAL  (เพิ่ม / แก้ไข สินค้า)
 ══════════════════════════════════════ -->
-<div id="manageModal" class="modal-overlay">
-  <div class="modal-box">
+<div id="manageModal" class="modal-overlay" onclick="return false">
+  <div class="modal-box" onclick="event.stopPropagation()">
     <div class="modal-header">
       <div class="modal-title" id="modalTitle">🛠️ เพิ่มสินค้าใหม่</div>
       <button class="modal-close" onclick="closeManageModal()">✕</button>
@@ -4428,7 +4428,7 @@ function renderGrid(data) {
           </div>
         </div>
         <div style="padding:10px 16px;border-top:0.5px solid rgba(255,255,255,0.08);font-size:11px;color:gray;display:flex;justify-content:space-between;align-items:center;">
-          <span>${item['Part Number']}</span>
+          <span>${item.Brand} · ${item.Series}</span>
           <div style="display:flex;gap:8px;align-items:center;">
             ${costHtml}
             <button onclick="openManageModal(true,this.dataset.pn)" data-pn="${(item['Part Number']||'').trim()}" class="btn-action btn-edit">Edit</button>
