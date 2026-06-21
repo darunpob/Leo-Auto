@@ -296,7 +296,7 @@
 
   .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
 
-  .card {
+.card {
     background: rgba(255,255,255,0.05);
     backdrop-filter: blur(20px) saturate(150%);
     border: 0.5px solid rgba(255,255,255,0.1);
@@ -304,6 +304,7 @@
     cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     animation: fadeUp 0.5s ease both;
   }
+  .grid.no-card-anim .card { animation: none; }
   .card:hover {
     transform: translateY(-8px) scale(1.015);
     border-color: rgba(96,165,250,0.3);
@@ -4252,7 +4253,43 @@ function toAbsoluteAssetUrl(url) {
 let globalData = [];
 let inventoryLoaded = false;
 let dpMode = 'brand'; // ใช้ใน dark prompt
+let inventoryFilterCache = null;
+let inventoryRenderCount = 0;
 window.globalData = globalData;
+
+function rebuildInventoryFilterCache() {
+  const brandMap = new Map();
+  const seriesMap = new Map();
+  const brandSeriesMap = new Map();
+
+  (globalData || []).forEach(item => {
+    const rawBrand = String(item?.Brand ?? '').trim();
+    const rawSeries = String(item?.Series ?? '').trim();
+    if (rawBrand) brandMap.set(rawBrand.toUpperCase(), rawBrand);
+    if (rawSeries) seriesMap.set(rawSeries.toUpperCase(), rawSeries);
+    if (rawBrand && rawSeries) {
+      const brandKey = rawBrand.toUpperCase();
+      let seriesSet = brandSeriesMap.get(brandKey);
+      if (!seriesSet) {
+        seriesSet = new Set();
+        brandSeriesMap.set(brandKey, seriesSet);
+      }
+      seriesSet.add(rawSeries.toUpperCase());
+    }
+  });
+
+  inventoryFilterCache = {
+    brands: [...brandMap.values()].sort(),
+    series: [...seriesMap.values()].sort(),
+    brandSeries: brandSeriesMap
+  };
+
+  return inventoryFilterCache;
+}
+
+function getInventoryFilterCache() {
+  return inventoryFilterCache || rebuildInventoryFilterCache();
+}
 
 /* ──────────────── LOAD ──────────────── */
 function setNav(el) {
@@ -4300,6 +4337,7 @@ async function loadProducts() {
         'Used_Stock_RH': toNum(item.Used_Stock_RH ?? item['Used_Stock_RH'] ?? 0)
       };
     });
+    inventoryFilterCache = null;
 
     window.globalData = globalData;
     console.log('Inventory loaded:', globalData.length, 'items');
@@ -4309,6 +4347,7 @@ async function loadProducts() {
     // Only fallback to embedded data on very first load (globalData is still empty)
     if (!globalData || globalData.length === 0) {
       globalData = EMBEDDED_DATA;
+      inventoryFilterCache = null;
       window.globalData = globalData;
     }
     return false;
@@ -4359,54 +4398,38 @@ function _getSideBadge(item, allData) {
   html += '</div>';
   return html;
 }
-function renderGrid(data) {
-  const grid = document.getElementById('productGrid');
-  grid.innerHTML = '';
-  document.getElementById('countLabel').innerText = `${data.length} items`;
+function buildProductCardHtml(item) {
+  const imageUrls = (item.Image_URL && item.Image_URL !== 'nan' && item.Image_URL !== 'none' ? item.Image_URL : "")
+    .split(',')
+    .map(url => url.trim())
+    .filter(Boolean)
+    .map(toAbsoluteAssetUrl);
 
-  if (data.length === 0) {
-    grid.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">🔍</div>
-        <div class="empty-title">ไม่พบสินค้าที่ตรงกัน</div>
-        <div class="empty-sub">ลองเปลี่ยนคำค้นหาหรือตัวกรอง Brand / Series</div>
-        <button class="empty-clear-btn" onclick="clearSearch()">ล้างการค้นหาทั้งหมด</button>
-      </div>`;
-    return;
-  }
+  const firstImage = imageUrls[0] || '';
+  const imageCountBadge = imageUrls.length > 1
+    ? `<div class="image-count-badge">+${imageUrls.length - 1}</div>`
+    : '';
 
-  data.forEach(item => {
-    const imageUrls = (item.Image_URL && item.Image_URL !== 'nan' && item.Image_URL !== 'none' ? item.Image_URL : "")
-      .split(',')
-      .map(url => url.trim())
-      .filter(Boolean)
-      .map(toAbsoluteAssetUrl);
-    
-    const firstImage = imageUrls[0] || '';
-    
-    const imageCountBadge = imageUrls.length > 1 
-      ? `<div class="image-count-badge">+${imageUrls.length - 1}</div>` 
-      : '';
-
-    const stockClass = item.Stock > 5 ? 'stock-ok' : 'stock-low';
-    const loc = item['Storage Location'] && item['Storage Location'] !== 'nan'
-      ? item['Storage Location'] : '';
-    const _cpRaw = item['Cost Price'];
-    const parsedCost = (_cpRaw !== '' && _cpRaw !== 'nan' && _cpRaw != null) ? Number(_cpRaw) : null;
-    const cost = (parsedCost !== null && Number.isFinite(parsedCost)) ? parsedCost : null;
-    const pn = item['Part Number'].replace(/'/g, "\\'");
-    const costHtml = cost !== null ? `
+  const stockClass = item.Stock > 5 ? 'stock-ok' : 'stock-low';
+  const loc = item['Storage Location'] && item['Storage Location'] !== 'nan'
+    ? item['Storage Location'] : '';
+  const _cpRaw = item['Cost Price'];
+  const parsedCost = (_cpRaw !== '' && _cpRaw !== 'nan' && _cpRaw != null) ? Number(_cpRaw) : null;
+  const cost = (parsedCost !== null && Number.isFinite(parsedCost)) ? parsedCost : null;
+  const partNumber = String(item['Part Number'] || '').trim();
+  const pn = partNumber.replace(/'/g, "\\'");
+  const costHtml = cost !== null ? `
       <div class="cost-row" id="cost-row-${pn}" onclick="toggleCostBox(this)" role="button" tabindex="0" title="แสดง/ซ่อนราคาทุน">
         <span class="cost-label"></span>
-        <span class="cost-value hidden-cost">${'฿'+cost.toLocaleString()}</span>
+        <span class="cost-value hidden-cost">${'฿' + cost.toLocaleString()}</span>
       </div>` : '';
 
-    grid.innerHTML += `
+  return `
       <div class="card">
         <div class="card-img-wrap" onclick="openLightbox('${pn}')">
           ${imageCountBadge}
           <div class="card-img-placeholder">🔧</div>
-          ${firstImage ? `<img src="${firstImage}" loading="lazy" onerror="this.style.display='none'" style="opacity:0;" onload="this.style.opacity='1'">` : ''}
+          ${firstImage ? `<img src="${firstImage}" loading="lazy" decoding="async" onerror="this.style.display='none'" style="opacity:0;" onload="this.style.opacity='1'">` : ''}
         </div>
         <div class="card-body">
           <div class="card-brand"><span>${item.Brand} · ${item.Series}</span>${_getSideBadge(item, globalData)}</div>
@@ -4431,12 +4454,37 @@ function renderGrid(data) {
           <span>${item.Brand} · ${item.Series}</span>
           <div style="display:flex;gap:8px;align-items:center;">
             ${costHtml}
-            <button onclick="openManageModal(true,this.dataset.pn)" data-pn="${(item['Part Number']||'').trim()}" class="btn-action btn-edit">Edit</button>
-            <button onclick="deleteProduct(this.dataset.pn)" data-pn="${(item['Part Number']||'').trim()}" class="btn-action btn-del">Del</button>
+            <button onclick="openManageModal(true,this.dataset.pn)" data-pn="${partNumber}" class="btn-action btn-edit">Edit</button>
+            <button onclick="deleteProduct(this.dataset.pn)" data-pn="${partNumber}" class="btn-action btn-del">Del</button>
           </div>
         </div>
       </div>`;
-  });
+}
+
+function renderGrid(data) {
+  const grid = document.getElementById('productGrid');
+  if (!grid) return;
+  const countLabel = document.getElementById('countLabel');
+  if (countLabel) countLabel.innerText = `${data.length} items`;
+
+  if (data.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">ไม่พบสินค้าที่ตรงกัน</div>
+        <div class="empty-sub">ลองเปลี่ยนคำค้นหาหรือตัวกรอง Brand / Series</div>
+        <button class="empty-clear-btn" onclick="clearSearch()">ล้างการค้นหาทั้งหมด</button>
+      </div>`;
+    return;
+  }
+
+  grid.classList.toggle('no-card-anim', inventoryRenderCount > 0);
+  const cards = new Array(data.length);
+  for (let index = 0; index < data.length; index += 1) {
+    cards[index] = buildProductCardHtml(data[index]);
+  }
+  grid.innerHTML = cards.join('');
+  inventoryRenderCount += 1;
 }
 
 function toggleCostBox(costRowEl) {
@@ -4488,6 +4536,9 @@ function updateStats(data) {
 let activeFilters = { brand: 'All', series: 'All' };
 
 function getUniqueBrandSeries(data) {
+  if (data === globalData) {
+    return getInventoryFilterCache();
+  }
   const brandMap = new Map();
   const seriesMap = new Map();
   (data || []).forEach(i => {
@@ -4546,6 +4597,7 @@ function clearSearch() {
   const inp = document.getElementById('searchInput');
   if (inp) { inp.value = ''; toggleClearBtn(inp); }
   activeFilters = { brand: 'All', series: 'All' };
+  updateSeriesChips('All');
   updateActiveChips();
   renderGrid(applySort(globalData));
   updateStats(globalData);
@@ -4565,30 +4617,18 @@ function setFilter(el, type, val) {
 }
 
 function updateSeriesChips(selectedBrand) {
-  // Build brand→series map from live data
-  const brandSeriesMap = {};
-  globalData.forEach(item => {
-    const brand = (item.Brand || '').trim().toUpperCase();
-    const series = (item.Series || '').trim().toUpperCase();
-    if (brand && series) {
-      if (!brandSeriesMap[brand]) brandSeriesMap[brand] = new Set();
-      brandSeriesMap[brand].add(series);
-    }
-  });
+  const { brandSeries } = getInventoryFilterCache();
 
   const seriesChips = document.querySelectorAll('#filterChipsRow .chip[onclick*="series"]');
   if (selectedBrand === 'All') {
     seriesChips.forEach(chip => { chip.style.display = ''; });
   } else {
-    const allowed = brandSeriesMap[selectedBrand.toUpperCase()] || new Set();
+    const allowed = brandSeries.get(selectedBrand.toUpperCase()) || new Set();
     seriesChips.forEach(chip => {
       const text = chip.textContent.trim().toUpperCase();
       chip.style.display = (text === 'ALL' || allowed.has(text)) ? '' : 'none';
     });
   }
-
-  activeFilters.series = 'All';
-  updateActiveChips();
 }
 
 function filterCards() { filterLocal(); }
@@ -4910,6 +4950,7 @@ document.getElementById('manageForm').onsubmit = async (e) => {
           'Used_Stock_LH': formUsedStockLH, 'Used_Stock_RH': formUsedStockRH
         });
       }
+      inventoryFilterCache = null;
       window.globalData = globalData;
       renderGrid(applySort(globalData));
       updateStats(globalData);
