@@ -1,318 +1,157 @@
-# 🚚 Leo Auto - Inventory Management System
+﻿# Leo Auto
 
-A comprehensive inventory management system for truck parts with AI-powered features using Google Gemini API. This project combines a FastAPI backend with a modern web frontend for efficient stock management, order tracking, and intelligent part identification.
+ระบบจัดการสต็อกอะไหล่รถบรรทุกและบิลขาย พร้อมผู้ช่วย AI สำหรับสอบถามสินค้าและค้นหาอะไหล่จากภาพ พัฒนาสำหรับวิชา CS460 มหาวิทยาลัยกรุงเทพ
 
-## 🌟 Features
+## ความสามารถ
 
-### Core Inventory Management
-- **CRUD Operations**: Create, read, update, and delete truck parts
-- **Real-time Stock Tracking**: Monitor inventory levels and storage locations
-- **Cost Management**: Track cost prices and compute inventory value
-- **Image Support**: Upload and manage part images with automatic URL handling
+- เพิ่ม แก้ไข ลบ และค้นหาสินค้า พร้อมรูปภาพ ตำแหน่งจัดเก็บ ต้นทุน และราคาขาย
+- จัดการสินค้าใหม่และมือสอง รวมถึงจำนวนอะไหล่ฝั่งซ้าย/ขวา
+- รับสินค้าเข้าสต็อก
+- สร้างบิลขาย คำนวณยอดรวม และตัดสต็อกเมื่อสร้างบิล
+- ดูรายการบิล แก้ไขชื่อและรายละเอียด หรือลบบิล
+- สอบถามข้อมูลสินค้าและระบุอะไหล่จากภาพด้วย Gemini 2.5 Flash
+- หน้าเว็บภาษาไทย รองรับการใช้งานผ่านเบราว์เซอร์
 
-### 🤖 AI Features
-- **Smart Chat**: Natural language queries about inventory using Gemini 2.5 Flash
-- **Vision Recognition**: AI-powered image scanning to identify truck parts by photo
-- **Inventory Summary Report**: Automated analysis with insights on stock levels, high-value items, and risk assessment
+## เทคโนโลยี
 
-### 📋 Order Management
-- **Daily Bill Tracking**: Record sales orders with date and item details
-- **Automatic Bill Numbering**: Sequential bill number generation
-- **Total Computation**: Automatic calculation of order totals
+| ส่วน | เทคโนโลยี |
+| --- | --- |
+| Backend | Python, FastAPI, Uvicorn |
+| Frontend | HTML, CSS, JavaScript |
+| AI | Google Gen AI SDK (`google-genai`) |
+| ข้อมูล | Pandas, CSV, JSON |
+| รูปภาพ | Pillow, local file storage |
+| Deployment | Docker / Python service และ Vercel สำหรับ frontend |
 
-### 🌐 Web Interface
-- Clean, responsive HTML frontend
-- CORS-enabled API for cross-origin requests
-- Static file serving for product images
+## โครงสร้างโปรเจกต์
 
-## 📁 Project Structure
-
-```
-.
-├── main.py                 # FastAPI backend application
-├── frontend/
-│   └── index.html         # Web UI
-├── inventory.csv          # Inventory database
-├── orders.json            # Orders database
-├── check.py               # Utility script
-├── requirements.txt       # Python dependencies
-├── picture/               # Product images directory
-├── leo/                   # Additional resources
-├── inv_api.json          # Sample API data
-└── orders_payload.json   # Sample order payload
+```text
+main.py               # FastAPI backend ที่ใช้กับ deployment ปัจจุบัน
+frontend/index.html   # หน้าเว็บและการตั้งค่า API URL
+requirements.txt      # Python dependencies
+inventory.csv         # ข้อมูลสินค้าเริ่มต้น
+orders.json           # ข้อมูลบิลเริ่มต้น
+picture/              # รูปสินค้า
+Dockerfile            # Python 3.12 container
+Procfile              # คำสั่งเริ่ม Python service
+render.yaml           # การตั้งค่า Render
+vercel.json           # การตั้งค่า static frontend
+main.go               # Backend อีกชุด แยกจาก Python app
+main_old.py           # โค้ด Python รุ่นก่อน
 ```
 
-## 🚀 Quick Start
+## เริ่มใช้งานในเครื่อง
 
-### Prerequisites
-- Python 3.8+
-- Google Generative AI API Key
-- Windows/Linux/macOS
+ใช้ Python 3.12 เพื่อให้ตรงกับ Dockerfile เปิด terminal ในโฟลเดอร์ที่มี `main.py`
 
-### Installation
+### Windows (PowerShell)
 
-1. **Clone or download the project**
-   ```bash
-   cd "g:\BangkokU\Buyear3\Term2\cs460\Final Project"
-   ```
-
-2. **Create a virtual environment** (recommended)
-   ```bash
-   python -m venv .venv
-   .venv\Scripts\activate  # Windows
-   # or
-   source .venv/bin/activate  # macOS/Linux
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Set up environment variables**
-   - Get your Google Generative AI API Key from [Google AI Studio](https://aistudio.google.com/app/apikey)
-   - Add it to `main.py` (line 15):
-     ```python
-     GOOGLE_API_KEY = "your-api-key-here"
-     ```
-   ⚠️ **Security Note**: Never commit API keys to GitHub. Use environment variables in production.
-
-5. **Run the server**
-   ```bash
-   python main.py
-   ```
-   The API will be available at `http://localhost:8000`
-
-## 📚 API Documentation
-
-### Inventory Endpoints
-
-#### Get All Products
-```http
-GET /api/inventory
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+$env:GEMINI_API_KEY = "your-api-key"
+.\.venv\Scripts\python.exe -m uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
-#### Add New Product
-```http
-POST /api/inventory
-Content-Type: multipart/form-data
+### macOS / Linux
 
-part_number (string, required)
-part_name (string, required)
-brand (string, required)
-series (string, required)
-price (float, required)
-stock (int, required)
-cost_price (float, optional)
-location (string, optional)
-image (file, optional)
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+export GEMINI_API_KEY="your-api-key"
+.venv/bin/python -m uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
-#### Update Product
-```http
-PUT /api/inventory/{part_number}
-Content-Type: multipart/form-data
+`GEMINI_API_KEY` ใช้สำหรับฟังก์ชัน AI เท่านั้น ตั้งผ่าน environment variable โดยไม่ต้องแก้ key ใน `main.py` หากไม่ได้ตั้งค่า ยังใช้งาน API จัดการสินค้าและบิลได้
 
-[Same fields as POST]
+เปิดหน้าเว็บที่ <http://127.0.0.1:8000> และเอกสาร API ที่ <http://127.0.0.1:8000/docs> ตรวจสถานะได้ที่ <http://127.0.0.1:8000/health> ซึ่งควรตอบ `{"status":"healthy"}`
+
+### เลือก Backend ให้หน้าเว็บ
+
+ใน `frontend/index.html` ปัจจุบันกำหนด API ไปยัง Railway:
+
+```javascript
+window.API_BASE_URL = 'https://leo-auto-backend-production.up.railway.app';
+window.API_URL = `${window.API_BASE_URL}/api`;
 ```
 
-#### Delete Product
-```http
-DELETE /api/inventory/{part_number}
+หากต้องการใช้ข้อมูลจาก backend ในเครื่อง ให้เปลี่ยนบรรทัดแรกเป็น:
+
+```javascript
+window.API_BASE_URL = 'http://127.0.0.1:8000';
 ```
 
-### AI Features
+แม้เปิดหน้าเว็บผ่าน localhost หากยังใช้ URL เดิม การอ่านและแก้ไขข้อมูลจะส่งไปยัง Railway
 
-#### Chat with Inventory AI
-```http
-POST /api/chat
-Content-Type: application/x-www-form-urlencoded
+## Environment variables และข้อมูลถาวร
 
-question=your_question_here
-```
-Responds in Thai with product availability and pricing.
+| ตัวแปร | การใช้งาน |
+| --- | --- |
+| `GEMINI_API_KEY` | API key สำหรับ Gemini |
+| `DATA_DIR` | โฟลเดอร์เก็บ `inventory.csv`, `orders.json` และ `picture/` |
+| `PORT` | พอร์ตสำหรับคำสั่งเริ่มใน Dockerfile และ Procfile |
 
-#### Image-Based Part Recognition
-```http
-POST /api/vision
-Content-Type: multipart/form-data
+หากไม่ตั้ง `DATA_DIR` โปรแกรมจะใช้ `/data` เมื่อมีโฟลเดอร์นี้อยู่ มิฉะนั้นใช้ working directory เมื่อเริ่มใช้โฟลเดอร์ข้อมูลใหม่ โปรแกรมจะคัดลอก CSV/JSON เริ่มต้นถ้าไฟล์ปลายทางยังไม่มี และคัดลอกรูปเมื่อโฟลเดอร์รูปปลายทางว่าง
 
-file=image_file
-```
-Analyzes an image and identifies the truck part with Part Number from inventory.
+สำหรับบริการที่ filesystem ไม่ถาวร ให้เชื่อม persistent volume และตั้ง `DATA_DIR` ไปยัง volume นั้น สำรองทั้ง CSV, JSON และรูปภาพร่วมกัน
 
-#### Get Inventory Summary Report
-```http
-GET /api/summary
-```
-Returns AI-generated intelligence report including:
-- Low stock items
-- High-value inventory
-- Risk assessment
-- Executive summary
+## API
 
-### Order Endpoints
+ดูชื่อฟิลด์และชนิดข้อมูลฉบับเต็มที่ `/docs`
 
-#### Create Order/Bill
-```http
-POST /api/orders
-Content-Type: application/json
+| Method | Path | การทำงาน |
+| --- | --- | --- |
+| GET | `/health` | ตรวจสถานะ backend |
+| GET | `/api/inventory` | รายการสินค้า |
+| POST | `/api/inventory` | เพิ่มสินค้า (form / multipart) |
+| PUT | `/api/inventory?part_number=...` | แก้ไขสินค้า (form / multipart) |
+| DELETE | `/api/inventory?part_number=...` | ลบสินค้า |
+| POST | `/api/inventory/receive` | รับสินค้าเข้า (form) |
+| DELETE | `/api/inventory/image?part_number=...&image_url=...` | ลบรูปสินค้า |
+| POST | `/api/chat` | ถาม AI ด้วยฟิลด์ `question` |
+| POST | `/api/vision` | ค้นหาจากรูปด้วยฟิลด์ `file` |
+| GET | `/api/orders` | รายการบิลทั้งหมด |
+| POST | `/api/orders` | สร้างบิลและตัดสต็อก (JSON) |
+| PUT | `/api/orders/{bill_no}` | แก้ไขชื่อบิล (JSON) |
+| PUT | `/api/orders/{bill_no}/detail` | แก้ไขชื่อ/รายการสินค้าและคำนวณยอดใหม่ (JSON) |
+| DELETE | `/api/orders/{bill_no}` | ลบบิล |
 
+ตัวอย่างข้อมูลสร้างบิล (เปลี่ยนรหัสสินค้าและจำนวนให้ตรงกับสต็อก):
+
+```json
 {
-  "date": "2026-05-15",
+  "date": "2026-10-17",
+  "name": "บิลตัวอย่าง",
   "items": [
     {
       "part_number": "FDH02032L-Y",
-      "part_name": "Door Mirror - Left",
-      "quantity": 2,
-      "unit_price": 1500
+      "part_name": "กระจกมองข้าง",
+      "quantity": 1,
+      "unit_price": 1500,
+      "type": "new"
     }
   ]
 }
 ```
 
-#### Get Orders by Date
-```http
-GET /api/orders?date=2026-05-15
-```
+`type` ใช้ `new` หรือ `used` การแก้ไขรายละเอียดและลบบิลไม่ได้ปรับคืนสต็อกอัตโนมัติในโค้ดปัจจุบัน
 
-## 🗂️ Database Schema
+## Deployment
 
-### inventory.csv Columns
-| Column | Type | Description |
-|--------|------|-------------|
-| Part Number | String | Unique identifier |
-| Part Name | String | Product name |
-| Brand | String | Manufacturer brand |
-| Series | String | Product series |
-| Price | Float | Selling price |
-| Stock | Integer | Quantity available |
-| Image_URL | String | Path to product image |
-| Storage Location | String | Warehouse location |
-| Cost Price | Float | Purchase cost |
+- **Backend:** Dockerfile ใช้ Python 3.12 และเริ่ม Uvicorn ด้วย `PORT` (ค่าเริ่มต้น 8080) หรือใช้คำสั่งใน Procfile สำหรับ Python service
+- **Frontend:** `vercel.json` ให้บริการ `frontend/index.html` เป็น static page ตั้ง `window.API_BASE_URL` ให้ตรงกับ backend ก่อน deploy
+- **ข้อมูล:** ตั้ง persistent volume และ `DATA_DIR` เพื่อให้ข้อมูลคงอยู่หลัง deploy ใหม่
 
-### orders.json Structure
-```json
-[
-  {
-    "bill_no": 1,
-    "date": "2026-05-15",
-    "items": [...],
-    "total": 5000.00
-  }
-]
-```
+## ข้อจำกัดปัจจุบัน
 
-## 🛠️ Technologies Used
+- หน้าเว็บเรียก `/api/summary` และ `/api/edit` แต่ `main.py` ชุดนี้ยังไม่มี endpoint ทั้งสอง
+- Backend ยังไม่มีระบบยืนยันตัวตน และ CORS อนุญาตทุก origin ควรเพิ่มการควบคุมการเข้าถึงก่อนเปิดให้ผู้ใช้ทั่วไปแก้ไขข้อมูล
+- CSV/JSON เหมาะกับการใช้งานขนาดเล็ก การเขียนข้อมูลพร้อมกันหลายคำขอไม่มีระบบ transaction
 
-- **Backend**: FastAPI, Uvicorn
-- **Data Processing**: Pandas, Pillow (PIL)
-- **AI/ML**: Google Generative AI (Gemini 2.5 Flash)
-- **Web**: HTML5, CORS middleware
-- **Database**: CSV + JSON (for lightweight deployment)
+## แก้ปัญหาเบื้องต้น
 
-## 🔐 Security Considerations
-
-1. **API Key Management**
-   - Never hardcode API keys in production
-   - Use environment variables or secure vaults
-   - The included API key is for development only
-
-2. **CORS Settings**
-   - Currently allows all origins (`allow_origins=["*"]`)
-   - Restrict to specific domains in production
-
-3. **File Uploads**
-   - Validates image extensions
-   - Consider adding file size limits for security
-
-## 📝 Sample Usage
-
-### Using the Chat API (Thai Language)
-```bash
-curl -X POST http://localhost:8000/api/chat \
-  -F "question=FDH02032L-Y มีสต็อกเท่าไร?"
-```
-
-### Adding an Inventory Item
-```bash
-curl -X POST http://localhost:8000/api/inventory \
-  -F "part_number=FDH02032L-Y" \
-  -F "part_name=Door Mirror - Left" \
-  -F "brand=Leo" \
-  -F "series=Premium" \
-  -F "price=1500" \
-  -F "stock=10" \
-  -F "cost_price=900" \
-  -F "location=Shelf A1" \
-  -F "image=@path/to/image.png"
-```
-
-## 🚨 Troubleshooting
-
-### Import Errors
-Ensure all dependencies are installed:
-```bash
-pip install -r requirements.txt
-```
-
-### Image Not Showing
-- Check if `/picture` directory exists (auto-created on first run)
-- Verify image file format (PNG, JPG, JPEG, WebP, GIF supported)
-- Check image filename matches Part Number format
-
-### AI Services Failing
-- Verify Google API key is valid and has quota
-- Check internet connection
-- Review API rate limits
-
-## 📖 Usage Examples
-
-### Frontend Integration
-The frontend (`index.html`) should include API calls to:
-```javascript
-// Get inventory
-fetch('/api/inventory').then(r => r.json())
-
-// Add product
-const formData = new FormData();
-formData.append('part_number', 'FDH02032L-Y');
-// ... other fields
-fetch('/api/inventory', { method: 'POST', body: formData })
-
-// Chat with AI
-fetch('/api/chat', { 
-  method: 'POST',
-  body: new FormData({ question: 'مثالي؟' })
-})
-```
-
-## 📊 Data Files
-
-- **inventory.csv**: Persisted on every CRUD operation
-- **orders.json**: Appended on each new order
-- **picture/**: Local image storage (auto-created)
-
-## 🎓 Course Information
-
-**Course**: CS460  
-**University**: Bangkok University  
-**Year**: 3 | **Term**: 2  
-**Project Type**: Final Project
-
-## 📞 Support
-
-For issues or questions:
-1. Check the troubleshooting section
-2. Review API documentation
-3. Verify all dependencies are installed
-4. Check file permissions in the `picture/` directory
-
-## 📄 License
-
-This project is developed for educational purposes.
-
----
-
-**Last Updated**: May 2026  
-**Version**: 1.0.0
+- **หน้าเว็บแสดงข้อมูลคนละชุด:** ตรวจ `window.API_BASE_URL` ว่าชี้ backend ที่ต้องการ
+- **AI ใช้งานไม่ได้:** ตรวจ `GEMINI_API_KEY`, quota และข้อความผิดพลาดจาก backend
+- **รูปไม่แสดง:** ตรวจไฟล์ใน `DATA_DIR/picture` และ URL ของ backend
+- **ข้อมูลหายหลัง deploy:** ตรวจว่า `DATA_DIR` อยู่บน persistent volume
+- **ติดตั้ง dependencies ไม่สำเร็จ:** ตรวจ Python version และใช้ Python ภายใน virtual environment
