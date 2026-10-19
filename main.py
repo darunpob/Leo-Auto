@@ -2,6 +2,9 @@ import os
 import io
 import re
 import shutil
+import threading
+import tempfile
+from starlette.concurrency import run_in_threadpool
 import pandas as pd
 import json
 from fastapi import FastAPI, Form, UploadFile, File, HTTPException
@@ -55,6 +58,8 @@ if os.path.isdir(SEED_PICTURE_DIR) and not any(os.scandir(PICTURE_DIR)):
         if os.path.isfile(src) and not os.path.exists(dst):
             shutil.copy2(src, dst)
 
+app.mount("/assets", StaticFiles(directory=os.path.join(APP_DIR, "frontend")), name="assets")
+
 app.mount("/picture", StaticFiles(directory=PICTURE_DIR), name="picture")
 
 @app.get("/")
@@ -68,8 +73,28 @@ async def root():
 async def health():
     return {"status": "healthy"}
 
-# ฟังก์ชันจัดการ CSV
+# Cache normalized inventory until the CSV or image directory changes.
+_inventory_cache = None
+_inventory_signature = None
+_inventory_lock = threading.RLock()
+
+def _file_signature(path):
+    try:
+        st = os.stat(path)
+        return (st.st_mtime_ns, st.st_size)
+    except FileNotFoundError:
+        return None
+
 def get_db():
+    global _inventory_cache, _inventory_signature
+    with _inventory_lock:
+        signature = (_file_signature(DB_FILE), _file_signature(PICTURE_DIR))
+        if _inventory_cache is None or signature != _inventory_signature:
+            _inventory_cache = _read_inventory()
+            _inventory_signature = signature
+        return _inventory_cache.copy(deep=True)
+
+def _read_inventory():
     if not os.path.exists(DB_FILE):
         return pd.DataFrame(columns=["Part Number", "Part Name", "Brand", "Series", "Price", "Stock", "Used_Price", "Used_Stock", "Image_URL", LOCATION_COLUMN, COST_COLUMN])
 
@@ -153,8 +178,24 @@ def get_db():
 
     return df
 
+def _atomic_write(path, content):
+    directory = os.path.dirname(os.path.abspath(path))
+    fd, temporary = tempfile.mkstemp(dir=directory, prefix=".leo-", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
 def save_db(df):
-    df.to_csv(DB_FILE, index=False)
+    global _inventory_signature
+    with _inventory_lock:
+        _atomic_write(DB_FILE, df.to_csv(index=False))
+        _inventory_signature = None
 
 # ==========================================
 # 🛠️ 2. API สำหรับจัดการสต็อก (CRUD Operations)
@@ -163,7 +204,7 @@ def save_db(df):
 # [READ] โหลดข้อมูลสินค้าทั้งหมด
 @app.get("/api/inventory")
 async def get_inventory():
-    df = get_db()
+    df = await run_in_threadpool(get_db)
     return df.to_dict(orient="records")
 
 # [CREATE] เพิ่มสินค้าใหม่
@@ -452,7 +493,7 @@ async def ai_chat(question: str = Form(...)):
     2. Keep the answer short, concise, and friendly. Answer in Thai.
     """
     try:
-        response = client.models.generate_content(
+        response = await run_in_threadpool(client.models.generate_content,
             model="gemini-2.5-flash", 
             contents=prompt
         )
@@ -489,7 +530,7 @@ async def ai_vision(file: UploadFile = File(...)):
             "Example: 'steering wheel' or 'air filter' or 'door mirror bracket'. "
             "No extra text."
         )
-        id_resp = client.models.generate_content(
+        id_resp = await run_in_threadpool(client.models.generate_content,
             model="gemini-2.5-flash",
             contents=[identify_prompt, image_part]
         )
@@ -510,7 +551,7 @@ async def ai_vision(file: UploadFile = File(...)):
             f"4. If no match exists, respond with exactly: None\n\n"
             f"Part Number:"
         )
-        match_resp = client.models.generate_content(
+        match_resp = await run_in_threadpool(client.models.generate_content,
             model="gemini-2.5-flash",
             contents=[match_prompt, image_part]
         )
@@ -577,8 +618,7 @@ def _load_orders():
         return []
 
 def _save_orders(data):
-    with open(ORDERS_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+    _atomic_write(ORDERS_FILE, json.dumps(data, ensure_ascii=False, indent=4))
 
 def _compute_bill_total(items):
     return sum(it.get("quantity", 0) * it.get("unit_price", 0) for it in items)

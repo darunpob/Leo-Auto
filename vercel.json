@@ -3,11 +3,23 @@
   "name": "leo-auto-frontend",
   "builds": [
     {
-      "src": "frontend/index.html",
+      "src": "frontend/**",
       "use": "@vercel/static"
     }
   ],
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "https://leo-auto-backend-production.up.railway.app/api/$1"
+    },
+    {
+      "src": "/picture/(.*)",
+      "dest": "https://leo-auto-backend-production.up.railway.app/picture/$1"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/frontend/$1"
+    },
     {
       "src": "/(.*)",
       "dest": "/frontend/index.html"

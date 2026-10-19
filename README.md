@@ -1,4 +1,4 @@
-﻿# Leo Auto
+# Leo Auto
 
 ระบบจัดการสต็อกอะไหล่รถบรรทุกและบิลขาย พร้อมผู้ช่วย AI สำหรับสอบถามสินค้าและค้นหาอะไหล่จากภาพ พัฒนาสำหรับวิชา CS460 มหาวิทยาลัยกรุงเทพ
 
@@ -27,7 +27,8 @@
 
 ```text
 main.py               # FastAPI backend ที่ใช้กับ deployment ปัจจุบัน
-frontend/index.html   # หน้าเว็บและการตั้งค่า API URL
+frontend/index.html   # โครงหน้าจอ (app.js / dialogs.js / CSS แยกไฟล์)
+frontend/config.js    # ตั้งค่า API origin เมื่อแยก frontend hosting
 requirements.txt      # Python dependencies
 inventory.csv         # ข้อมูลสินค้าเริ่มต้น
 orders.json           # ข้อมูลบิลเริ่มต้น
@@ -68,20 +69,39 @@ export GEMINI_API_KEY="your-api-key"
 
 ### เลือก Backend ให้หน้าเว็บ
 
-ใน `frontend/index.html` ปัจจุบันกำหนด API ไปยัง Railway:
+เมื่อเปิดผ่าน FastAPI หน้าเว็บใช้ API ที่ origin เดียวกันอัตโนมัติ เช่น `http://127.0.0.1:8000/api` ไม่ส่งข้อมูลไป Railway โดยอัตโนมัติ
+
+หาก deploy frontend แยกบน Vercel ให้ตั้งค่า `frontend/config.js` ก่อน deploy:
 
 ```javascript
-window.API_BASE_URL = 'https://leo-auto-backend-production.up.railway.app';
-window.API_URL = `${window.API_BASE_URL}/api`;
+window.LEO_API_BASE_URL = 'https://your-backend.example';
 ```
 
-หากต้องการใช้ข้อมูลจาก backend ในเครื่อง ให้เปลี่ยนบรรทัดแรกเป็น:
+ไฟล์ CSS/JavaScript แยกอยู่ใน `frontend/` และให้บริการใต้ `/assets/` ทั้ง FastAPI และ Vercel
 
-```javascript
-window.API_BASE_URL = 'http://127.0.0.1:8000';
+### UX/UI และประสิทธิภาพ
+
+- เมนูด้านข้างบนคอมพิวเตอร์และเมนูด้านบนบนมือถือ พร้อมปุ่มเพิ่มสินค้า รับสินค้า และสแกนรูป
+- แสดงสินค้า 24 รายการต่อหน้า พร้อมค้นหาแบบหน่วง 120 ms ลดการสร้าง DOM ระหว่างพิมพ์
+- ตัดหน้าบิลและ modal ที่ซ้ำกันออก และแยก HTML, CSS และ JavaScript
+- แสดงข้อผิดพลาดเมื่อเชื่อมต่อไม่ได้ ไม่ใช้ข้อมูล seed แทนข้อมูลจริงอย่างเงียบ ๆ
+- แคชข้อมูล CSV และการจับคู่รูป โดยตรวจการเปลี่ยนไฟล์ก่อนใช้แคช และส่งสำเนาให้แต่ละคำขอ
+- บันทึก CSV/JSON ผ่านไฟล์ชั่วคราวแล้วแทนที่ไฟล์เดิม ลดความเสี่ยงไฟล์เขียนค้าง
+- เรียก Gemini ผ่าน thread pool เพื่อไม่ให้ระหว่างรอ AI บล็อก event loop
+
+ยังใช้ FastAPI และ JavaScript โดยไม่เพิ่มขั้นตอน build ส่วนข้อมูลยังเป็น CSV/JSON จึงควรเปลี่ยนเป็นฐานข้อมูลที่รองรับ transaction หากต้องใช้หลาย worker เขียนข้อมูลพร้อมกัน
+
+### ตรวจสอบการทำงาน
+
+```bash
+.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/python -m pytest -q tests/test_workspace.py
+.venv/bin/python -m playwright install chromium
+# เปิด server ที่ port 8000 ก่อน แล้วรัน:
+.venv/bin/python tests/browser_smoke.py
 ```
 
-แม้เปิดหน้าเว็บผ่าน localhost หากยังใช้ URL เดิม การอ่านและแก้ไขข้อมูลจะส่งไปยัง Railway
+การทดสอบ API ใช้ข้อมูลในโฟลเดอร์ชั่วคราว ส่วน browser smoke test อ่านข้อมูลและเปิดฟอร์มโดยไม่บันทึกสินค้า/บิล
 
 ## Environment variables และข้อมูลถาวร
 
