@@ -24,7 +24,7 @@ def test_workspace_assets_and_unique_ids(backend):
     soup = BeautifulSoup(response.text, 'html.parser')
     ids = [el['id'] for el in soup.select('[id]')]
     assert len(ids) == len(set(ids))
-    for asset in ['/assets/config.js', '/assets/app.js', '/assets/dialogs.js', '/assets/legacy.css', '/assets/workspace.css']:
+    for asset in ['/assets/config.js', '/assets/app.js', '/assets/dialogs.js', '/assets/legacy.css', '/assets/workspace.css', '/assets/promax.css']:
         assert client.get(asset).status_code == 200
 
 
