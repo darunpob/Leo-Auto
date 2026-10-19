@@ -49,11 +49,7 @@
   <div class="hero">
     <div class="eyebrow">LEO AUTO / INVENTORY</div><h1>คลังอะไหล่<span class="heading-dot">.</span></h1><p class="hero-description">ค้นหา เช็กสต็อก และจัดการอะไหล่ได้ในที่เดียว</p>
     <p id="heroMeta">0 brands · 0 series · real-time availability</p>
-    <div class="hero-actions">
-      <button class="action-secondary" onclick="document.getElementById('scanInput').click()"><span data-icon="scan"></span> สแกนรูป</button>
-      <button class="action-secondary" onclick="openReceiveModal()"><span data-icon="receive"></span> รับสินค้าเข้า</button>
-      <button class="action-primary" onclick="openManageModal()"><span data-icon="plus"></span> เพิ่มสินค้า</button>
-    </div>
+
   </div>
   <!-- STATS -->
   <div class="stats">
@@ -248,7 +244,7 @@
             <div class="an-card-title" id="si-table-title">รายการสินค้าทั้งหมด</div>
             <div class="an-card-sub" style="margin-bottom:0;" id="si-table-sub">—</div>
           </div>
-          <input id="si-search" placeholder="<span class="ui-inline-icon" data-icon="search"></span> ค้น Part / ชื่อ…" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.14);border-radius:10px;padding:7px 12px;color:#fff;font-size:12px;font-family:inherit;outline:none;width:180px;" oninput="siRender()">
+          <input id="si-search" placeholder="ค้น Part / ชื่อ…" aria-label="ค้นหาในภาพรวมสต็อก" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.14);border-radius:10px;padding:7px 12px;color:#fff;font-size:12px;font-family:inherit;outline:none;width:180px;" oninput="siRender()">
         </div>
         <div style="overflow-x:auto;">
           <table id="si-table" style="width:100%;border-collapse:collapse;font-size:12px;">
@@ -329,10 +325,8 @@
 
 <!-- DOCK -->
 <div class="bottom-bar" id="bottomBar">
-  <div class="dock-toggle" onclick="toggleDock()" title="แสดง/ซ่อนแถบเมนู">
-    <span class="dock-toggle-arrow">▼</span>
-  </div>
-  <div class="dock">
+  <button type="button" id="dockToggle" class="dock-toggle" onclick="toggleDock()" aria-label="ซ่อนแถบเครื่องมือ" aria-expanded="true" aria-controls="workspaceDock" title="ซ่อนแถบเครื่องมือ"><span class="dock-toggle-arrow" aria-hidden="true">⌄</span></button>
+  <div class="dock" id="workspaceDock" role="group" aria-label="เครื่องมือจัดการสินค้า">
     <button class="dock-btn" onclick="refreshInventoryUI()"><span class="icon" data-icon="refresh"></span>รีเฟรช</button>
     <button class="dock-btn" id="scanDockBtn" onclick="document.getElementById('scanInput').click()"><span class="icon" data-icon="scan"></span>สแกนรูป</button>
     <button class="dock-btn" onclick="openManageModal()"><span class="icon" data-icon="plus"></span>เพิ่มสินค้า</button>
@@ -461,7 +455,7 @@
 
     <!-- Search -->
     <div class="recv-search-wrap">
-      <input id="recvSearch" class="recv-search" type="text" placeholder="<span class="ui-inline-icon" data-icon="search"></span> พิมพ์ Part Number หรือชื่อสินค้า..." autocomplete="off"
+      <input id="recvSearch" class="recv-search" type="text" placeholder="พิมพ์ Part Number หรือชื่อสินค้า..." aria-label="ค้นหาสินค้าที่รับเข้า" autocomplete="off"
         oninput="recvFilter(this.value)" onfocus="recvFilter(this.value)">
       <div id="recvDropdown" class="recv-dropdown"></div>
     </div>

@@ -1272,7 +1272,12 @@ function switchPage(page, el) {
 
 /* ── DOCK TOGGLE ── */
 function toggleDock() {
-  document.getElementById('bottomBar').classList.toggle('hidden');
+  const collapsed = document.getElementById('bottomBar').classList.toggle('hidden');
+  const toggle = document.getElementById('dockToggle');
+  document.getElementById('workspaceDock').hidden = collapsed;
+  toggle.setAttribute('aria-expanded', String(!collapsed));
+  toggle.setAttribute('aria-label', collapsed ? 'เปิดแถบเครื่องมือ' : 'ซ่อนแถบเครื่องมือ');
+  toggle.title = collapsed ? 'เปิดแถบเครื่องมือ' : 'ซ่อนแถบเครื่องมือ';
 }
 // ใส่ไว้ด้านล่างสุดของสคริปต์ใน index.html
 

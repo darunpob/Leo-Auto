@@ -199,3 +199,55 @@ input::placeholder, textarea::placeholder { opacity: 1; }
 @media (min-width: 761px) {
   #productGrid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
 }
+/* Restore the shared collapsible action dock on desktop and phones. */
+.hero { padding-right: 0; }
+.bottom-bar, .bottom-bar.hidden {
+  display: flex !important;
+  position: fixed;
+  left: 50%;
+  right: auto;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  transform: translateX(-50%) !important;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  align-items: center;
+  flex-direction: column;
+  gap: 0;
+  transition: none;
+  z-index: 120;
+}
+.dock-toggle {
+  display: flex;
+  pointer-events: auto;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 32px;
+  margin-bottom: -1px;
+  border: 1px solid #52637b;
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background: #202c3c;
+  color: #e1e8f3;
+  padding: 0;
+  backdrop-filter: none;
+}
+.dock-toggle:hover { background: #314258; }
+.dock-toggle-arrow { color: inherit; font-size: 24px; line-height: 1; }
+.bottom-bar.hidden .dock-toggle { border-bottom: 1px solid #52637b; border-radius: 10px; height: 40px; }
+.bottom-bar.hidden .dock-toggle-arrow { color: inherit; transform: rotate(180deg); }
+.dock { padding: 7px; border-radius: 12px; border: 1px solid #52637b; background: #202c3c; }
+.dock[hidden] { display: none !important; }
+.dock-btn { min-height: 46px; font-size: 12px; gap: 8px; }
+.dock-btn .ui-icon { width: 20px; height: 20px; }
+@media (min-width: 761px) {
+  .app-wrapper { padding-bottom: 160px !important; }
+}
+@media (max-width: 760px) {
+  .bottom-bar { width: calc(100% - 24px); }
+  .dock { width: 100%; }
+  .dock-btn { font-size: 10px; gap: 5px; padding-left: 4px; padding-right: 4px; }
+  .dock-btn .ui-icon { width: 17px; height: 17px; }
+  .chat-fab { bottom: calc(118px + env(safe-area-inset-bottom)); }
+  .app-wrapper { padding-bottom: 170px !important; }
+}
