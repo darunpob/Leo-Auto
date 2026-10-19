@@ -27,6 +27,21 @@ async def main():
             assert state['columns'] == (4 if width>760 else 2), (width,state)
             assert not state['overflow'] and state['filtersFit'], (width,state)
             if width>760: assert state['topRight'], (width,state)
+            toggle = page.locator('#dockToggle')
+            assert await toggle.is_visible()
+            assert await toggle.get_attribute('aria-expanded') == 'true'
+            await toggle.click()
+            assert await toggle.get_attribute('aria-expanded') == 'false'
+            assert not await page.locator('#workspaceDock').is_visible()
+            await toggle.press('Enter')
+            assert await toggle.get_attribute('aria-expanded') == 'true'
+            assert await page.locator('#workspaceDock').is_visible()
+            assert await page.evaluate('Math.abs(document.getElementById("bottomBar").getBoundingClientRect().x + document.getElementById("bottomBar").getBoundingClientRect().width/2 - innerWidth/2) < 2')
+        await page.locator('.nav-pill[data-view="analytics"]').click()
+        assert await page.locator('#si-search').get_attribute('placeholder') == 'ค้น Part / ชื่อ…'
+        await page.locator('#si-search').fill('water')
+        assert 'style="background:rgba' not in await page.locator('#page-analytics').inner_text()
+        await page.locator('.nav-pill[data-view="inventory"]').click()
         await page.locator('#inventoryBrand').select_option('HINO')
         assert await page.evaluate("visibleInventory.every(item=>item.Brand==='HINO')")
         assert await page.locator('#inventoryBrand').evaluate('el=>el===document.activeElement')

@@ -152,3 +152,14 @@ def test_invalid_bill_does_not_modify_stock(backend, item):
     response = client.post('/api/orders', json={'date':'2026-10-19','items':[dict(part_number=part, **item)]})
     assert response.status_code == 422, response.text
     assert Path(main.DB_FILE).read_bytes() == before
+
+
+def test_placeholder_text_never_contains_icon_markup(backend):
+    from bs4 import BeautifulSoup
+    _, client = backend
+    soup = BeautifulSoup(client.get('/').text, 'html.parser')
+    assert soup.select_one('#si-search')['placeholder'] == 'ค้น Part / ชื่อ…'
+    assert soup.select_one('#recvSearch')['placeholder'] == 'พิมพ์ Part Number หรือชื่อสินค้า...'
+    for field in soup.select('[placeholder]'):
+        assert '<' not in field['placeholder'] and '>' not in field['placeholder']
+    assert 'style="background:rgba' not in soup.get_text()
