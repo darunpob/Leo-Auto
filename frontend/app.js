@@ -1,3 +1,11 @@
+const workspaceIconPaths = {"package": "<path d=\"m12 3 9 5-9 5-9-5 9-5Z\"/><path d=\"M3 8v9l9 5 9-5V8M12 13v9M7.5 5.5l9 5\"/>", "receipt": "<path d=\"M5 3h14v19l-3-2-4 2-4-2-3 2V3Z\"/><path d=\"M8 7h8M8 11h8M8 15h5\"/>", "chart": "<path d=\"M4 4v16h16M8 15v-4M12 15V7M16 15V9\"/>", "refresh": "<path d=\"M20 7v5h-5M4 17v-5h5\"/><path d=\"M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3A7 7 0 0 0 18 17\"/>", "search": "<circle cx=\"10.5\" cy=\"10.5\" r=\"6.5\"/><path d=\"m16 16 5 5\"/>", "scan": "<path d=\"M8 3H3v5M16 3h5v5M3 16v5h5M16 21h5v-5M3 12h18\"/>", "receive": "<path d=\"M12 3v12m-5-5 5 5 5-5M4 15v6h16v-6\"/>", "plus": "<path d=\"M12 5v14M5 12h14\"/>", "close": "<path d=\"m6 6 12 12M18 6 6 18\"/>", "sort": "<path d=\"M8 4v16m-4-4 4 4 4-4M16 20V4m-4 4 4-4 4 4\"/>", "chat": "<path d=\"M21 11a8 8 0 0 1-8 8H8l-5 3V11a9 9 0 0 1 18 0Z\"/><path d=\"M7 10h10M7 14h6\"/>", "pin": "<path d=\"M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z\"/><circle cx=\"12\" cy=\"10\" r=\"2\"/>", "edit": "<path d=\"m15 5 4 4M4 20l5-1L21 7a2.8 2.8 0 0 0-4-4L5 15l-1 5Z\"/>", "trash": "<path d=\"M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7\"/>", "save": "<path d=\"M5 3h12l4 4v14H3V3h2ZM7 3v6h10V3M7 21v-8h10v8\"/>"};
+function uiIcon(name) {
+  return `<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${workspaceIconPaths[name] || workspaceIconPaths.package}</svg>`;
+}
+function hydrateWorkspaceIcons() {
+  document.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = uiIcon(el.dataset.icon); el.setAttribute('aria-hidden', 'true'); });
+}
+hydrateWorkspaceIcons();
 
 window.API_BASE_URL = (window.LEO_API_BASE_URL || localStorage.getItem('leo_api_base') || (location.protocol === 'file:' ? 'http://127.0.0.1:8000' : location.origin)).replace(/\/$/, '');
 window.API_URL = `${window.API_BASE_URL}/api`;
@@ -53,14 +61,13 @@ function getInventoryFilterCache() {
 
 /* ──────────────── LOAD ──────────────── */
 function setNav(el) {
-  document.querySelectorAll('.nav-pill').forEach(p=>p.classList.remove('active'));
-  if (el) el.classList.add('active');
+  document.querySelectorAll('.nav-pill').forEach(p=>{p.classList.remove('active'); p.removeAttribute('aria-current');});
+  if (el) {el.classList.add('active');el.setAttribute('aria-current','page');}
 }
 
 
 async function loadProducts() {
-  console.log("--- STARTING DIAGNOSTIC TEST ---");
-  console.log("Loading inventory from API...");
+
   try {
     const res = await fetch(`${window.API_URL}/inventory`, {signal: AbortSignal.timeout(15000)});
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -120,8 +127,11 @@ async function refreshInventoryUI() {
 }
 async function refreshInventoryData() {
   inventoryLoaded = false;
+  document.querySelectorAll('.quiet-button').forEach(button => button.disabled = true);
+  document.getElementById('connectionStatus').textContent = 'กำลังอัปเดต…';
   const success = await loadProducts();
   inventoryLoaded = true;
+  document.querySelectorAll('.quiet-button').forEach(button => button.disabled = false);
   filterLocal();
   updateStats(globalData);
   buildFilterChips();
@@ -162,66 +172,36 @@ function _getSideBadge(item, allData) {
   return html;
 }
 function buildProductCardHtml(item) {
-  const imageUrls = (item.Image_URL && item.Image_URL !== 'nan' && item.Image_URL !== 'none' ? item.Image_URL : "")
-    .split(',')
-    .map(url => url.trim())
-    .filter(Boolean)
-    .map(toAbsoluteAssetUrl);
-
-  const firstImage = imageUrls[0] || '';
-  const imageCountBadge = imageUrls.length > 1
-    ? `<div class="image-count-badge">+${imageUrls.length - 1}</div>`
-    : '';
-
-  const stockClass = item.Stock > 5 ? 'stock-ok' : 'stock-low';
-  const loc = item['Storage Location'] && item['Storage Location'] !== 'nan'
-    ? item['Storage Location'] : '';
-  const _cpRaw = item['Cost Price'];
-  const parsedCost = (_cpRaw !== '' && _cpRaw !== 'nan' && _cpRaw != null) ? Number(_cpRaw) : null;
-  const cost = (parsedCost !== null && Number.isFinite(parsedCost)) ? parsedCost : null;
   const partNumber = String(item['Part Number'] || '').trim();
-  const pn = partNumber.replace(/'/g, "\\'");
-  const costHtml = cost !== null ? `
-      <div class="cost-row" id="cost-row-${pn}" onclick="toggleCostBox(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCostBox(this)}" role="button" tabindex="0" title="แสดง/ซ่อนราคาทุน">
-        <span class="cost-label"></span>
-        <span class="cost-value hidden-cost">${'฿' + cost.toLocaleString()}</span>
-      </div>` : '';
-
-  return `
-      <div class="card">
-        <div class="card-img-wrap" onclick="openLightbox('${pn}')">
-          ${imageCountBadge}
-          <div class="card-img-placeholder">🔧</div>
-          ${firstImage ? `<img src="${firstImage}" loading="lazy" decoding="async" onerror="this.style.display='none'" style="opacity:0;" onload="this.style.opacity='1'">` : ''}
-        </div>
-        <div class="card-body">
-          <div class="card-brand"><span>${item.Brand} · ${item.Series}</span>${_getSideBadge(item, globalData)}</div>
-          <div class="card-name">${item['Part Name']}</div>
-          <div class="card-meta">
-            <div class="price-stock-container">
-              <div class="price-stock-group new-item">
-                <div class="card-price">฿${Number(item.Price).toLocaleString()}</div>
-                <div class="card-stock ${stockClass}">${item.Stock} pcs</div>
-              </div>
-              ${(item.Used_Price && item.Used_Stock) ? `
-              <div class="price-stock-group used-item">
-                <div class="card-price">฿${Number(item.Used_Price).toLocaleString()}</div>
-                <div class="card-stock ${item.Used_Stock > 5 ? 'stock-ok' : (item.Used_Stock > 0 ? 'stock-low' : 'stock-out')}">${item.Used_Stock} pcs</div>
-              </div>
-              ` : ''}
-            </div>
-            ${loc ? `<div style="width:100%; text-align:right;"><div class="card-location-tag" style="display:inline-block;">📍 ${loc}</div></div>` : ''}
-          </div>
-        </div>
-        <div style="padding:10px 16px;border-top:0.5px solid rgba(255,255,255,0.08);font-size:11px;color:gray;display:flex;justify-content:space-between;align-items:center;">
-          <span class="part-code">${escapeHtml(partNumber)}</span>
-          <div style="display:flex;gap:8px;align-items:center;">
-            ${costHtml}
-            <button onclick="openManageModal(true,this.dataset.pn)" data-pn="${partNumber}" class="btn-action btn-edit">แก้ไข</button>
-            <button onclick="deleteProduct(this.dataset.pn)" data-pn="${partNumber}" class="btn-action btn-del">ลบ</button>
-          </div>
-        </div>
-      </div>`;
+  const pn = escapeHtml(partNumber);
+  const name = escapeHtml(item['Part Name'] || partNumber);
+  const urls = String(item.Image_URL || '').split(',').map(v => v.trim()).filter(v => v && !['nan','none'].includes(v.toLowerCase()));
+  const image = urls.length ? escapeHtml(toAbsoluteAssetUrl(urls[0])) : '';
+  const location = escapeHtml(item['Storage Location'] || '');
+  const total = Number(item.Stock || 0) + Number(item.Used_Stock || 0);
+  const status = total === 0 ? 'หมดสต็อก' : total <= 5 ? 'ใกล้หมด' : 'พร้อมขาย';
+  const statusClass = total === 0 ? 'unavailable' : total <= 5 ? 'limited' : 'available';
+  const money = value => '฿' + Number(value || 0).toLocaleString('th-TH');
+  const stockLine = (label, price, qty) => `<div class="product-price-row"><div><span class="condition-label">${label}</span><span class="card-price">${money(price)}</span></div><span class="stock-quantity ${Number(qty)===0?'is-zero':''}">${Number(qty).toLocaleString()} <small>ชิ้น</small></span></div>`;
+  return `<article class="card product-card">
+    <button class="card-img-wrap" onclick="openLightbox(this.dataset.pn)" data-pn="${pn}" aria-label="ดูรูป ${name}">
+      <span class="card-img-placeholder">${uiIcon('package')}<span>ยังไม่มีรูปภาพ</span></span>
+      ${image ? `<img src="${image}" alt="${name}" width="400" height="240" loading="lazy" decoding="async" onerror="this.style.display='none'" onload="this.style.opacity='1';this.parentElement.querySelector('.card-img-placeholder').style.visibility='hidden'" style="opacity:0">` : ''}
+      <span class="availability ${statusClass}"><span></span>${status}</span>
+      ${urls.length>1?`<span class="image-count-badge">${urls.length} รูป</span>`:''}
+    </button>
+    <div class="card-body">
+      <div class="product-context"><span>${escapeHtml(item.Brand)} <span class="context-divider">/</span> ${escapeHtml(item.Series)}</span>${_getSideBadge(item, globalData)}</div>
+      <div class="product-sku" title="${pn}">${pn}</div>
+      <h3 class="card-name" title="${name}">${name}</h3>
+      <div class="product-prices">${stockLine('สินค้าใหม่',item.Price,item.Stock)}${Number(item.Used_Stock)>0?stockLine('มือสอง',item.Used_Price,item.Used_Stock):''}</div>
+      <div class="product-location">${uiIcon('pin')}<span>${location || 'ยังไม่ระบุตำแหน่งจัดเก็บ'}</span></div>
+    </div>
+    <div class="product-footer">
+      <button class="cost-row" onclick="toggleCostBox(this)" aria-label="แสดงหรือซ่อนราคาทุนของ ${pn}" title="แสดง/ซ่อนราคาทุน"><span class="cost-value hidden-cost">${money(item['Cost Price'])}</span></button>
+      <div><button onclick="openManageModal(true,this.dataset.pn)" data-pn="${pn}" class="btn-action btn-edit">${uiIcon('edit')}แก้ไข</button><button onclick="deleteProduct(this.dataset.pn)" data-pn="${pn}" class="btn-action btn-del" aria-label="ลบ ${pn}">${uiIcon('trash')}</button></div>
+    </div>
+  </article>`;
 }
 
 let inventoryPage = 1;
@@ -285,12 +265,10 @@ function updateStats(data) {
   const totalUsedStock = data.reduce((s, i) => s + toNum(i.Used_Stock), 0);
   const totalStock = totalNewStock + totalUsedStock;
 
-  const lowCount = data.reduce((s, i) => {
-    let currentLow = 0;
-    if (toNum(i.Stock) > 0 && toNum(i.Stock) < 5) currentLow++;
-    if (toNum(i.Used_Stock) > 0 && toNum(i.Used_Stock) < 5) currentLow++;
-    return s + currentLow;
-  }, 0);
+  const lowCount = data.filter(item => {
+    const quantity = toNum(item.Stock) + toNum(item.Used_Stock);
+    return quantity > 0 && quantity <= 5;
+  }).length;
 
   const totalCostValue = data.reduce((s, i) => {
     const cost = toNum(i['Cost Price'] ?? i.Cost_Price ?? i.Cost ?? 0);
@@ -339,32 +317,21 @@ function updateHeroMeta() {
   el.textContent = `${brands.length} ยี่ห้อ · ${series.length} รุ่น · ข้อมูลจากคลังสินค้า`;
 }
 
+let inventoryStockFilter = 'all';
 function buildFilterChips() {
   const row = document.getElementById('filterChipsRow');
   if (!row) return;
-
-  // Collect unique brands and series from live data
-  const { brands, series: allSeries } = getUniqueBrandSeries(globalData);
-
-  let html = '';
-  // Brand chips
-  html += `<span class="chip-label">Brand</span>`;
-  html += `<div class="chip active" onclick="setFilter(this,'brand','All')">All</div>`;
-  brands.forEach(b => {
-    html += `<div class="chip" onclick="setFilter(this,'brand','${b}')">${b}</div>`;
-  });
-  // Series chips
-  html += `<span class="chip-label" style="margin-left:12px">Series</span>`;
-  html += `<div class="chip active" onclick="setFilter(this,'series','All')">All</div>`;
-  allSeries.forEach(s => {
-    const escaped = s.replace(/'/g, "\\'");
-    html += `<div class="chip" onclick="setFilter(this,'series','${escaped}')">${s}</div>`;
-  });
-
-  row.innerHTML = html;
+  const { brands, series } = getUniqueBrandSeries(globalData);
+  const allowed = activeFilters.brand === 'All' ? series : [...(getInventoryFilterCache().brandSeries.get(activeFilters.brand.toUpperCase()) || [])];
+  const options = (values, selected, label) => `<option value="All">${label}</option>` + values.map(value => `<option value="${escapeHtml(value)}" ${value===selected?'selected':''}>${escapeHtml(value)}</option>`).join('');
+  row.innerHTML = `<div class="filter-selects"><label for="inventoryBrand">ยี่ห้อ<select id="inventoryBrand" onchange="setFilter(this,'brand',this.value)">${options(brands,activeFilters.brand,'ทุกยี่ห้อ')}</select></label><label for="inventorySeries">รุ่นรถ<select id="inventorySeries" onchange="setFilter(this,'series',this.value)">${options(allowed,activeFilters.series,'ทุกรุ่น')}</select></label></div><div class="stock-tabs" role="group" aria-label="สถานะสต็อก">${[['all','ทั้งหมด'],['available','พร้อมขาย'],['low','ใกล้หมด'],['out','หมดสต็อก']].map(([value,label])=>`<button class="stock-tab ${inventoryStockFilter===value?'active':''}" aria-pressed="${inventoryStockFilter===value}" onclick="setInventoryStockFilter('${value}')">${label}</button>`).join('')}</div>`;
   updateHeroMeta();
-  // restore active state
-  updateActiveChips();
+}
+function setInventoryStockFilter(value) {
+  inventoryStockFilter = value;
+  buildFilterChips();
+  filterLocal();
+  document.querySelector('.stock-tab.active')?.focus({preventScroll:true});
 }
 
 function toggleClearBtn(inp) {
@@ -373,61 +340,28 @@ function toggleClearBtn(inp) {
 }
 
 function clearSearch() {
-  const inp = document.getElementById('searchInput');
-  if (inp) { inp.value = ''; toggleClearBtn(inp); }
-  activeFilters = { brand: 'All', series: 'All' };
-  updateSeriesChips('All');
-  updateActiveChips();
-  renderGrid(applySort(globalData));
-  updateStats(globalData);
-}
-
-function setFilter(el, type, val) {
-  activeFilters[type] = val;
-  
-  // ถ้าเลือก Brand → อัพเดท Series chips และรีเซ็ต series filter
-  if (type === 'brand') {
-    activeFilters.series = 'All'; // รีเซ็ตฟิลเตอร์ series
-    updateSeriesChips(val);
-  }
-
-  updateActiveChips(); // อัปเดต active class ทั้งหมด
+  const input = document.getElementById('searchInput');
+  input.value = '';
+  toggleClearBtn(input);
+  activeFilters = { brand:'All', series:'All' };
+  inventoryStockFilter = 'all';
+  buildFilterChips();
   filterLocal();
 }
-
-function updateSeriesChips(selectedBrand) {
-  const { brandSeries } = getInventoryFilterCache();
-
-  const seriesChips = document.querySelectorAll('#filterChipsRow .chip[onclick*="series"]');
-  if (selectedBrand === 'All') {
-    seriesChips.forEach(chip => { chip.style.display = ''; });
-  } else {
-    const allowed = brandSeries.get(selectedBrand.toUpperCase()) || new Set();
-    seriesChips.forEach(chip => {
-      const text = chip.textContent.trim().toUpperCase();
-      chip.style.display = (text === 'ALL' || allowed.has(text)) ? '' : 'none';
-    });
-  }
+function setFilter(el, type, value) {
+  activeFilters[type] = value;
+  if (type === 'brand') activeFilters.series = 'All';
+  buildFilterChips();
+  filterLocal();
+  document.getElementById(type === 'brand' ? 'inventoryBrand' : 'inventorySeries')?.focus({preventScroll:true});
 }
+function updateSeriesChips() { buildFilterChips(); }
 
 let searchTimer;
 function scheduleFilter() { clearTimeout(searchTimer); searchTimer = setTimeout(filterLocal, 120); }
 function filterCards() { filterLocal(); }
 
-function updateActiveChips() {
-    document.querySelectorAll('.chip').forEach(chip => {
-        const onclickAttr = chip.getAttribute('onclick');
-        if (!onclickAttr) return;
-
-        const match = onclickAttr.match(/setFilter\(this,\s*'(.*?)',\s*'(.*?)'\)/);
-        if (match) {
-            const type = match[1];
-            const value = match[2];
-            const isActive = activeFilters[type] && activeFilters[type].toUpperCase() === value.toUpperCase();
-            chip.classList.toggle('active', isActive);
-        }
-    });
-}
+function updateActiveChips() { buildFilterChips(); }
 
 function filterLocal() {
   const q = document.getElementById('searchInput').value.toLowerCase();
@@ -438,7 +372,9 @@ function filterLocal() {
       item['Brand'].toLowerCase().includes(q);
     const matchBrand  = activeFilters.brand  === 'All' || item['Brand'].toUpperCase()  === activeFilters.brand.toUpperCase();
     const matchSeries = activeFilters.series === 'All' || item['Series'].toUpperCase() === activeFilters.series.toUpperCase();
-    return matchText && matchBrand && matchSeries;
+    const total = Number(item.Stock || 0) + Number(item.Used_Stock || 0);
+    const stockMatch = inventoryStockFilter === 'all' || (inventoryStockFilter === 'available' && total > 0) || (inventoryStockFilter === 'low' && total > 0 && total <= 5) || (inventoryStockFilter === 'out' && total === 0);
+    return matchText && matchBrand && matchSeries && stockMatch;
   });
   renderGrid(applySort(filtered));
 }
@@ -1312,8 +1248,8 @@ function buildLiveStats() {
   }, 400);
 }
 function setNav(el) {
-  document.querySelectorAll('.nav-pill').forEach(p=>p.classList.remove('active'));
-  if (el) el.classList.add('active');
+  document.querySelectorAll('.nav-pill').forEach(p=>{p.classList.remove('active'); p.removeAttribute('aria-current');});
+  if (el) {el.classList.add('active');el.setAttribute('aria-current','page');}
 }
 
 /* ──────────────── PAGE STATE ──────────────── */
@@ -1323,6 +1259,7 @@ function switchPage(page, el) {
   const validPages = ['inventory', 'orders', 'analytics'];
   if (!validPages.includes(page)) page = 'inventory';
   currentPage = page; // store current page
+  document.querySelector('.skip-link').href = '#page-' + page;
   try { localStorage.setItem('leo_last_page', page); } catch {}
   setNav(el || document.querySelector(`.nav-pill[data-view="${page}"]`));
   validPages.forEach(id => {
@@ -3158,17 +3095,21 @@ function setSort(mode) {
     el.classList.toggle('active', oc.includes(`'${mode}'`));
   });
   document.getElementById('sortDrop').classList.remove('open');
+  document.getElementById('sortDropBtn').setAttribute('aria-expanded','false');
+  document.getElementById('sortDropBtn').focus();
   filterLocal();
 }
 
 function toggleSortDrop(e) {
   if (e) e.stopPropagation();
-  document.getElementById('sortDrop').classList.toggle('open');
+  const open = document.getElementById('sortDrop').classList.toggle('open');
+  document.getElementById('sortDropBtn').setAttribute('aria-expanded',String(open));
 }
 
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.sort-drop-wrap')) {
     document.getElementById('sortDrop')?.classList.remove('open');
+    document.getElementById('sortDropBtn')?.setAttribute('aria-expanded','false');
   }
 });
 
@@ -3478,4 +3419,12 @@ document.addEventListener('keydown', event => {
 
 document.addEventListener('click', event => {
   if (!event.target.closest('.bill-search-wrap, .bill-dropdown')) document.getElementById('billSearchResults').style.display = 'none';
+});
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && document.getElementById('sortDrop').classList.contains('open')) {
+    document.getElementById('sortDrop').classList.remove('open');
+    document.getElementById('sortDropBtn').setAttribute('aria-expanded','false');
+    document.getElementById('sortDropBtn').focus();
+  }
 });

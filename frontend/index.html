@@ -12,8 +12,10 @@
 
 <link rel="stylesheet" href="/assets/legacy.css">
 <link rel="stylesheet" href="/assets/workspace.css">
+<link rel="stylesheet" href="/assets/promax.css">
 </head>
 <body>
+<a class="skip-link" href="#page-inventory">ข้ามไปเนื้อหาหลัก</a>
 
 <div class="bg-orbs">
   <div class="orb orb1"></div>
@@ -24,7 +26,7 @@
 <div class="app-wrapper">
 
   <!-- NAV -->
-  <nav class="nav">
+  <nav class="nav" aria-label="เมนูหลัก">
     <div class="nav-brand">
       <div class="nav-icon">L<span>↗</span></div>
       <div>
@@ -33,67 +35,74 @@
       </div>
     </div>
     <div class="nav-pills">
-          <button class="nav-pill active" data-view="inventory" onclick="switchPage('inventory', this)"><span>▦</span> คลังสินค้า</button>
-          <button class="nav-pill" data-view="orders" onclick="switchPage('orders', this)"><span>▤</span> บิลขาย</button>
-          <button class="nav-pill" data-view="analytics" onclick="switchPage('analytics', this)"><span>↗</span> ภาพรวมสต็อก</button>
+          <button class="nav-pill active" data-view="inventory" onclick="switchPage('inventory', this)"><span data-icon="package"></span> คลังสินค้า</button>
+          <button class="nav-pill" data-view="orders" onclick="switchPage('orders', this)"><span data-icon="receipt"></span> บิลขาย</button>
+          <button class="nav-pill" data-view="analytics" onclick="switchPage('analytics', this)"><span data-icon="chart"></span> ภาพรวมสต็อก</button>
         </div>
     <div class="nav-note"><span class="status-dot"></span> LEO AUTO WORKSPACE<small>จัดการร้านให้เป็นเรื่องง่าย</small></div>
   </nav>
-  <header class="workspace-bar"><span>ระบบจัดการอะไหล่รถบรรทุก</span><div><span id="connectionStatus" role="status">กำลังเชื่อมต่อ…</span><button class="quiet-button" onclick="refreshInventoryUI()" aria-label="โหลดข้อมูลใหม่">↻</button></div></header>
+  <header class="workspace-bar"><span>ระบบจัดการอะไหล่รถบรรทุก</span><div><span id="connectionStatus" role="status">กำลังเชื่อมต่อ…</span><button class="quiet-button" onclick="refreshInventoryUI()" aria-label="โหลดข้อมูลใหม่"><span data-icon="refresh"></span></button></div></header>
 
   <!-- ══════ PAGE: INVENTORY ══════ -->
-  <div id="page-inventory">
+  <main id="page-inventory" tabindex="-1">
   <!-- HERO -->
   <div class="hero">
-    <div class="eyebrow">WORKSPACE / INVENTORY</div><h1>คลังอะไหล่<span class="heading-dot">.</span></h1><p class="hero-description">ค้นหา เช็กสต็อก และจัดการอะไหล่ได้ในที่เดียว</p>
+    <div class="eyebrow">LEO AUTO / INVENTORY</div><h1>คลังอะไหล่<span class="heading-dot">.</span></h1><p class="hero-description">ค้นหา เช็กสต็อก และจัดการอะไหล่ได้ในที่เดียว</p>
     <p id="heroMeta">0 brands · 0 series · real-time availability</p>
-    <div class="search-bar">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="ค้นหา Part Number หรือชื่อชิ้นส่วน…" oninput="scheduleFilter();toggleClearBtn(this)">
-      <span id="searchClear" class="search-clear" onclick="clearSearch()" title="ล้างการค้นหา">✕</span>
+    <div class="hero-actions">
+      <button class="action-secondary" onclick="document.getElementById('scanInput').click()"><span data-icon="scan"></span> สแกนรูป</button>
+      <button class="action-secondary" onclick="openReceiveModal()"><span data-icon="receive"></span> รับสินค้าเข้า</button>
+      <button class="action-primary" onclick="openManageModal()"><span data-icon="plus"></span> เพิ่มสินค้า</button>
     </div>
   </div>
-  <!-- FILTER CHIPS — rendered dynamically by buildFilterChips() -->
-  <div class="filters" id="filterChipsRow"></div>
   <!-- STATS -->
   <div class="stats">
     <div class="stat-card"><div class="stat-dot dot-blue"></div><div class="stat-val" id="s-total">0</div><div class="stat-lbl">รายการสินค้า</div></div>
     <div class="stat-card"><div class="stat-dot dot-green"></div><div class="stat-val" id="s-stock">0</div><div class="stat-lbl">จำนวนสินค้าพร้อมขาย</div></div>
     <div class="stat-card"><div class="stat-dot dot-amber"></div><div class="stat-val" id="s-low">0</div><div class="stat-lbl">สินค้าใกล้หมด</div></div>
-          <div class="stat-card" onclick="toggleCostValue()" title="คลิกเพื่อดู/ซ่อน" style="cursor:pointer;">
+          <div class="stat-card" onclick="toggleCostValue()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleCostValue()}" role="button" tabindex="0" aria-label="แสดงหรือซ่อนราคาทุนรวม" title="คลิกเพื่อดู/ซ่อน" style="cursor:pointer;">
         <div class="stat-dot dot-purple"></div>
         <div id="s-value" class="stat-val">ซ่อน</div>
         <div class="stat-lbl" style="margin-top: 2px;">ราคาทุนรวม</div>
       </div>
   </div>
+  <section class="catalog-toolbar" aria-label="ค้นหาและกรองสินค้า">
+    <div class="search-bar">
+      <span class="search-icon" data-icon="search"></span>
+      <input type="text" id="searchInput" aria-label="ค้นหาอะไหล่" placeholder="ค้นหา Part Number หรือชื่อชิ้นส่วน…" oninput="scheduleFilter();toggleClearBtn(this)">
+      <button type="button" id="searchClear" class="search-clear" onclick="clearSearch()" aria-label="ล้างการค้นหา"><span data-icon="close"></span></button>
+    </div>
+  <!-- FILTER CHIPS — rendered dynamically by buildFilterChips() -->
+  <div class="filters" id="filterChipsRow"></div>
+  </section>
   <!-- GRID HEADER -->
   <div class="section-header">
     <div><div class="section-title">รายการอะไหล่</div></div>
     <div style="display:flex;gap:8px;align-items:center">
-      <div class="section-count" id="countLabel">0 items</div>
+      <div class="section-count" id="countLabel" role="status" aria-atomic="true">กำลังโหลด</div>
       <div class="sort-drop-wrap">
-        <div class="sort-btn" id="sortDropBtn" onclick="toggleSortDrop(event)">⇅ <span id="sortLabel">ใหม่ล่าสุด</span></div>
+        <button class="sort-btn" id="sortDropBtn" onclick="toggleSortDrop(event)" aria-label="เรียงลำดับสินค้า" aria-expanded="false" aria-controls="sortDrop"><span data-icon="sort"></span><span id="sortLabel">ใหม่ล่าสุด</span></button>
         <div class="sort-drop" id="sortDrop">
-          <div class="sort-opt active" onclick="setSort('newest')">🆕 ใหม่ล่าสุด</div>
-          <div class="sort-opt" onclick="setSort('oldest')">📅 เก่าที่สุด</div>
+          <button class="sort-opt active" onclick="setSort('newest')">ใหม่ล่าสุด</button>
+          <button class="sort-opt" onclick="setSort('oldest')">เก่าที่สุด</button>
           <div class="sort-sep"></div>
-          <div class="sort-opt" onclick="setSort('price_asc')">💲 ราคา: น้อย → มาก</div>
-          <div class="sort-opt" onclick="setSort('price_desc')">💲 ราคา: มาก → น้อย</div>
+          <button class="sort-opt" onclick="setSort('price_asc')">ราคา: น้อย → มาก</button>
+          <button class="sort-opt" onclick="setSort('price_desc')">ราคา: มาก → น้อย</button>
           <div class="sort-sep"></div>
-          <div class="sort-opt" onclick="setSort('stock_desc')">📦 Stock: มาก → น้อย</div>
-          <div class="sort-opt" onclick="setSort('stock_asc')">📦 Stock: น้อย → มาก</div>
+          <button class="sort-opt" onclick="setSort('stock_desc')">Stock: มาก → น้อย</button>
+          <button class="sort-opt" onclick="setSort('stock_asc')">Stock: น้อย → มาก</button>
           <div class="sort-sep"></div>
-          <div class="sort-opt" onclick="setSort('name_asc')">🔤 ชื่อสินค้า: A → Z</div>
-          <div class="sort-opt" onclick="setSort('pn_asc')">🏷️ Part Number</div>
+          <button class="sort-opt" onclick="setSort('name_asc')">ชื่อสินค้า: A → Z</button>
+          <button class="sort-opt" onclick="setSort('pn_asc')">Part Number</button>
         </div>
       </div>
     </div>
   </div>
   <!-- PRODUCT GRID -->
-  <div id="inventoryNotice" role="status"></div><div class="grid" id="productGrid" aria-live="polite"></div><div id="inventoryPagination" class="pagination"></div>
-  </div><!-- /page-inventory -->
+  <div id="inventoryNotice" role="status"></div><div class="grid" id="productGrid"></div><div id="inventoryPagination" class="pagination"></div>
+  </main><!-- /page-inventory -->
 
-  <!-- ------ PAGE: ORDERS ------ -->  <div id="page-orders" style="display:none;">
+  <!-- ------ PAGE: ORDERS ------ -->  <div id="page-orders" tabindex="-1" style="display:none;">
     <div class="orders-layout">
 
       <!-- LEFT: Bill Editor -->
@@ -101,7 +110,7 @@
         <div class="orders-card">
           <div class="orders-card-header">
             <div>
-              <div class="orders-card-title">🧾 สร้างบิลใหม่</div>
+              <div class="orders-card-title"><span class="ui-inline-icon" data-icon="receipt"></span> สร้างบิลใหม่</div>
               <div class="orders-card-sub">เพิ่มรายการสินค้าที่ขายวันนี้</div>
             </div>
             <div style="display:flex;gap:8px;align-items:center;">
@@ -110,7 +119,7 @@
             </div>
           </div>          <!-- Part Search -->
           <div class="bill-search-wrap">
-            <span class="search-icon" style="color:rgba(255,255,255,0.35)">🔍</span>
+            <span class="search-icon" style="color:rgba(255,255,255,0.35)"><span class="ui-inline-icon" data-icon="search"></span></span>
             <input type="text" id="billSearchInput" class="bill-search-input" placeholder="ค้นหาสินค้าเพื่อเพิ่มในบิล…" oninput="billSearch()">
           </div>
           <!-- Dropdown Results -->
@@ -140,8 +149,8 @@
               <div class="bill-total-row bill-grand"><span>ยอดรวมทั้งหมด</span><span id="billGrand">฿0</span></div>
             </div>
             <div style="display:flex;gap:10px;margin-top:16px;">
-              <button class="bill-btn-clear" onclick="clearBill()">🗑 ล้างบิล</button>
-              <button class="bill-btn-save" onclick="saveBill()">💾 บันทึกบิล</button>
+              <button class="bill-btn-clear" onclick="clearBill()"><span class="ui-inline-icon" data-icon="trash"></span> ล้างบิล</button>
+              <button class="bill-btn-save" onclick="saveBill()"><span class="ui-inline-icon" data-icon="save"></span> บันทึกบิล</button>
             </div>
             <div id="billSaveMsg" style="font-size:12px;color:#34d399;margin-top:8px;min-height:18px;"></div>
           </div>
@@ -153,7 +162,7 @@
         <div class="orders-card" style="height:100%;">
           <div class="orders-card-header" style="margin-bottom:12px;">
             <div>
-              <div class="orders-card-title">📋 ประวัติบิล</div>
+              <div class="orders-card-title"><span class="ui-inline-icon" data-icon="receipt"></span> ประวัติบิล</div>
               <div class="orders-card-sub" id="historyDateLabel">วันนี้</div>
             </div>
             <div style="display:flex;gap:8px;align-items:center;">
@@ -178,12 +187,12 @@
   </div><!-- /page-orders -->
 
   <!-- ══════ PAGE: ANALYTICS ══════ -->
-  <div id="page-analytics" style="display:none;">
+  <div id="page-analytics" tabindex="-1" style="display:none;">
 
     <!-- Header -->
     <div class="an-header">
       <div>
-        <div class="an-title">📦 Stock Intelligence</div>
+        <div class="an-title"><span class="ui-inline-icon" data-icon="package"></span> Stock Intelligence</div>
         <div class="an-sub" id="anSubLabel">วิเคราะห์สต็อกสินค้าแบบ real-time จากข้อมูลในระบบ</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
@@ -218,7 +227,7 @@
 
     <!-- Filter Tabs -->
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;" id="si-tabs">
-      <button class="si-tab active" data-tab="all"     onclick="siTab(this,'all')">📋 ทั้งหมด</button>
+      <button class="si-tab active" data-tab="all"     onclick="siTab(this,'all')"><span class="ui-inline-icon" data-icon="receipt"></span> ทั้งหมด</button>
       <button class="si-tab"        data-tab="out"     onclick="siTab(this,'out')">🔴 หมด (0)</button>
       <button class="si-tab"        data-tab="qty1"    onclick="siTab(this,'qty1')">🟠 เหลือ 1</button>
       <button class="si-tab"        data-tab="qty2"    onclick="siTab(this,'qty2')">🟡 เหลือ 2</button>
@@ -239,7 +248,7 @@
             <div class="an-card-title" id="si-table-title">รายการสินค้าทั้งหมด</div>
             <div class="an-card-sub" style="margin-bottom:0;" id="si-table-sub">—</div>
           </div>
-          <input id="si-search" placeholder="🔍 ค้น Part / ชื่อ…" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.14);border-radius:10px;padding:7px 12px;color:#fff;font-size:12px;font-family:inherit;outline:none;width:180px;" oninput="siRender()">
+          <input id="si-search" placeholder="<span class="ui-inline-icon" data-icon="search"></span> ค้น Part / ชื่อ…" style="background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.14);border-radius:10px;padding:7px 12px;color:#fff;font-size:12px;font-family:inherit;outline:none;width:180px;" oninput="siRender()">
         </div>
         <div style="overflow-x:auto;">
           <table id="si-table" style="width:100%;border-collapse:collapse;font-size:12px;">
@@ -294,7 +303,7 @@
 </div><!-- /app-wrapper -->
 
 <!-- CHAT FAB -->
-<button class="chat-fab" id="chatFab" onclick="toggleChat()" title="Ask AI Assistant">💬</button>
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" title="ถามผู้ช่วย AI" aria-label="เปิดผู้ช่วย AI"><span data-icon="chat"></span></button>
 
 
 <!-- CHAT PANEL -->
@@ -324,10 +333,10 @@
     <span class="dock-toggle-arrow">▼</span>
   </div>
   <div class="dock">
-    <button class="dock-btn" onclick="refreshInventoryUI()"><span class="icon">↻</span>รีเฟรช</button>
-    <button class="dock-btn" id="scanDockBtn" onclick="document.getElementById('scanInput').click()"><span class="icon">⌕</span>สแกนรูป</button>
-    <button class="dock-btn" onclick="openManageModal()"><span class="icon">＋</span>เพิ่มสินค้า</button>
-    <button class="dock-btn" onclick="openReceiveModal()"><span class="icon">↓</span>รับสินค้าเข้า</button>
+    <button class="dock-btn" onclick="refreshInventoryUI()"><span class="icon" data-icon="refresh"></span>รีเฟรช</button>
+    <button class="dock-btn" id="scanDockBtn" onclick="document.getElementById('scanInput').click()"><span class="icon" data-icon="scan"></span>สแกนรูป</button>
+    <button class="dock-btn" onclick="openManageModal()"><span class="icon" data-icon="plus"></span>เพิ่มสินค้า</button>
+    <button class="dock-btn" onclick="openReceiveModal()"><span class="icon" data-icon="receive"></span>รับสินค้าเข้า</button>
   </div>
 </div>
 
@@ -339,7 +348,7 @@
 <div id="manageModal" class="modal-overlay" onclick="return false">
   <div class="modal-box" onclick="event.stopPropagation()">
     <div class="modal-header">
-      <div class="modal-title" id="modalTitle">🛠️ เพิ่มสินค้าใหม่</div>
+      <div class="modal-title" id="modalTitle"><span class="ui-inline-icon" data-icon="package"></span> เพิ่มสินค้าใหม่</div>
       <button class="modal-close" onclick="closeManageModal()">✕</button>
     </div>
 
@@ -446,13 +455,13 @@
 <div id="receiveModal" class="modal-overlay" onclick="return false">
   <div class="modal-box" onclick="event.stopPropagation()">
     <div class="modal-header">
-      <div class="modal-title">📥 รับสินค้าเข้า</div>
+      <div class="modal-title"><span class="ui-inline-icon" data-icon="receive"></span> รับสินค้าเข้า</div>
       <button class="modal-close" onclick="closeReceiveModal()">✕</button>
     </div>
 
     <!-- Search -->
     <div class="recv-search-wrap">
-      <input id="recvSearch" class="recv-search" type="text" placeholder="🔍 พิมพ์ Part Number หรือชื่อสินค้า..." autocomplete="off"
+      <input id="recvSearch" class="recv-search" type="text" placeholder="<span class="ui-inline-icon" data-icon="search"></span> พิมพ์ Part Number หรือชื่อสินค้า..." autocomplete="off"
         oninput="recvFilter(this.value)" onfocus="recvFilter(this.value)">
       <div id="recvDropdown" class="recv-dropdown"></div>
     </div>
