@@ -91,6 +91,14 @@ window.LEO_API_BASE_URL = 'https://your-backend.example';
 
 ยังใช้ FastAPI และ JavaScript โดยไม่เพิ่มขั้นตอน build ส่วนข้อมูลยังเป็น CSV/JSON จึงควรเปลี่ยนเป็นฐานข้อมูลที่รองรับ transaction หากต้องใช้หลาย worker เขียนข้อมูลพร้อมกัน
 
+### Backend response cache
+
+`GET /api/inventory` และ `GET /api/orders` เก็บ JSON ที่ serialize แล้วและ gzip ไว้ในหน่วยความจำ ตรวจ mtime/size ของไฟล์ก่อนใช้ทุกครั้ง จึงไม่ต้องแปลง DataFrame หรือบีบอัดซ้ำบนคำขอที่ข้อมูลไม่เปลี่ยน รองรับ `ETag` / `If-None-Match` และตอบ `304` เมื่อข้อมูลเดิม โดยใช้ `Cache-Control: private, no-cache` เพื่อให้ browser ตรวจความสดใหม่ก่อนใช้ข้อมูลซ้ำ
+
+งานอ่านและเขียนไฟล์ทำใน FastAPI thread pool ส่วนการแก้สต็อกและบิลล็อกตลอด read-modify-write เพื่อป้องกันคำขอพร้อมกันเขียนทับกันใน worker เดียว ตรวจรายการบิลก่อนเขียนสต็อกแล้ว ระบบยังต้องใช้ Uvicorn worker เดียวสำหรับ CSV/JSON; lock นี้ไม่ใช่ transaction ข้ามหลาย process
+
+ผล benchmark ในเครื่องกับสำเนาข้อมูล production 460 รายการ (60 คำขอหลัง warm-up): inventory median 14.035 → 0.538 ms, p95 14.331 → 0.609 ms; payload 163,677 → 15,198 bytes ด้วย gzip ตัวเลขนี้เป็น TestClient ภายในเครื่อง ไม่รวม latency เครือข่ายและ cold start รันทวนได้ด้วย `DATA_DIR=/path/to/benchmark-data .venv/bin/python tests/benchmark_backend.py`
+
 ### ตรวจสอบการทำงาน
 
 ```bash

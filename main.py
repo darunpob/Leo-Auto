@@ -4,13 +4,17 @@ import re
 import shutil
 import threading
 import tempfile
+import gzip
+import hashlib
+import math
+from functools import wraps
 from starlette.concurrency import run_in_threadpool
 import pandas as pd
 import json
-from fastapi import FastAPI, Form, UploadFile, File, HTTPException
+from fastapi import FastAPI, Form, UploadFile, File, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from google import genai
 from google.genai import types
 from PIL import Image
@@ -197,19 +201,81 @@ def save_db(df):
         _atomic_write(DB_FILE, df.to_csv(index=False))
         _inventory_signature = None
 
+class _JSONResponseCache:
+    """Reuse serialized and compressed bytes until the source files change."""
+    def __init__(self):
+        self.signature = object()
+        self.body = None
+        self.compressed = None
+        self.etag = None
+
+    def response(self, request, signature, build):
+        # Caller holds _inventory_lock, also used by complete write operations.
+        if self.body is None or signature != self.signature:
+            body = json.dumps(build(), ensure_ascii=False, allow_nan=False,
+                              separators=(",", ":")).encode("utf-8")
+            self.body = body
+            self.compressed = gzip.compress(body, compresslevel=5, mtime=0)
+            self.etag = 'W/"' + hashlib.sha256(body).hexdigest() + '"'
+            self.signature = signature
+        headers = {"ETag": self.etag, "Cache-Control": "private, no-cache",
+                   "Vary": "Accept-Encoding"}
+        validators = request.headers.get("if-none-match", "")
+        if any(value.strip().removeprefix("W/") in ("*", self.etag[2:])
+               for value in validators.split(",")):
+            return Response(status_code=304, headers=headers)
+        if _accepts_gzip(request.headers.get("accept-encoding", "")):
+            headers["Content-Encoding"] = "gzip"
+            body = self.compressed
+        else:
+            body = self.body
+        return Response(body, media_type="application/json", headers=headers)
+
+
+def _accepts_gzip(value):
+    encodings = {}
+    for entry in value.lower().split(","):
+        fields = [field.strip() for field in entry.split(";")]
+        quality = 1.0
+        for field in fields[1:]:
+            if field.startswith("q="):
+                try:
+                    quality = float(field[2:])
+                except ValueError:
+                    quality = 0
+        encodings[fields[0]] = quality
+    return encodings.get("gzip", encodings.get("*", 0)) > 0
+
+
+_inventory_response = _JSONResponseCache()
+_orders_response = _JSONResponseCache()
+
+
+def _serialized_write(function):
+    """Keep read-modify-write intact while endpoints run in the thread pool."""
+    @wraps(function)
+    def wrapped(*args, **kwargs):
+        with _inventory_lock:
+            return function(*args, **kwargs)
+    return wrapped
+
+
 # ==========================================
 # 🛠️ 2. API สำหรับจัดการสต็อก (CRUD Operations)
 # ==========================================
 
 # [READ] โหลดข้อมูลสินค้าทั้งหมด
 @app.get("/api/inventory")
-async def get_inventory():
-    df = await run_in_threadpool(get_db)
-    return df.to_dict(orient="records")
+def get_inventory(request: Request):
+    with _inventory_lock:
+        signature = (_file_signature(DB_FILE), _file_signature(PICTURE_DIR))
+        return _inventory_response.response(
+            request, signature, lambda: get_db().to_dict(orient="records"))
 
 # [CREATE] เพิ่มสินค้าใหม่
 @app.post("/api/inventory")
-async def add_product(
+@_serialized_write
+def add_product(
     part_number: str = Form(...),
     part_name: str = Form(...),
     brand: str = Form(...),
@@ -274,7 +340,8 @@ async def add_product(
 
 # [UPDATE] แก้ไขสินค้าเดิม
 @app.put("/api/inventory")
-async def update_product(
+@_serialized_write
+def update_product(
     part_number: str = Form(...),
     part_name: str = Form(...),
     brand: str = Form(...),
@@ -362,7 +429,8 @@ async def update_product(
 
 # [DELETE] ลบสินค้า
 @app.delete("/api/inventory")
-async def delete_product(part_number: str):
+@_serialized_write
+def delete_product(part_number: str):
     part_number = part_number.strip()
     df = get_db()
     df['Part Number'] = df['Part Number'].astype(str).str.strip()
@@ -389,7 +457,8 @@ async def delete_product(part_number: str):
 
 # [RECEIVE] รับสินค้าเข้า — เพิ่ม stock ให้สินค้าที่มีอยู่แล้ว
 @app.post("/api/inventory/receive")
-async def receive_stock(
+@_serialized_write
+def receive_stock(
     part_number: str = Form(...),
     qty:          int = Form(0),
     qty_lh:       int = Form(0),
@@ -432,7 +501,8 @@ async def receive_stock(
 
 # [DELETE IMAGE] ลบรูปภาพเดียว
 @app.delete("/api/inventory/image")
-async def delete_image(part_number: str, image_url: str):
+@_serialized_write
+def delete_image(part_number: str, image_url: str):
     df = get_db()
     if part_number not in df['Part Number'].values:
         raise HTTPException(status_code=404, detail="ไม่พบสินค้าในระบบ")
@@ -632,11 +702,15 @@ def _normalize_order_items(items, inventory_df=None):
 
     norm_items = []
     for it in items:
+        if not isinstance(it, dict):
+            raise HTTPException(status_code=422, detail="Each item must be an object")
         pn = str(it.get("part_number", "")).strip()
         qty = it.get("quantity")
         unit = it.get("unit_price")
         item_type = str(it.get("type", "new") or "new")
         custom_name = str(it.get("part_name", "")).strip()
+        if item_type not in ("new", "used"):
+            raise HTTPException(status_code=422, detail="item.type must be new or used")
 
         if not pn:
             raise HTTPException(status_code=422, detail="Missing item.part_number")
@@ -648,9 +722,9 @@ def _normalize_order_items(items, inventory_df=None):
             unit_f = float(unit)
         except (ValueError, TypeError):
             raise HTTPException(status_code=422, detail="Invalid item.unit_price")
-        if qty_f <= 0:
+        if not math.isfinite(qty_f) or qty_f <= 0:
             raise HTTPException(status_code=422, detail="item.quantity must be > 0")
-        if unit_f < 0:
+        if not math.isfinite(unit_f) or unit_f < 0:
             raise HTTPException(status_code=422, detail="item.unit_price must be >= 0")
 
         part_name = custom_name
@@ -672,7 +746,8 @@ def _normalize_order_items(items, inventory_df=None):
 
 # [CREATE] บันทึกบิลขายรายวัน (รับ JSON)
 @app.post("/api/orders")
-async def create_order(data: dict):
+@_serialized_write
+def create_order(data: dict):
     date = data.get("date")
     items = data.get("items", [])
     bill_name = data.get("name", "") # รับชื่อบิล
@@ -684,9 +759,10 @@ async def create_order(data: dict):
 
     # --- Stock Deduction Logic ---
     inventory_df = get_db()
-    inventory_df['Part Number'] = inventory_df['Part Number'].astype(str)
-    
-    for it in items:
+    inventory_df['Part Number'] = inventory_df['Part Number'].astype(str).str.strip()
+    norm_items = _normalize_order_items(items, inventory_df)
+
+    for it in norm_items:
         pn = str(it.get("part_number"))
         qty = float(it.get("quantity", 0))
         item_type = it.get("type", "new") # default to 'new' if not provided
@@ -714,8 +790,6 @@ async def create_order(data: dict):
     # --- End Stock Deduction ---
     save_db(inventory_df) # <--- ⭐️ บันทึกไฟล์ CSV ที่อัปเดตสต็อกแล้ว
 
-    norm_items = _normalize_order_items(items, inventory_df)
-
     bills = _load_orders()
     next_no = 1
     if bills:
@@ -740,14 +814,16 @@ async def create_order(data: dict):
 
 # [READ] โหลดบิลทั้งหมด
 @app.get("/api/orders")
-async def get_orders():
-    bills = _load_orders()
-    # เรียงจากใหม่ไปเก่า
-    return sorted(bills, key=lambda b: b.get("bill_no", 0), reverse=True)
+def get_orders(request: Request):
+    with _inventory_lock:
+        return _orders_response.response(
+            request, _file_signature(ORDERS_FILE),
+            lambda: sorted(_load_orders(), key=lambda b: b.get("bill_no", 0), reverse=True))
 
 # [UPDATE] แก้ไขชื่อบิล
 @app.put("/api/orders/{bill_no}")
-async def update_order_name(bill_no: int, data: dict):
+@_serialized_write
+def update_order_name(bill_no: int, data: dict):
     new_name = data.get("name")
     if not new_name:
         raise HTTPException(status_code=422, detail="Missing field: name")
@@ -768,7 +844,8 @@ async def update_order_name(bill_no: int, data: dict):
 
 # [DELETE] ลบบิล
 @app.delete("/api/orders/{bill_no}")
-async def delete_order(bill_no: int):
+@_serialized_write
+def delete_order(bill_no: int):
     bills = _load_orders()
     original_len = len(bills)
     
@@ -779,17 +856,10 @@ async def delete_order(bill_no: int):
 
     _save_orders(bills_to_keep)
     return {"message": f"ลบบิล #{bill_no} สำเร็จ"}
-    
-    bills_to_keep = [b for b in bills if b.get("bill_no") != bill_no]
-
-    if len(bills_to_keep) == original_len:
-        raise HTTPException(status_code=404, detail=f"Bill #{bill_no} not found")
-
-    _save_orders(bills_to_keep)
-    return {"message": f"ลบบิล #{bill_no} สำเร็จ"}
 
 @app.put("/api/orders/{bill_no}/detail")
-async def update_order_detail(bill_no: int, data: dict):
+@_serialized_write
+def update_order_detail(bill_no: int, data: dict):
     bills = _load_orders()
     updated_bill = None
     for bill in bills:
